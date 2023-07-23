@@ -1,19 +1,17 @@
 [tool.poetry]
-name = "tomodachi-transactional-outbox"
-version = "0.0.1"
+name = "src"
+version = "0.0.0"
 description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
-license = "MIT"
-readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+tomodachi = "^0.25.0"
+
 [tool.poetry.group.dev.dependencies]
 autoflake = "^2.2.0"
 bandit = "^1.7.5"
 black = "^23.7.0"
-busypie = "^0.5.1"
-colorama = "^0.4.6"
 flake8 = "^6.0.0"
 flake8-annotations = "^3.0.1"
 flake8-black = "^0.3.6"
@@ -30,14 +28,12 @@ flake8-return = "^1.2.0"
 flake8-simplify = "^0.20.0"
 flake8-use-pathlib = "^0.3.0"
 flake8-warnings = "^0.4.0"
-httpx = "^0.24.1"
 isort = "^5.12.0"
 mypy = "^1.4.1"
 pre-commit = ">=3.3.3"
 pylint = "^2.17.4"
-pytest-asyncio = "^0.21.1"
+pytest = "^7.4.0"
 pytest-cov = "^4.1.0"
-pytest-env = "^0.8.2"
 ruff = "^0.0.277"
 
 [build-system]
@@ -49,8 +45,6 @@ hooks = "dev:hooks"
 format = "dev:format"
 lint = "dev:lint"
 test = "dev:test"
-test-cov-term = "dev:test_cov_term"
-test-cov-html = "dev:test_cov_html"
 test-ci = "dev:test_ci"
 
 [tool.black]
