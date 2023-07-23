@@ -1,17 +1,27 @@
 version: '3.8'
 
 services:
-  app:
-    build: .
+  customers:
+    build: ./service-customers
     ports:
-      - 9700:9700
+      - 9701:9700
     volumes:
-      - .:/app
+      - ./service-customers:/app
     command: ['tomodachi', 'run', 'src/entrypoints/tomodachi_app.py']
+  orders:
+    build: ./service-orders
+    ports:
+      - 9702:9700
+    volumes:
+      - ./service-orders:/app
+    command: ['tomodachi', 'run', 'src/entrypoints/tomodachi_app.py']
+  localstack:
+    image: localstack/localstack:2.2.0
+    ports:
+      - 4566:4566
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin:4.6.1
+    ports:
+      - 8001:8001
     environment:
-      - AWS_REGION=eu-west-1
-      - AWS_ACCESS_KEY_ID=
-      - AWS_SECRET_ACCESS_KEY=
-      - AWS_SNS_TOPIC_PREFIX=d6013159
-      - AWS_SQS_QUEUE_NAME_PREFIX=d6013159
-      - DYNAMODB_TABLE_NAME=tomodachi-transactional-outbox
+      - DYNAMO_ENDPOINT=http://localstack:4566

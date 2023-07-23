@@ -5,10 +5,10 @@
   },
   "python.formatting.provider": "black",
   "terminal.integrated.env.osx": {
-    "PYTHONPATH": "${workspaceFolder}/src:${workspaceFolder}/examples:${env:PYTHONPATH}"
+    "PYTHONPATH": "${workspaceFolder}/service-customers/src:${workspaceFolder}/service-orders/src:${env:PYTHONPATH}"
   },
   "terminal.integrated.env.linux": {
-    "PYTHONPATH": "${workspaceFolder}/src:${workspaceFolder}/examples:${env:PYTHONPATH}"
+    "PYTHONPATH": "${workspaceFolder}/service-customers/src:${workspaceFolder}/service-orders/src:${env:PYTHONPATH}"
   },
   "esbonio.sphinx.confDir": ""
 }

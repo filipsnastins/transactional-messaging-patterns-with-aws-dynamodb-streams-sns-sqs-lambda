@@ -20,8 +20,7 @@ RUN poetry install --without dev
 
 FROM dependencies-base AS dependencies-release
 COPY src ./src
-RUN poetry install --without dev && \
-  poetry build
+RUN poetry install --without dev
 
 FROM dependencies-base AS development
 RUN poetry install --with dev

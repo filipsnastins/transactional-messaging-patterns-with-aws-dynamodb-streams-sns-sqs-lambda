@@ -26,21 +26,16 @@ def format() -> None:
 def lint() -> None:
     check_call(["ruff", "check", "."])
     check_call(["flake8", "."])
-    check_call(["pylint", "src", "tests"])
-    check_call(["mypy", "src", "tests", "examples"])
-    check_call(["bandit", "-r", "src", "examples"])
+    check_call(["pylint", "service-customers/src", "service-customers/tests"])
+    check_call(["pylint", "service-orders/src", "service-orders/tests"])
+    check_call(["mypy", "service-customers/src", "service-customers/tests"])
+    check_call(["mypy", "service-orders/src", "service-orders/tests"])
+    check_call(["bandit", "-r", "service-customers/src", "service-orders/src"])
 
 
 def test() -> None:
-    check_call(["pytest"])
-
-
-def test_cov_term() -> None:
-    check_call(["pytest", "--cov=src", "--cov-branch", "--cov-report=term-missing"])
-
-
-def test_cov_html() -> None:
-    check_call(["pytest", "--cov=src", "--cov-branch", "--cov-report=html:build/htmlcov"])
+    check_call(["pytest", "service-customers"])
+    check_call(["pytest", "service-orders"])
 
 
 def test_ci() -> None:
@@ -48,10 +43,23 @@ def test_ci() -> None:
         [
             "pytest",
             "-v",
-            "--cov=src",
+            "--cov=service-customers/src",
             "--cov-branch",
-            "--cov-report=xml:build/coverage.xml",
-            "--cov-report=html:build/htmlcov",
-            "--junitxml=build/tests.xml",
+            "--cov-report=xml:build/service-customers/coverage.xml",
+            "--cov-report=html:build/service-customers/htmlcov",
+            "--junitxml=build/service-customers/tests.xml",
+            "service-customers",
+        ]
+    )
+    check_call(
+        [
+            "pytest",
+            "-v",
+            "--cov=service-orders/src",
+            "--cov-branch",
+            "--cov-report=xml:build/service-orders/coverage.xml",
+            "--cov-report=html:build/service-orders/htmlcov",
+            "--junitxml=build/service-orders/tests.xml",
+            "service-orders",
         ]
     )
