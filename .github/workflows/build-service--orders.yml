@@ -1,9 +1,10 @@
-name: Build Service - Orders
+name: Build service - Orders
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_run:
+    workflows: ['Lint']
+    types:
+      - completed
 
 jobs:
   build:
@@ -24,13 +25,6 @@ jobs:
           target: development
           load: true
           context: ${{ env.SERVICE_CONTEXT }}
-
-      - name: Run commit hooks
-        run: |
-          docker run \
-          -v /var/run/docker.sock:/var/run/docker.sock \
-          "${{ steps.docker_build_dev_image.outputs.imageid }}" \
-          bash -c "git init . && SKIP=test poetry run hooks"
 
       - name: Build Docker image - Release
         id: docker_build_production_image
