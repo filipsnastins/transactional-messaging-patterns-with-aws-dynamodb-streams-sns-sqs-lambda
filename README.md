@@ -1,25 +1,17 @@
 # tomodachi-transactional-outbox
 
-## Acknowledgements
+## Resources and acknowledgements
 
-- Application example, domain problem:
-
-  - <https://github.com/eventuate-tram/eventuate-tram-examples-customers-and-orders>
-
-- Application design:
-
-  - <https://github.com/cosmicpython/code>
-  - <https://github.com/pycabook/rentomatic>
-
+- Application example and domain problem:
+  - [github.com/eventuate-tram/eventuate-tram-examples-customers-and-orders](https://github.com/eventuate-tram/eventuate-tram-examples-customers-and-orders)
+- Application design inspiration:
+  - [github.com/cosmicpython/code](https://github.com/cosmicpython/code)
+  - [github.com/pycabook/rentomatic](https://github.com/pycabook/rentomatic)
+- Transactional messaging implementation inspiration:
+  - [github.com/eventuate-tram/eventuate-tram-core](https://github.com/eventuate-tram/eventuate-tram-core)
 - Books:
-
-  - <https://microservices.io/book> - Microservices Patterns: With Examples in Java.
-    Book by Chris Richardson
-  - <https://www.cosmicpython.com/> -Architecture Patterns with Python:
-    Enabling Test-Driven Development, Domain-Driven Design,
-    and Event-Driven Microservices. Book by Harry Percival and Bob Gregory.
-  - <https://leanpub.com/clean-architectures-in-python> - Clean Architectures in Python:
-    A practical approach to better software design. Book by Leonardo Giordani.
-
+  - [Microservices Patterns: With Examples in Java.](https://microservices.io/book) Book by Chris Richardson.
+  - [Architecture Patterns with Python: Enabling Test-Driven Development, Domain-Driven Design, and Event-Driven Microservices](https://www.cosmicpython.com/) Book by Harry Percival and Bob Gregory.
+  - [Clean Architectures in Python: A practical approach to better software design.](https://leanpub.com/clean-architectures-in-python) Book by Leonardo Giordani.
 - Articles:
   - ...
