@@ -1,6 +1,9 @@
 name: Build Service - Customers
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
 
 jobs:
   build:
