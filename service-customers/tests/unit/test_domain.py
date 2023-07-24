@@ -13,21 +13,20 @@ def test_create_new_customer_model() -> None:
 
     assert isinstance(customer.customer_id, uuid.UUID)
     assert customer.name == "John Doe"
+    assert customer.credit_limit == Decimal("200.00")
     assert customer.created_at == datetime(2021, 2, 3, 12, 30, 0, tzinfo=timezone.utc)
     assert customer.version == 0
 
 
 def test_restore_customer_model() -> None:
     customer_id = uuid.uuid4()
-    order_id_1 = uuid.uuid4()
-    order_id_2 = uuid.uuid4()
     customer = Customer(
         customer_id=customer_id,
         name="John Doe",
         credit_limit=Decimal("200.00"),
         credit_reservations={
-            order_id_1: Decimal("100.50"),
-            order_id_2: Decimal("200.99"),
+            uuid.uuid4(): Decimal("50.00"),
+            uuid.uuid4(): Decimal("49.99"),
         },
         created_at=datetime(2021, 1, 1, 12, 0, 0),
         version=0,
@@ -35,6 +34,7 @@ def test_restore_customer_model() -> None:
 
     assert customer.customer_id == customer_id
     assert customer.name == "John Doe"
+    assert customer.credit_limit == Decimal("200.00")
     assert customer.created_at == datetime(2021, 1, 1, 12, 0, 0)
     assert customer.version == 0
 
@@ -57,8 +57,10 @@ def test_customer_model_from_dict() -> None:
 
     assert customer.customer_id == customer_id
     assert customer.name == init_dict["name"]
+    assert customer.credit_limit == Decimal("200.00")
     assert customer.created_at == init_dict["created_at"]
     assert customer.version == init_dict["version"]
+    assert customer.available_credit() == Decimal("100.01")
 
 
 def test_customer_model_to_dict() -> None:
@@ -66,7 +68,6 @@ def test_customer_model_to_dict() -> None:
         "customer_id": uuid.uuid4(),
         "name": "John Doe",
         "credit_limit": Decimal("200.00"),
-        "credit_reservations": {},
         "created_at": datetime(2021, 1, 1, 12, 0, 0),
         "version": 0,
     }
