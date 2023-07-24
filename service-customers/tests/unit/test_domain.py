@@ -1,11 +1,25 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 
-from customers.domain import Customer
+import pytest
+from customers.customer import Customer, CustomerCreditLimitExceededError
+from freezegun import freeze_time
 
 
-def test_create_customer_model() -> None:
+@freeze_time("2021-02-03 12:30:00")
+def test_create_new_customer_model() -> None:
+    customer = Customer(name="John Doe", credit_limit=Decimal("200.00"))
+
+    assert isinstance(customer.customer_id, uuid.UUID)
+    assert customer.name == "John Doe"
+    assert customer._credit_limit == Decimal("200.00")
+    assert customer._credit_reservations == {}
+    assert customer.created_at == datetime(2021, 2, 3, 12, 30, 0, tzinfo=timezone.utc)
+    assert customer.version == 0
+
+
+def test_restore_customer_model() -> None:
     customer_id = uuid.uuid4()
     order_id_1 = uuid.uuid4()
     order_id_2 = uuid.uuid4()
@@ -23,8 +37,8 @@ def test_create_customer_model() -> None:
 
     assert customer.customer_id == customer_id
     assert customer.name == "John Doe"
-    assert customer.credit_limit == Decimal("200.00")
-    assert customer.credit_reservations == {
+    assert customer._credit_limit == Decimal("200.00")
+    assert customer._credit_reservations == {
         order_id_1: Decimal("100.50"),
         order_id_2: Decimal("200.99"),
     }
@@ -50,8 +64,8 @@ def test_customer_model_from_dict() -> None:
 
     assert customer.customer_id == customer_id
     assert customer.name == init_dict["name"]
-    assert customer.credit_limit == init_dict["credit_limit"]
-    assert customer.credit_reservations == init_dict["credit_reservations"]
+    assert customer._credit_limit == init_dict["credit_limit"]
+    assert customer._credit_reservations == init_dict["credit_reservations"]
     assert customer.created_at == init_dict["created_at"]
     assert customer.version == init_dict["version"]
 
@@ -86,3 +100,46 @@ def test_customer_model_comparison() -> None:
     customer_2 = Customer.from_dict(data)
 
     assert customer_1 == customer_2
+
+
+@pytest.mark.parametrize(
+    ("credit_limit", "order_total", "expected"),
+    [
+        (Decimal("200.00"), Decimal("0"), Decimal("200.00")),
+        (Decimal("200.00"), Decimal("100.00"), Decimal("100.00")),
+        (Decimal("200.00"), Decimal("100.01"), Decimal("99.99")),
+        (Decimal("200.00"), Decimal("200.00"), Decimal("0.00")),
+    ],
+)
+def test_reserve_credit(credit_limit: Decimal, order_total: Decimal, expected: Decimal) -> None:
+    customer = Customer(name="John Doe", credit_limit=credit_limit)
+
+    customer.reserve_credit(order_id=uuid.uuid4(), order_total=order_total)
+
+    assert customer.available_credit() == expected
+
+
+def test_insufficient_credit_raises_credit_limit_exceeded_error() -> None:
+    customer = Customer(name="John Doe", credit_limit=Decimal("200.00"))
+
+    with pytest.raises(CustomerCreditLimitExceededError):
+        customer.reserve_credit(order_id=uuid.uuid4(), order_total=Decimal("200.01"))
+
+    assert customer.available_credit() == Decimal("200.00")
+
+
+def test_unreserve_credit() -> None:
+    customer = Customer(name="John Doe", credit_limit=Decimal("200.00"))
+    order_id = uuid.uuid4()
+    customer.reserve_credit(order_id=order_id, order_total=Decimal("100.00"))
+
+    customer.unreserve_credit(order_id=order_id)
+
+    assert customer.available_credit() == Decimal("200.00")
+
+
+def test_unreserve_non_existing_order_raises_key_error() -> None:
+    customer = Customer(name="John Doe", credit_limit=Decimal("200.00"))
+
+    with pytest.raises(KeyError):
+        customer.unreserve_credit(order_id=uuid.uuid4())
