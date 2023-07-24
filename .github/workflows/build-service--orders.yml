@@ -2,9 +2,8 @@ name: Build service - Orders
 
 on:
   workflow_run:
-    workflows: ['Lint']
-    types:
-      - completed
+    workflows: [Lint]
+    types: [completed]
 
 jobs:
   build:
