@@ -12,6 +12,6 @@ class Event:
 
 @dataclass(kw_only=True)
 class CustomerCreatedEvent(Event):
-    customer_id: uuid.UUID
+    id: uuid.UUID
     name: str
     credit_limit: Decimal

@@ -4,4 +4,4 @@ from dataclasses import dataclass
 
 @dataclass
 class Order:
-    order_id: uuid.UUID
+    id: uuid.UUID
