@@ -1,4 +1,5 @@
 # noqa: INP001
+import os
 from subprocess import check_call
 
 
@@ -34,8 +35,14 @@ def lint() -> None:
 
 
 def test() -> None:
-    check_call(["pytest", "service-customers"])
-    check_call(["pytest", "service-orders"])
+    check_call(
+        ["pytest", "service-customers"],
+        env={"TOMODACHI_TESTCONTAINER_DOCKERFILE_PATH": "service-customers", **os.environ.copy()},
+    )
+    check_call(
+        ["pytest", "service-orders"],
+        env={"TOMODACHI_TESTCONTAINER_DOCKERFILE_PATH": "service-customers", **os.environ.copy()},
+    )
 
 
 def test_ci() -> None:
@@ -49,7 +56,8 @@ def test_ci() -> None:
             "--cov-report=html:build/service-customers/htmlcov",
             "--junitxml=build/service-customers/tests.xml",
             "service-customers",
-        ]
+        ],
+        env={"TOMODACHI_TESTCONTAINER_DOCKERFILE_PATH": "service-customers", **os.environ.copy()},
     )
     check_call(
         [
@@ -61,5 +69,6 @@ def test_ci() -> None:
             "--cov-report=html:build/service-orders/htmlcov",
             "--junitxml=build/service-orders/tests.xml",
             "service-orders",
-        ]
+        ],
+        env={"TOMODACHI_TESTCONTAINER_DOCKERFILE_PATH": "service-orders", **os.environ.copy()},
     )
