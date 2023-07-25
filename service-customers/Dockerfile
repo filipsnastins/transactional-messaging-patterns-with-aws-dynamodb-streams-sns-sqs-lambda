@@ -35,4 +35,4 @@ FROM python-base AS release
 COPY --from=dependencies-release --chown=app:app /opt/venv /opt/venv
 COPY --from=dependencies-release --chown=app:app /app .
 USER app
-CMD ["tomodachi", "run", "entrypoints/tomodachi_app.py", "--production"]
+CMD ["tomodachi", "run", "src/entrypoints/tomodachi_app.py", "--production"]
