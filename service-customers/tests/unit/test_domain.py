@@ -11,7 +11,7 @@ from freezegun import freeze_time
 def test_create_new_customer_model() -> None:
     customer = Customer(name="John Doe", credit_limit=Decimal("200.00"))
 
-    assert isinstance(customer.customer_id, uuid.UUID)
+    assert isinstance(customer.id, uuid.UUID)
     assert customer.name == "John Doe"
     assert customer.credit_limit == Decimal("200.00")
     assert customer.created_at == datetime(2021, 2, 3, 12, 30, 0, tzinfo=timezone.utc)
@@ -19,9 +19,9 @@ def test_create_new_customer_model() -> None:
 
 
 def test_restore_customer_model() -> None:
-    customer_id = uuid.uuid4()
+    id = uuid.uuid4()
     customer = Customer(
-        customer_id=customer_id,
+        id=id,
         name="John Doe",
         credit_limit=Decimal("200.00"),
         credit_reservations={
@@ -32,7 +32,7 @@ def test_restore_customer_model() -> None:
         version=0,
     )
 
-    assert customer.customer_id == customer_id
+    assert customer.id == id
     assert customer.name == "John Doe"
     assert customer.credit_limit == Decimal("200.00")
     assert customer.created_at == datetime(2021, 1, 1, 12, 0, 0)
@@ -40,9 +40,9 @@ def test_restore_customer_model() -> None:
 
 
 def test_customer_model_from_dict() -> None:
-    customer_id = uuid.uuid4()
+    id = uuid.uuid4()
     init_dict = {
-        "customer_id": customer_id,
+        "id": id,
         "name": "John Doe",
         "credit_limit": Decimal("200.00"),
         "credit_reservations": {
@@ -55,7 +55,7 @@ def test_customer_model_from_dict() -> None:
 
     customer = Customer.from_dict(init_dict)
 
-    assert customer.customer_id == customer_id
+    assert customer.id == id
     assert customer.name == init_dict["name"]
     assert customer.credit_limit == Decimal("200.00")
     assert customer.created_at == init_dict["created_at"]
@@ -65,7 +65,7 @@ def test_customer_model_from_dict() -> None:
 
 def test_customer_model_to_dict() -> None:
     init_dict = {
-        "customer_id": uuid.uuid4(),
+        "id": uuid.uuid4(),
         "name": "John Doe",
         "credit_limit": Decimal("200.00"),
         "created_at": datetime(2021, 1, 1, 12, 0, 0),
@@ -78,7 +78,7 @@ def test_customer_model_to_dict() -> None:
 
 def test_customer_model_comparison() -> None:
     data = {
-        "customer_id": uuid.uuid4(),
+        "id": uuid.uuid4(),
         "name": "John Doe",
         "credit_limit": Decimal("200.00"),
         "credit_reservations": {
@@ -106,7 +106,7 @@ def test_customer_model_comparison() -> None:
 def test_reserve_credit(credit_limit: Decimal, order_total: Decimal, expected: Decimal) -> None:
     customer = Customer(name="John Doe", credit_limit=credit_limit)
 
-    customer.reserve_credit(order_id=uuid.uuid4(), order_total=order_total)
+    customer.reserve_credit(id=uuid.uuid4(), order_total=order_total)
 
     assert customer.available_credit() == expected
 
@@ -115,17 +115,17 @@ def test_insufficient_credit_raises_credit_limit_exceeded_error() -> None:
     customer = Customer(name="John Doe", credit_limit=Decimal("200.00"))
 
     with pytest.raises(CustomerCreditLimitExceededError):
-        customer.reserve_credit(order_id=uuid.uuid4(), order_total=Decimal("200.01"))
+        customer.reserve_credit(id=uuid.uuid4(), order_total=Decimal("200.01"))
 
     assert customer.available_credit() == Decimal("200.00")
 
 
 def test_unreserve_credit() -> None:
     customer = Customer(name="John Doe", credit_limit=Decimal("200.00"))
-    order_id = uuid.uuid4()
-    customer.reserve_credit(order_id=order_id, order_total=Decimal("100.00"))
+    id = uuid.uuid4()
+    customer.reserve_credit(id=id, order_total=Decimal("100.00"))
 
-    customer.unreserve_credit(order_id=order_id)
+    customer.unreserve_credit(id=id)
 
     assert customer.available_credit() == Decimal("200.00")
 
@@ -134,4 +134,4 @@ def test_unreserve_non_existing_order_raises_key_error() -> None:
     customer = Customer(name="John Doe", credit_limit=Decimal("200.00"))
 
     with pytest.raises(KeyError):
-        customer.unreserve_credit(order_id=uuid.uuid4())
+        customer.unreserve_credit(id=uuid.uuid4())

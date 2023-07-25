@@ -10,7 +10,7 @@ class CustomerCreditLimitExceededError(Exception):
 
 @dataclass
 class Customer:
-    customer_id: uuid.UUID
+    id: uuid.UUID
     name: str
     credit_limit: Decimal
     _credit_reservations: dict[uuid.UUID, Decimal]
@@ -21,12 +21,12 @@ class Customer:
         self,
         name: str,
         credit_limit: Decimal,
-        customer_id: uuid.UUID | None = None,
+        id: uuid.UUID | None = None,
         credit_reservations: dict[uuid.UUID, Decimal] | None = None,
         created_at: datetime | None = None,
         version: int | None = None,
     ) -> None:
-        self.customer_id = customer_id or uuid.uuid4()
+        self.id = id or uuid.uuid4()
         self.name = name
         self.credit_limit = credit_limit
         self._credit_reservations = credit_reservations or {}
@@ -39,7 +39,7 @@ class Customer:
 
     def to_dict(self) -> dict:
         return {
-            "customer_id": self.customer_id,
+            "id": self.id,
             "name": self.name,
             "credit_limit": self.credit_limit,
             "created_at": self.created_at,
@@ -49,11 +49,11 @@ class Customer:
     def available_credit(self) -> Decimal:
         return self.credit_limit - sum(self._credit_reservations.values())
 
-    def reserve_credit(self, order_id: uuid.UUID, order_total: Decimal) -> None:
+    def reserve_credit(self, id: uuid.UUID, order_total: Decimal) -> None:
         if self.available_credit() >= order_total:
-            self._credit_reservations[order_id] = order_total
+            self._credit_reservations[id] = order_total
         else:
             raise CustomerCreditLimitExceededError
 
-    def unreserve_credit(self, order_id: uuid.UUID) -> None:
-        self._credit_reservations.pop(order_id)
+    def unreserve_credit(self, id: uuid.UUID) -> None:
+        self._credit_reservations.pop(id)
