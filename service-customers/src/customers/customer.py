@@ -13,7 +13,7 @@ class Customer:
     id: uuid.UUID
     name: str
     credit_limit: Decimal
-    _credit_reservations: dict[uuid.UUID, Decimal]
+    credit_reservations: dict[uuid.UUID, Decimal]
     created_at: datetime
     version: int
 
@@ -29,7 +29,7 @@ class Customer:
         self.id = id or uuid.uuid4()
         self.name = name
         self.credit_limit = credit_limit
-        self._credit_reservations = credit_reservations or {}
+        self.credit_reservations = credit_reservations or {}
         self.created_at = created_at or datetime.utcnow().replace(tzinfo=timezone.utc)
         self.version = version or 0
 
@@ -47,13 +47,13 @@ class Customer:
         }
 
     def available_credit(self) -> Decimal:
-        return self.credit_limit - sum(self._credit_reservations.values())
+        return self.credit_limit - sum(self.credit_reservations.values())
 
     def reserve_credit(self, id: uuid.UUID, order_total: Decimal) -> None:
         if self.available_credit() >= order_total:
-            self._credit_reservations[id] = order_total
+            self.credit_reservations[id] = order_total
         else:
             raise CustomerCreditLimitExceededError
 
     def unreserve_credit(self, id: uuid.UUID) -> None:
-        self._credit_reservations.pop(id)
+        self.credit_reservations.pop(id)
