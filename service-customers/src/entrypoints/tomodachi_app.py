@@ -26,8 +26,8 @@ class TomodachiService(tomodachi.Service):
             {
                 "id": customer_id,
                 "name": "John Doe",
-                "credit_limit": 20000,
-                "available_credit": 20000,
+                "credit_limit": 24999,
+                "available_credit": 24999,
                 "created_at": "2021-01-01T00:00:00+00:00",
                 "version": 0,
                 "_links": {
