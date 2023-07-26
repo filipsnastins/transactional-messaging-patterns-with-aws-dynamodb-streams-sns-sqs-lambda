@@ -140,5 +140,5 @@ dmypy.json
 secrets/
 
 # VSCode
-.vscode/*
-!.vscode/*.example.json
+**/.vscode/*
+!**/.vscode/*.example.json

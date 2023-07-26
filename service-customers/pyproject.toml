@@ -6,9 +6,12 @@ authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+structlog = "^23.1.0"
 tomodachi = "^0.25.0"
+types-aiobotocore = { extras = ["dynamodb", "sns", "sqs"], version = "^2.5.2" }
 
 [tool.poetry.group.dev.dependencies]
+colorama = "^0.4.6"
 freezegun = "^1.2.2"
 httpx = "^0.24.1"
 pytest = "^7.4.0"

@@ -6,12 +6,15 @@ authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+structlog = "^23.1.0"
 tomodachi = "^0.25.0"
+types-aiobotocore = { extras = ["dynamodb", "sns", "sqs"], version = "^2.5.2" }
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "^2.2.0"
 bandit = "^1.7.5"
 black = "^23.7.0"
+colorama = "^0.4.6"
 flake8 = "^6.0.0"
 flake8-annotations = "^3.0.1"
 flake8-black = "^0.3.6"
