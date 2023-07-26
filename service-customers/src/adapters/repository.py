@@ -50,8 +50,8 @@ class AbstractCustomersRepository(Protocol):
 
 
 class DynamoDBCustomersRepository(AbstractCustomersRepository):
-    def __init__(self) -> None:
-        self.session = DynamoDBSession()
+    def __init__(self, session: DynamoDBSession) -> None:
+        self.session = session
 
     async def create(self, customer: Customer) -> None:
         self.session.add(

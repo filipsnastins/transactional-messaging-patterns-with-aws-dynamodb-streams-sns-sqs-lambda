@@ -4,7 +4,12 @@ from decimal import Decimal
 
 import pytest
 from adapters import dynamodb
-from adapters.repository import CustomerAlreadyExistsError, CustomerNotFoundError, DynamoDBCustomersRepository
+from adapters.repository import (
+    CustomerAlreadyExistsError,
+    CustomerNotFoundError,
+    DynamoDBCustomersRepository,
+    DynamoDBSession,
+)
 from botocore.exceptions import ClientError
 from customers.customer import Customer
 from service_layer.unit_of_work import DynamoDBUnitOfWork
@@ -37,7 +42,7 @@ class FailingDynamoDBCustomersRepository(DynamoDBCustomersRepository):
 
 @pytest.mark.asyncio()
 async def test_session_not_committed_by_default() -> None:
-    uow = DynamoDBUnitOfWork(customers=DynamoDBCustomersRepository())
+    uow = DynamoDBUnitOfWork.create()
     customer = Customer(
         id=uuid.uuid4(),
         name="John Doe",
@@ -55,7 +60,7 @@ async def test_session_not_committed_by_default() -> None:
 
 @pytest.mark.asyncio()
 async def test_session_rollbacked() -> None:
-    uow = DynamoDBUnitOfWork(customers=DynamoDBCustomersRepository())
+    uow = DynamoDBUnitOfWork.create()
     customer = Customer(
         id=uuid.uuid4(),
         name="John Doe",
@@ -75,7 +80,7 @@ async def test_session_rollbacked() -> None:
 
 @pytest.mark.asyncio()
 async def test_commit_is_idempotent() -> None:
-    uow = DynamoDBUnitOfWork(customers=DynamoDBCustomersRepository())
+    uow = DynamoDBUnitOfWork.create()
     customer = Customer(
         id=uuid.uuid4(),
         name="John Doe",
@@ -95,7 +100,7 @@ async def test_commit_is_idempotent() -> None:
 
 @pytest.mark.asyncio()
 async def test_domain_error_raised() -> None:
-    uow = DynamoDBUnitOfWork(customers=DynamoDBCustomersRepository())
+    uow = DynamoDBUnitOfWork.create()
     customer = Customer(id=uuid.uuid4(), name="John Doe", credit_limit=Decimal("200.00"))
     await uow.customers.create(customer)
     await uow.commit()
@@ -107,7 +112,8 @@ async def test_domain_error_raised() -> None:
 
 @pytest.mark.asyncio()
 async def test_dynamodb_error_raised() -> None:
-    uow = DynamoDBUnitOfWork(customers=FailingDynamoDBCustomersRepository())
+    session = DynamoDBSession()
+    uow = DynamoDBUnitOfWork(customers=FailingDynamoDBCustomersRepository(session))
     customer = Customer(id=uuid.uuid4(), name="John Doe", credit_limit=Decimal("200.00"))
 
     await uow.customers.create(customer)

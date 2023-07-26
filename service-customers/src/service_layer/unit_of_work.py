@@ -2,7 +2,7 @@ import abc
 from typing import Any
 
 from adapters import dynamodb
-from adapters.repository import AbstractCustomersRepository, DynamoDBCustomersRepository
+from adapters.repository import AbstractCustomersRepository, DynamoDBCustomersRepository, DynamoDBSession
 
 
 class AbstractUnitOfWork(abc.ABC):
@@ -28,6 +28,12 @@ class DynamoDBUnitOfWork(AbstractUnitOfWork):
 
     def __init__(self, customers: DynamoDBCustomersRepository) -> None:
         self.customers = customers
+
+    @staticmethod
+    def create() -> "DynamoDBUnitOfWork":
+        session = DynamoDBSession()
+        customers = DynamoDBCustomersRepository(session)
+        return DynamoDBUnitOfWork(customers)
 
     async def commit(self) -> None:
         items = self.customers.session.get()
