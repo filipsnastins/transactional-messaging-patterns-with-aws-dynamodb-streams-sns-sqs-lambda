@@ -3,7 +3,6 @@ from typing import Any
 
 from adapters import dynamodb
 from adapters.repository import AbstractCustomersRepository, DynamoDBCustomersRepository
-from types_aiobotocore_dynamodb.client import BotocoreClientError
 
 
 class AbstractUnitOfWork(abc.ABC):
@@ -24,28 +23,30 @@ class AbstractUnitOfWork(abc.ABC):
         pass
 
 
-class DynamoDBCommitError(BotocoreClientError):
-    pass
-
-
 class DynamoDBUnitOfWork(AbstractUnitOfWork):
     customers: DynamoDBCustomersRepository
 
-    def __init__(self) -> None:
-        self.customers = DynamoDBCustomersRepository()
+    def __init__(self, customers: DynamoDBCustomersRepository) -> None:
+        self.customers = customers
 
     async def commit(self) -> None:
         items = self.customers.session.get()
         if items:
+            transact_items = [item["transact_item"] for item in items]
+            domain_exceptions = [item["domain_exception"] for item in items]
             async with dynamodb.get_dynamodb_client() as client:
                 try:
-                    await client.transact_write_items(TransactItems=items)
+                    await client.transact_write_items(TransactItems=transact_items)
                 except client.exceptions.TransactionCanceledException as e:
-                    error = DynamoDBCommitError(error_response={}, operation_name="")
-                    error.response = e.response
-                    error.operation_name = e.operation_name
-                    raise error from e
-        await self.rollback()
+                    cancellation_reasons = e.response["CancellationReasons"]
+                    for cancellation_reason, domain_exception in zip(cancellation_reasons, domain_exceptions):
+                        if cancellation_reason["Code"] == "None":
+                            continue
+                        if cancellation_reason["Code"] == "ConditionalCheckFailed" and domain_exception is not None:
+                            raise domain_exception from e
+                    raise
+                finally:
+                    await self.rollback()
 
     async def rollback(self) -> None:
         self.customers.session.clear()

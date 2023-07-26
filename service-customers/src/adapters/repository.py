@@ -2,7 +2,7 @@ import datetime
 import uuid
 from contextvars import ContextVar
 from decimal import Decimal
-from typing import Generic, Protocol, TypeVar
+from typing import Protocol, TypedDict, TypeVar
 
 from adapters import dynamodb
 from customers.customer import Customer
@@ -15,36 +15,33 @@ class CustomerNotFoundError(Exception):
     pass
 
 
-class Session(Protocol, Generic[ModelType]):
-    def add(self, instance: ModelType) -> None:
-        ...
-
-    def get(self) -> list[ModelType]:
-        ...
-
-    def clear(self) -> None:
-        ...
+class CustomerAlreadyExistsError(Exception):
+    pass
 
 
-class DynamoDBSession(Session[TransactWriteItemTypeDef]):
-    _session: ContextVar[list[TransactWriteItemTypeDef]]
+class DynamoDBSessionItems(TypedDict):
+    transact_item: TransactWriteItemTypeDef
+    domain_exception: Exception | None
+
+
+class DynamoDBSession:
+    _session: ContextVar[list[DynamoDBSessionItems]]
 
     def __init__(self) -> None:
-        self._session = ContextVar("session", default=[])
+        self._session = ContextVar("service_layer.unit_of_work.dynamodb_session.session", default=[])
 
-    def add(self, instance: TransactWriteItemTypeDef) -> None:
-        self._session.get().append(instance)
+    def add(self, transact_item: TransactWriteItemTypeDef, raises_domain_exception: Exception | None = None) -> None:
+        item = DynamoDBSessionItems(transact_item=transact_item, domain_exception=raises_domain_exception)
+        self._session.get().append(item)
 
-    def get(self) -> list[TransactWriteItemTypeDef]:
+    def get(self) -> list[DynamoDBSessionItems]:
         return self._session.get()
 
     def clear(self) -> None:
-        return self._session.get().clear()
+        self._session.get().clear()
 
 
-class AbstractCustomersRepository(Protocol, Generic[ModelType]):
-    session: Session[ModelType]
-
+class AbstractCustomersRepository(Protocol):
     async def create(self, customer: Customer) -> None:
         ...
 
@@ -52,7 +49,7 @@ class AbstractCustomersRepository(Protocol, Generic[ModelType]):
         ...
 
 
-class DynamoDBCustomersRepository(AbstractCustomersRepository[TransactWriteItemTypeDef]):
+class DynamoDBCustomersRepository(AbstractCustomersRepository):
     def __init__(self) -> None:
         self.session = DynamoDBSession()
 
@@ -65,6 +62,7 @@ class DynamoDBCustomersRepository(AbstractCustomersRepository[TransactWriteItemT
                     "ConditionExpression": "attribute_not_exists(PK)",
                 }
             },
+            raises_domain_exception=CustomerAlreadyExistsError(customer.id),
         )
         self.session.add(
             {
