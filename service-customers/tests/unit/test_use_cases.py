@@ -2,12 +2,12 @@ import uuid
 from decimal import Decimal
 
 import pytest
-from adapters.repository import AbstractRepository, CustomerNotFoundError
+from adapters.repository import AbstractRepository
 from customers.commands import CreateCustomerCommand
 from customers.customer import Customer
 from customers.events import CustomerCreatedEvent
+from service_layer import use_cases
 from service_layer.unit_of_work import AbstractUnitOfWork
-from service_layer.use_cases import create_customer
 
 
 class FakeRepository(AbstractRepository):
@@ -18,11 +18,8 @@ class FakeRepository(AbstractRepository):
     async def create(self, customer: Customer) -> None:
         self._customers.append(customer)
 
-    async def get(self, customer_id: uuid.UUID) -> Customer:
-        customer = next((p for p in self._customers if p.id == customer_id), None)
-        if not customer:
-            raise CustomerNotFoundError(customer_id)
-        return customer
+    async def get(self, customer_id: uuid.UUID) -> Customer | None:
+        return next((p for p in self._customers if p.id == customer_id), None)
 
 
 class FakeUnitOfWork(AbstractUnitOfWork):
@@ -42,7 +39,7 @@ async def test_create_customer() -> None:
     uow = FakeUnitOfWork()
     cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
 
-    customer = await create_customer(uow, cmd)
+    customer = await use_cases.create_customer(uow, cmd)
     customer_from_db = await uow.customers.get(customer.id)
 
     assert uow.committed is True
@@ -60,7 +57,7 @@ async def test_customer_created_event_created() -> None:
     uow = FakeUnitOfWork()
     cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
 
-    customer = await create_customer(uow, cmd)
+    customer = await use_cases.create_customer(uow, cmd)
     [event] = customer.events
 
     assert isinstance(event, CustomerCreatedEvent)
@@ -77,6 +74,6 @@ async def test_created_customer_has_clean_available_credit() -> None:
     uow = FakeUnitOfWork()
     cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
 
-    customer = await create_customer(uow, cmd)
+    customer = await use_cases.create_customer(uow, cmd)
 
     assert customer.available_credit() == Decimal("200.00")

@@ -6,6 +6,10 @@ from decimal import Decimal
 from customers.events import CustomerCreatedEvent, Event
 
 
+class CustomerNotFoundError(Exception):
+    pass
+
+
 class CustomerCreditLimitExceededError(Exception):
     pass
 

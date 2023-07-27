@@ -11,10 +11,6 @@ from types_aiobotocore_dynamodb.type_defs import TransactWriteItemTypeDef
 ModelType = TypeVar("ModelType")
 
 
-class CustomerNotFoundError(Exception):
-    pass
-
-
 class CustomerAlreadyExistsError(Exception):
     pass
 
@@ -45,7 +41,7 @@ class AbstractRepository(Protocol):
     async def create(self, customer: Customer) -> None:
         ...
 
-    async def get(self, customer_id: uuid.UUID) -> Customer:
+    async def get(self, customer_id: uuid.UUID) -> Customer | None:
         ...
 
 
@@ -86,7 +82,7 @@ class DynamoDBRepository(AbstractRepository):
             }
         )
 
-    async def get(self, customer_id: uuid.UUID) -> Customer:
+    async def get(self, customer_id: uuid.UUID) -> Customer | None:
         async with dynamodb.get_dynamodb_client() as client:
             response = await client.get_item(
                 TableName=dynamodb.get_table_name(),
@@ -94,7 +90,7 @@ class DynamoDBRepository(AbstractRepository):
             )
             item = response.get("Item")
             if not item:
-                raise CustomerNotFoundError(customer_id)
+                return None
             return Customer(
                 id=uuid.UUID(item["Id"]["S"]),
                 name=item["Name"]["S"],
