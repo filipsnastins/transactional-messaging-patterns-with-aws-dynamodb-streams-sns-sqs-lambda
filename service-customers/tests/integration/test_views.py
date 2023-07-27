@@ -3,7 +3,6 @@ from decimal import Decimal
 
 import pytest
 from customers.commands import CreateCustomerCommand
-from customers.customer import CustomerNotFoundError
 from service_layer import use_cases, views
 from service_layer.unit_of_work import DynamoDBUnitOfWork
 
@@ -15,8 +14,14 @@ async def test_get_not_existing_customer() -> None:
     uow = DynamoDBUnitOfWork.create()
     customer_id = uuid.uuid4()
 
-    with pytest.raises(CustomerNotFoundError, match=str(customer_id)):
-        await views.get_customer(uow, customer_id=customer_id)
+    response = await views.get_customer(uow, customer_id=customer_id)
+
+    assert response.to_dict() == {
+        "error": "CUSTOMER_NOT_FOUND",
+        "_links": {
+            "self": {"href": f"/customer/{customer_id}"},
+        },
+    }
 
 
 @pytest.mark.asyncio()

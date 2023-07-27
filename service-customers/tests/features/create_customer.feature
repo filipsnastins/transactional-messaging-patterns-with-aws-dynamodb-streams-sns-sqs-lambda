@@ -5,3 +5,7 @@ Feature: Create customer
         When customer creation is requested
         Then the customer is created successfully
         And the customer is created with correct data and full available credit
+
+    Scenario: Customer not found
+        When customer with ID "12b38f68-2d61-4cb2-8661-773c40702815" is queried
+        Then the customer is not found

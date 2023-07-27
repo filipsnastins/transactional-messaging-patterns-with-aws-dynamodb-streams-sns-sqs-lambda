@@ -15,10 +15,6 @@ class TomodachiService(tomodachi.Service):
     async def _start_service(self) -> None:
         await dynamodb.create_dynamodb_table()
 
-    @tomodachi.http("GET", r"/health")
-    async def healthcheck(self, request: web.Request) -> web.Response:
-        return web.json_response(data={"status": "ok"})
-
     @tomodachi.http("POST", r"/customers")
     async def create_customer(self, request: web.Request) -> web.Response:
         uow = DynamoDBUnitOfWork.create()
@@ -27,11 +23,11 @@ class TomodachiService(tomodachi.Service):
         cmd = CreateCustomerCommand.from_dict(data)
         customer = await use_cases.create_customer(uow, cmd)
 
-        response = CreateCustomerResponse.from_customer(customer)
-        return web.json_response(response.to_dict())
+        response = CreateCustomerResponse.create(customer)
+        return web.json_response(response.to_dict(), status=response.status_code())
 
     @tomodachi.http("GET", r"/customer/(?P<customer_id>[^/]+?)/?")
     async def get_customer(self, request: web.Request, customer_id: str) -> web.Response:
         uow = DynamoDBUnitOfWork.create()
         response = await views.get_customer(uow, customer_id=uuid.UUID(customer_id))
-        return web.json_response(response.to_dict())
+        return web.json_response(response.to_dict(), status=response.status_code())

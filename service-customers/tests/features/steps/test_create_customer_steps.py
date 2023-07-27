@@ -65,3 +65,24 @@ def _(
         }
 
     return event_loop.run_until_complete(_async())
+
+
+@when(parsers.parse('customer with ID "{customer_id}" is queried'), target_fixture="get_customer")
+def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, customer_id: str) -> httpx.Response:
+    async def _async() -> httpx.Response:
+        return await http_client.get(f"/customer/{customer_id}")
+
+    return event_loop.run_until_complete(_async())
+
+
+@then("the customer is not found")
+def _(get_customer: httpx.Response) -> None:
+    customer_id = get_customer.url.path.split("/")[-1]
+
+    assert get_customer.status_code == 404
+    assert get_customer.json() == {
+        "error": "CUSTOMER_NOT_FOUND",
+        "_links": {
+            "self": {"href": f"/customer/{customer_id}"},
+        },
+    }
