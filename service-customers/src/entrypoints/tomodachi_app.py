@@ -2,9 +2,9 @@ import tomodachi
 from adapters import dynamodb
 from aiohttp import web
 from customers.commands import CreateCustomerCommand
+from service_layer.response import CreateCustomerResponse
 from service_layer.unit_of_work import DynamoDBUnitOfWork
 from service_layer.use_cases import create_customer
-from stockholm import Money
 
 
 class TomodachiService(tomodachi.Service):
@@ -19,23 +19,14 @@ class TomodachiService(tomodachi.Service):
 
     @tomodachi.http("POST", r"/customers")
     async def create_customer(self, request: web.Request) -> web.Response:
-        data = await request.json()
-        cmd = CreateCustomerCommand(
-            name=data["name"],
-            credit_limit=Money.from_sub_units(data["credit_limit"]).as_decimal(),
-        )
-
         uow = DynamoDBUnitOfWork.create()
+
+        data = await request.json()
+        cmd = CreateCustomerCommand.from_dict(data)
         customer = await create_customer(uow, cmd)
 
-        return web.json_response(
-            {
-                "id": str(customer.id),
-                "_links": {
-                    "self": {"href": f"/customer/{customer.id}"},
-                },
-            }
-        )
+        response = CreateCustomerResponse.from_customer(customer)
+        return web.json_response(response.to_dict())
 
     @tomodachi.http("GET", r"/customer/(?P<customer_id>[^/]+?)/?")
     async def get_customer(self, request: web.Request, customer_id: str) -> web.Response:
