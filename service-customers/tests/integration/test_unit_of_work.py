@@ -4,7 +4,7 @@ from decimal import Decimal
 
 import pytest
 from adapters import dynamodb
-from adapters.repository import CustomerAlreadyExistsError, CustomerNotFoundError, DynamoDBRepository, DynamoDBSession
+from adapters.repository import CustomerAlreadyExistsError, DynamoDBRepository, DynamoDBSession
 from botocore.exceptions import ClientError
 from customers.customer import Customer
 from service_layer.unit_of_work import DynamoDBUnitOfWork
@@ -49,8 +49,8 @@ async def test_session_not_committed_by_default() -> None:
 
     await uow.customers.create(customer)
 
-    with pytest.raises(CustomerNotFoundError):
-        await uow.customers.get(customer.id)
+    customer_from_db = await uow.customers.get(customer.id)
+    assert customer_from_db is None
 
 
 @pytest.mark.asyncio()
@@ -69,8 +69,8 @@ async def test_session_rollbacked() -> None:
     await uow.rollback()
     await uow.commit()
 
-    with pytest.raises(CustomerNotFoundError):
-        await uow.customers.get(customer.id)
+    customer_from_db = await uow.customers.get(customer.id)
+    assert customer_from_db is None
 
 
 @pytest.mark.asyncio()
