@@ -3,6 +3,7 @@ from decimal import Decimal
 
 import pytest
 from adapters.repository import AbstractRepository, CustomerNotFoundError
+from customers.commands import CreateCustomerCommand
 from customers.customer import Customer
 from customers.events import CustomerCreatedEvent
 from service_layer.unit_of_work import AbstractUnitOfWork
@@ -39,8 +40,9 @@ class FakeUnitOfWork(AbstractUnitOfWork):
 @pytest.mark.asyncio()
 async def test_create_customer() -> None:
     uow = FakeUnitOfWork()
+    cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
 
-    customer = await create_customer(uow, name="John Doe", credit_limit=Decimal("200.00"))
+    customer = await create_customer(uow, cmd)
     customer_from_db = await uow.customers.get(customer.id)
 
     assert uow.committed is True
@@ -54,10 +56,11 @@ async def test_create_customer() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_customer_created_event_published() -> None:
+async def test_customer_created_event_created() -> None:
     uow = FakeUnitOfWork()
+    cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
 
-    customer = await create_customer(uow, name="John Doe", credit_limit=Decimal("200.00"))
+    customer = await create_customer(uow, cmd)
     [event] = customer.events
 
     assert isinstance(event, CustomerCreatedEvent)
@@ -72,7 +75,8 @@ async def test_customer_created_event_published() -> None:
 @pytest.mark.asyncio()
 async def test_created_customer_has_clean_available_credit() -> None:
     uow = FakeUnitOfWork()
+    cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
 
-    customer = await create_customer(uow, name="John Doe", credit_limit=Decimal("200.00"))
+    customer = await create_customer(uow, cmd)
 
     assert customer.available_credit() == Decimal("200.00")

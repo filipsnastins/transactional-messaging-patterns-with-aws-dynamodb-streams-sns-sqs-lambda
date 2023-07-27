@@ -1945,6 +1945,20 @@ files = [
 pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
+name = "stockholm"
+version = "0.5.5"
+description = "Human friendly and flexible package for working with monetary amounts"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "stockholm-0.5.5-py3-none-any.whl", hash = "sha256:bc3f66693e329561ca8ce97f8ae7cb3e0bdf61701b947dad797e425462b384fc"},
+    {file = "stockholm-0.5.5.tar.gz", hash = "sha256:7d3f3e05f9a2128d81f4c9fefd34db16019d6771dbad33b3a43e250319234a1b"},
+]
+
+[package.extras]
+protobuf = ["protobuf (>=3.20.0,<5.0.0)"]
+
+[[package]]
 name = "structlog"
 version = "23.1.0"
 description = "Structured Logging for Python"
@@ -2762,4 +2776,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "569762b0e8c21f8ede50e7d3e562175ca42b41f0668c54bcd0a3c841f3d7218b"
+content-hash = "37ef3635e41fbef6ed1b7f16d1e0b74d140a659b8b54212b4bb8f7c501373fac"

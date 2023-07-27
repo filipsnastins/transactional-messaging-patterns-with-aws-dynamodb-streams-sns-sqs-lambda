@@ -30,10 +30,9 @@ def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, customer: d
 
 @then("the customer is created successfully")
 def _(create_customer: httpx.Response) -> None:
-    body = create_customer.json()
-
     assert create_customer.status_code == 200
-    assert create_customer.json() == {
+    body = create_customer.json()
+    assert body == {
         "id": body["id"],
         "_links": {
             "self": {"href": f"/customer/{body['id']}"},
