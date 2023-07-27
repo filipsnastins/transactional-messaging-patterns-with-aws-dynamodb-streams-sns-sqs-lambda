@@ -11,7 +11,7 @@ from service_layer.use_cases import create_customer
 
 
 class FakeRepository(AbstractRepository):
-    def __init__(self, customers: list[Customer]):
+    def __init__(self, customers: list[Customer]) -> None:
         super().__init__()
         self._customers = customers
 
@@ -26,7 +26,7 @@ class FakeRepository(AbstractRepository):
 
 
 class FakeUnitOfWork(AbstractUnitOfWork):
-    def __init__(self):
+    def __init__(self) -> None:
         self.customers = FakeRepository([])
         self.committed = False
 

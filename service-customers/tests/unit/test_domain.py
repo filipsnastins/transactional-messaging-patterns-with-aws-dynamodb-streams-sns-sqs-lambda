@@ -48,7 +48,7 @@ def test_restore_customer_model() -> None:
     assert customer.credit_limit == Decimal("200.00")
     assert customer.created_at == datetime.datetime(2021, 1, 1, 12, 0, 0)
     assert customer.version == 0
-    assert customer.events == []
+    assert len(customer.events) == 0
 
 
 def test_customer_model_from_dict() -> None:
@@ -73,7 +73,7 @@ def test_customer_model_from_dict() -> None:
     assert customer.created_at == init_dict["created_at"]
     assert customer.version == init_dict["version"]
     assert customer.available_credit() == Decimal("100.01")
-    assert customer.events == []
+    assert len(customer.events) == 0
 
 
 def test_customer_model_to_dict() -> None:
