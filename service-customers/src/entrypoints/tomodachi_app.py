@@ -1,10 +1,12 @@
+import uuid
+
 import tomodachi
 from adapters import dynamodb
 from aiohttp import web
 from customers.commands import CreateCustomerCommand
+from service_layer import use_cases, views
 from service_layer.response import CreateCustomerResponse
 from service_layer.unit_of_work import DynamoDBUnitOfWork
-from service_layer.use_cases import create_customer
 
 
 class TomodachiService(tomodachi.Service):
@@ -23,23 +25,13 @@ class TomodachiService(tomodachi.Service):
 
         data = await request.json()
         cmd = CreateCustomerCommand.from_dict(data)
-        customer = await create_customer(uow, cmd)
+        customer = await use_cases.create_customer(uow, cmd)
 
         response = CreateCustomerResponse.from_customer(customer)
         return web.json_response(response.to_dict())
 
     @tomodachi.http("GET", r"/customer/(?P<customer_id>[^/]+?)/?")
     async def get_customer(self, request: web.Request, customer_id: str) -> web.Response:
-        return web.json_response(
-            {
-                "id": customer_id,
-                "name": "John Doe",
-                "credit_limit": 24999,
-                "available_credit": 24999,
-                "created_at": "2021-01-01T00:00:00+00:00",
-                "version": 0,
-                "_links": {
-                    "self": {"href": f"/customer/{customer_id}"},
-                },
-            }
-        )
+        uow = DynamoDBUnitOfWork.create()
+        response = await views.get_customer(uow, customer_id=uuid.UUID(customer_id))
+        return web.json_response(response.to_dict())
