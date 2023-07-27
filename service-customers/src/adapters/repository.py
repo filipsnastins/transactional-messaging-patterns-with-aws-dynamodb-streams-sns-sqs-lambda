@@ -41,7 +41,7 @@ class DynamoDBSession:
         self._session.get().clear()
 
 
-class AbstractCustomersRepository(Protocol):
+class AbstractRepository(Protocol):
     async def create(self, customer: Customer) -> None:
         ...
 
@@ -49,7 +49,7 @@ class AbstractCustomersRepository(Protocol):
         ...
 
 
-class DynamoDBCustomersRepository(AbstractCustomersRepository):
+class DynamoDBRepository(AbstractRepository):
     def __init__(self, session: DynamoDBSession) -> None:
         self.session = session
 
