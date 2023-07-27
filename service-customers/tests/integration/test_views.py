@@ -22,10 +22,19 @@ async def test_get_not_existing_customer() -> None:
 @pytest.mark.asyncio()
 async def test_get_customer() -> None:
     uow = DynamoDBUnitOfWork.create()
-    cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
+    cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("249.99"))
     customer = await use_cases.create_customer(uow, cmd)
-    customer.events = []
 
-    customer_from_db = await views.get_customer(uow, customer_id=customer.id)
+    response = await views.get_customer(uow, customer_id=customer.id)
 
-    assert customer_from_db == customer
+    assert response.to_dict() == {
+        "id": str(customer.id),
+        "name": "John Doe",
+        "credit_limit": 24999,
+        "available_credit": 24999,
+        "created_at": customer.created_at.isoformat(),
+        "version": 0,
+        "_links": {
+            "self": {"href": f"/customer/{customer.id}"},
+        },
+    }
