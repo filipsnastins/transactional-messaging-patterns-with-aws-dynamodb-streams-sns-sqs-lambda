@@ -1,7 +1,9 @@
+import datetime
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from decimal import Decimal
+
+from customers.events import CustomerCreatedEvent, Event
 
 
 class CustomerCreditLimitExceededError(Exception):
@@ -14,24 +16,45 @@ class Customer:
     name: str
     credit_limit: Decimal
     credit_reservations: dict[uuid.UUID, Decimal]
-    created_at: datetime
+    created_at: datetime.datetime
     version: int
+    events: list[Event]
 
     def __init__(
         self,
         name: str,
         credit_limit: Decimal,
-        id: uuid.UUID | None = None,
-        credit_reservations: dict[uuid.UUID, Decimal] | None = None,
-        created_at: datetime | None = None,
-        version: int | None = None,
+        id: uuid.UUID,
+        credit_reservations: dict[uuid.UUID, Decimal],
+        created_at: datetime.datetime,
+        version: int,
     ) -> None:
         self.id = id or uuid.uuid4()
         self.name = name
         self.credit_limit = credit_limit
-        self.credit_reservations = credit_reservations or {}
-        self.created_at = created_at or datetime.utcnow().replace(tzinfo=timezone.utc)
-        self.version = version or 0
+        self.credit_reservations = credit_reservations
+        self.created_at = created_at
+        self.version = version
+        self.events = []
+
+    @staticmethod
+    def create(name: str, credit_limit: Decimal) -> "Customer":
+        customer = Customer(
+            id=uuid.uuid4(),
+            name=name,
+            credit_limit=credit_limit,
+            credit_reservations={},
+            created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
+            version=0,
+        )
+        event = CustomerCreatedEvent(
+            customer_id=customer.id,
+            name=customer.name,
+            credit_limit=customer.credit_limit,
+            created_at=customer.created_at,
+        )
+        customer.events.append(event)
+        return customer
 
     @staticmethod
     def from_dict(data: dict) -> "Customer":
@@ -42,6 +65,7 @@ class Customer:
             "id": self.id,
             "name": self.name,
             "credit_limit": self.credit_limit,
+            "credit_reservations": self.credit_reservations,
             "created_at": self.created_at,
             "version": self.version,
         }
