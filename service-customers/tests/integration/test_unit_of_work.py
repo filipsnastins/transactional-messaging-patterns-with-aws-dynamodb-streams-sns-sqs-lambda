@@ -4,12 +4,7 @@ from decimal import Decimal
 
 import pytest
 from adapters import dynamodb
-from adapters.repository import (
-    CustomerAlreadyExistsError,
-    CustomerNotFoundError,
-    DynamoDBCustomersRepository,
-    DynamoDBSession,
-)
+from adapters.repository import CustomerAlreadyExistsError, CustomerNotFoundError, DynamoDBRepository, DynamoDBSession
 from botocore.exceptions import ClientError
 from customers.customer import Customer
 from service_layer.unit_of_work import DynamoDBUnitOfWork
@@ -17,7 +12,7 @@ from service_layer.unit_of_work import DynamoDBUnitOfWork
 pytestmark = pytest.mark.usefixtures("_mock_dynamodb")
 
 
-class FailingDynamoDBCustomersRepository(DynamoDBCustomersRepository):
+class FailingDynamoDBRepository(DynamoDBRepository):
     async def create(self, customer: Customer) -> None:
         self.session.add(
             {
@@ -101,7 +96,7 @@ async def test_commit_is_idempotent() -> None:
 @pytest.mark.asyncio()
 async def test_domain_error_raised() -> None:
     uow = DynamoDBUnitOfWork.create()
-    customer = Customer(id=uuid.uuid4(), name="John Doe", credit_limit=Decimal("200.00"))
+    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
     await uow.customers.create(customer)
     await uow.commit()
 
@@ -113,8 +108,8 @@ async def test_domain_error_raised() -> None:
 @pytest.mark.asyncio()
 async def test_dynamodb_error_raised() -> None:
     session = DynamoDBSession()
-    uow = DynamoDBUnitOfWork(customers=FailingDynamoDBCustomersRepository(session))
-    customer = Customer(id=uuid.uuid4(), name="John Doe", credit_limit=Decimal("200.00"))
+    uow = DynamoDBUnitOfWork(customers=FailingDynamoDBRepository(session))
+    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
 
     await uow.customers.create(customer)
     with pytest.raises(ClientError) as exc_info:
