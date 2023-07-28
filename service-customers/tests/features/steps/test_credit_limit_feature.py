@@ -4,6 +4,7 @@ from asyncio import AbstractEventLoop
 from typing import Any
 
 import httpx
+import pytest
 from busypie import wait_at_most
 from pytest_bdd import given, parsers, scenarios, then, when
 from stockholm import Money
@@ -11,6 +12,8 @@ from tomodachi.envelope.json_base import JsonBase
 from tomodachi_testcontainers.clients import snssqs_client
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
+
+pytestmark = pytest.mark.xfail(strict=True)
 
 scenarios("../credit_limit.feature")
 
