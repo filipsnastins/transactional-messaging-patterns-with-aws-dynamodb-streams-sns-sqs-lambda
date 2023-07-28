@@ -9,6 +9,7 @@ from stockholm import Money
 
 
 class Response(Protocol):
+    @property
     def status_code(self) -> int:
         ...
 
@@ -51,6 +52,7 @@ class CreateCustomerResponse(Response):
             "_links": asdict(self._links),
         }
 
+    @property
     def status_code(self) -> int:
         return 200
 
@@ -88,6 +90,7 @@ class GetCustomerResponse(Response):
             "_links": asdict(self._links),
         }
 
+    @property
     def status_code(self) -> int:
         return 200
 
@@ -107,5 +110,6 @@ class GetCustomerNotFoundResponse(ErrorResponse):
             "_links": asdict(self._links),
         }
 
+    @property
     def status_code(self) -> int:
         return 404
