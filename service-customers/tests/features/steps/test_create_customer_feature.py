@@ -1,8 +1,8 @@
 from asyncio import AbstractEventLoop
-from decimal import Decimal
 
 import httpx
 from pytest_bdd import given, parsers, scenarios, then, when
+from stockholm import Money
 
 scenarios("../create_customer.feature")
 
@@ -11,7 +11,7 @@ scenarios("../create_customer.feature")
 def _(name: str, credit_limit: str) -> dict:
     return {
         "name": name,
-        "credit_limit": int(Decimal(credit_limit) * 100),
+        "credit_limit": int(Money(credit_limit).to_sub_units()),
     }
 
 
@@ -44,11 +44,11 @@ def _(create_customer: httpx.Response) -> None:
 def _(
     event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, customer: dict, create_customer: httpx.Response
 ) -> None:
-    body = create_customer.json()
-    customer_id = body["id"]
-    get_customer_link = body["_links"]["self"]["href"]
-
     async def _async() -> None:
+        body = create_customer.json()
+        customer_id = body["id"]
+        get_customer_link = body["_links"]["self"]["href"]
+
         response = await http_client.get(get_customer_link)
 
         assert response.status_code == 200
