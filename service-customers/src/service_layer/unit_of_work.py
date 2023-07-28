@@ -37,22 +37,24 @@ class DynamoDBUnitOfWork(AbstractUnitOfWork):
 
     async def commit(self) -> None:
         items = self.customers.session.get()
-        if items:
-            transact_items = [item["transact_item"] for item in items]
-            domain_exceptions = [item["domain_exception"] for item in items]
-            async with dynamodb.get_dynamodb_client() as client:
-                try:
-                    await client.transact_write_items(TransactItems=transact_items)
-                except client.exceptions.TransactionCanceledException as e:
-                    cancellation_reasons = e.response["CancellationReasons"]
-                    for cancellation_reason, domain_exception in zip(cancellation_reasons, domain_exceptions):
-                        if cancellation_reason["Code"] == "None":
-                            continue
-                        if cancellation_reason["Code"] == "ConditionalCheckFailed" and domain_exception is not None:
-                            raise domain_exception from e
-                    raise
-                finally:
-                    await self.rollback()
+        if not items:
+            return None
+        async with dynamodb.get_dynamodb_client() as client:
+            try:
+                transact_items = [item["transact_item"] for item in items]
+                await client.transact_write_items(TransactItems=transact_items)
+            except client.exceptions.TransactionCanceledException as e:
+                cancellation_codes = [reason["Code"] for reason in e.response["CancellationReasons"]]
+                raise_on_condition_failures = [item["raise_on_condition_check_failure"] for item in items]
+                zipped = zip(cancellation_codes, raise_on_condition_failures)
+                for cancellation_code, raise_on_condition_failure in zipped:
+                    if cancellation_code == "None":
+                        continue
+                    if cancellation_code == "ConditionalCheckFailed" and raise_on_condition_failure is not None:
+                        raise raise_on_condition_failure from e
+                raise
+            finally:
+                await self.rollback()
 
     async def rollback(self) -> None:
         self.customers.session.clear()
