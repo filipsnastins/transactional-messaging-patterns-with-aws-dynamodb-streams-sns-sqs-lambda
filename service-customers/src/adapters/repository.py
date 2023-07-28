@@ -17,7 +17,7 @@ class CustomerAlreadyExistsError(Exception):
 
 class DynamoDBSessionItems(TypedDict):
     transact_item: TransactWriteItemTypeDef
-    domain_exception: Exception | None
+    raise_on_condition_check_failure: Exception | None
 
 
 class DynamoDBSession:
@@ -26,8 +26,13 @@ class DynamoDBSession:
     def __init__(self) -> None:
         self._session = ContextVar("service_layer.unit_of_work.dynamodb_session.session", default=[])
 
-    def add(self, transact_item: TransactWriteItemTypeDef, raises_domain_exception: Exception | None = None) -> None:
-        item = DynamoDBSessionItems(transact_item=transact_item, domain_exception=raises_domain_exception)
+    def add(
+        self, transact_item: TransactWriteItemTypeDef, raise_on_condition_check_failure: Exception | None = None
+    ) -> None:
+        item = DynamoDBSessionItems(
+            transact_item=transact_item,
+            raise_on_condition_check_failure=raise_on_condition_check_failure,
+        )
         self._session.get().append(item)
 
     def get(self) -> list[DynamoDBSessionItems]:
@@ -58,7 +63,7 @@ class DynamoDBRepository(AbstractRepository):
                     "ConditionExpression": "attribute_not_exists(PK)",
                 }
             },
-            raises_domain_exception=CustomerAlreadyExistsError(customer.id),
+            raise_on_condition_check_failure=CustomerAlreadyExistsError(customer.id),
         )
         self.session.add(
             {
