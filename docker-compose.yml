@@ -8,13 +8,6 @@ services:
     volumes:
       - ./service-customers:/app
     command: ['tomodachi', 'run', 'src/entrypoints/tomodachi_app.py']
-  orders:
-    build: ./service-orders
-    ports:
-      - 9702:9700
-    volumes:
-      - ./service-orders:/app
-    command: ['tomodachi', 'run', 'src/entrypoints/tomodachi_app.py']
   localstack:
     image: localstack/localstack:2.2.0
     ports:
