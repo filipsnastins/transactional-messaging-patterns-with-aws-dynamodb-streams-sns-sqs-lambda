@@ -53,7 +53,7 @@ async def test_create_customer() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_customer_created_event_created() -> None:
+async def test_customer_created_event_published() -> None:
     uow = FakeUnitOfWork()
     cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
 
@@ -70,7 +70,7 @@ async def test_customer_created_event_created() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_created_customer_has_clean_available_credit() -> None:
+async def test_created_customer_has_full_available_credit() -> None:
     uow = FakeUnitOfWork()
     cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
 

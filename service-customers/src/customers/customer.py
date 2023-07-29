@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from customers.events import CustomerCreatedEvent, Event
+from stockholm import Money
 
 
 class CustomerCreditLimitExceededError(Exception):
@@ -62,11 +63,11 @@ class Customer:
 
     def to_dict(self) -> dict:
         return {
-            "id": self.id,
+            "id": str(self.id),
             "name": self.name,
-            "credit_limit": self.credit_limit,
+            "credit_limit": int(Money(self.credit_limit).to_sub_units()),
             "credit_reservations": self.credit_reservations,
-            "created_at": self.created_at,
+            "created_at": self.created_at.isoformat(),
             "version": self.version,
         }
 

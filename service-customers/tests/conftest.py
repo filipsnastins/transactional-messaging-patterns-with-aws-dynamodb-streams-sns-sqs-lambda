@@ -75,12 +75,15 @@ def tomodachi_container(
     _reset_moto_container: None,
 ) -> Generator[TomodachiContainer, None, None]:
     aws_config = moto_container.get_aws_client_config()
+    endpoint_internal_url = moto_container.get_internal_url()
     with (
         TomodachiContainer(image=str(tomodachi_image.id), edge_port=get_available_port())
         .with_env("AWS_REGION", aws_config["region_name"])
         .with_env("AWS_ACCESS_KEY_ID", aws_config["aws_access_key_id"])
         .with_env("AWS_SECRET_ACCESS_KEY", aws_config["aws_secret_access_key"])
-        .with_env("AWS_DYNAMODB_ENDPOINT_URL", moto_container.get_internal_url())
+        .with_env("AWS_SNS_ENDPOINT_URL", endpoint_internal_url)
+        .with_env("AWS_SQS_ENDPOINT_URL", endpoint_internal_url)
+        .with_env("AWS_DYNAMODB_ENDPOINT_URL", endpoint_internal_url)
         .with_env("DYNAMODB_TABLE_NAME", "customers")
     ) as container:
         yield cast(TomodachiContainer, container)
