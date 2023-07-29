@@ -3,7 +3,7 @@ Feature: Create customer
     Scenario: Create new customer with full available credit
         Given customer with name "John Doe" and credit limit "249.99"
         When customer creation is requested
-        Then the customer is created successfully
+        Then the customer creation request is successful
         And the customer is created with correct data and full available credit
 
     Scenario: Customer not found

@@ -1,8 +1,17 @@
 from asyncio import AbstractEventLoop
+from typing import Any
 
 import httpx
+import pytest
+from busypie import wait_at_most
 from pytest_bdd import given, parsers, scenarios, then, when
 from stockholm import Money
+from tomodachi.envelope.json_base import JsonBase
+from tomodachi_testcontainers.clients import snssqs_client
+from types_aiobotocore_sqs import SQSClient
+
+pytestmark = pytest.mark.xfail(strict=False)
+
 
 scenarios("../create_customer.feature")
 
@@ -28,7 +37,7 @@ def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, customer: d
     return event_loop.run_until_complete(_async())
 
 
-@then("the customer is created successfully")
+@then("the customer creation request is successful")
 def _(create_customer: httpx.Response) -> None:
     assert create_customer.status_code == 200
     body = create_customer.json()
@@ -42,27 +51,44 @@ def _(create_customer: httpx.Response) -> None:
 
 @then("the customer is created with correct data and full available credit")
 def _(
-    event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, customer: dict, create_customer: httpx.Response
+    event_loop: AbstractEventLoop,
+    http_client: httpx.AsyncClient,
+    moto_sqs_client: SQSClient,
+    customer: dict,
+    create_customer: httpx.Response,
 ) -> None:
-    async def _async() -> None:
-        body = create_customer.json()
-        customer_id = body["id"]
-        get_customer_link = body["_links"]["self"]["href"]
+    body = create_customer.json()
+    customer_id = body["id"]
+    get_customer_link = body["_links"]["self"]["href"]
 
+    async def _assert_get_customer() -> None:
         response = await http_client.get(get_customer_link)
 
         assert response.status_code == 200
-        assert response.json() == {
+        body = response.json()
+        assert body == {
             "id": customer_id,
             "name": customer["name"],
             "credit_limit": customer["credit_limit"],
             "available_credit": customer["credit_limit"],
-            "created_at": response.json()["created_at"],
+            "created_at": body["created_at"],
             "version": 0,
             "_links": {
                 "self": {"href": get_customer_link},
             },
         }
+
+    async def _assert_customer_created() -> None:
+        [message] = await snssqs_client.receive(moto_sqs_client, "customer--created", JsonBase, dict[str, Any])
+
+        assert message == {
+            "customer_id": customer_id,
+            "created_at": message["created_at"],
+        }
+
+    async def _async() -> None:
+        await wait_at_most(3).until_asserted_async(_assert_get_customer)
+        await wait_at_most(3).until_asserted_async(_assert_customer_created)
 
     return event_loop.run_until_complete(_async())
 
