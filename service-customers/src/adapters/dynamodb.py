@@ -1,11 +1,40 @@
 import os
+from contextvars import ContextVar
+from typing import TypedDict
 
 import structlog
 from aiobotocore.session import get_session
-from structlog import get_logger
 from types_aiobotocore_dynamodb import DynamoDBClient
+from types_aiobotocore_dynamodb.type_defs import TransactWriteItemTypeDef
 
-logger: structlog.stdlib.BoundLogger = get_logger()
+logger: structlog.stdlib.BoundLogger = structlog.get_logger()
+
+
+class DynamoDBSessionItems(TypedDict):
+    transact_item: TransactWriteItemTypeDef
+    raise_on_condition_check_failure: Exception | None
+
+
+class DynamoDBSession:
+    _session: ContextVar[list[DynamoDBSessionItems]]
+
+    def __init__(self) -> None:
+        self._session = ContextVar("service_layer.unit_of_work.dynamodb_session.session", default=[])
+
+    def add(
+        self, transact_item: TransactWriteItemTypeDef, raise_on_condition_check_failure: Exception | None = None
+    ) -> None:
+        item = DynamoDBSessionItems(
+            transact_item=transact_item,
+            raise_on_condition_check_failure=raise_on_condition_check_failure,
+        )
+        self._session.get().append(item)
+
+    def get(self) -> list[DynamoDBSessionItems]:
+        return self._session.get()
+
+    def clear(self) -> None:
+        self._session.get().clear()
 
 
 def get_table_name() -> str:

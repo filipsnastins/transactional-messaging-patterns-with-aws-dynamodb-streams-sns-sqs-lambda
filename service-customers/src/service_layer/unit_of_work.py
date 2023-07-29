@@ -1,12 +1,19 @@
 import abc
 from typing import Any
 
+import structlog
 from adapters import dynamodb
-from adapters.repository import AbstractRepository, DynamoDBRepository, DynamoDBSession
+from adapters.customer_repository import AbstractCustomerRepository, DynamoDBCustomerRepository
+from adapters.event_repository import AbstractEventRepository, DynamoDBEventRepository
+from service_layer.topics import CUSTOMER_TOPICS_MAP
+from tomodachi.envelope.json_base import JsonBase
+
+logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
 class AbstractUnitOfWork(abc.ABC):
-    customers: AbstractRepository
+    customers: AbstractCustomerRepository
+    events: AbstractEventRepository
 
     async def __aenter__(self) -> "AbstractUnitOfWork":
         return self
@@ -24,25 +31,37 @@ class AbstractUnitOfWork(abc.ABC):
 
 
 class DynamoDBUnitOfWork(AbstractUnitOfWork):
-    customers: DynamoDBRepository
+    session: dynamodb.DynamoDBSession
+    customers: DynamoDBCustomerRepository
+    events: DynamoDBEventRepository
 
-    def __init__(self, customers: DynamoDBRepository) -> None:
+    def __init__(
+        self,
+        session: dynamodb.DynamoDBSession,
+        customers: DynamoDBCustomerRepository,
+        events: DynamoDBEventRepository,
+    ) -> None:
+        self.session = session
         self.customers = customers
+        self.events = events
 
     @staticmethod
     def create() -> "DynamoDBUnitOfWork":
-        session = DynamoDBSession()
-        customers = DynamoDBRepository(session)
-        return DynamoDBUnitOfWork(customers)
+        session = dynamodb.DynamoDBSession()
+        customers = DynamoDBCustomerRepository(session)
+        events = DynamoDBEventRepository(session, envelope=JsonBase(), topics=CUSTOMER_TOPICS_MAP)
+        return DynamoDBUnitOfWork(session, customers, events)
 
     async def commit(self) -> None:
-        items = self.customers.session.get()
+        items = self.session.get()
         if not items:
-            return None
+            logger.debug("dynamodb_unit_of_work__nothing_to_commit")
+            return
         async with dynamodb.get_dynamodb_client() as client:
             try:
                 transact_items = [item["transact_item"] for item in items]
                 await client.transact_write_items(TransactItems=transact_items)
+                logger.debug("dynamodb_unit_of_work__committed", item_count=len(items))
             except client.exceptions.TransactionCanceledException as e:
                 cancellation_codes = [reason["Code"] for reason in e.response["CancellationReasons"]]
                 raise_on_condition_failures = [item["raise_on_condition_check_failure"] for item in items]
@@ -57,4 +76,5 @@ class DynamoDBUnitOfWork(AbstractUnitOfWork):
                 await self.rollback()
 
     async def rollback(self) -> None:
-        self.customers.session.clear()
+        self.session.clear()
+        logger.debug("dynamodb_unit_of_work__rollbacked")

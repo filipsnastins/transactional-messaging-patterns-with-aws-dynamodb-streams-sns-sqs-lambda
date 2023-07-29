@@ -1,18 +1,21 @@
 import datetime
+import json
 import uuid
 from decimal import Decimal
 
 import pytest
 from adapters import dynamodb
-from adapters.repository import CustomerAlreadyExistsError, DynamoDBRepository, DynamoDBSession
+from adapters.customer_repository import CustomerAlreadyExistsError, DynamoDBCustomerRepository
+from adapters.event_repository import EventAlreadyPublishedError
 from botocore.exceptions import ClientError
 from customers.customer import Customer
+from customers.events import CustomerCreatedEvent, Event
 from service_layer.unit_of_work import DynamoDBUnitOfWork
 
 pytestmark = pytest.mark.usefixtures("_mock_dynamodb")
 
 
-class FailingDynamoDBRepository(DynamoDBRepository):
+class FailingDynamoDBRepository(DynamoDBCustomerRepository):
     async def create(self, customer: Customer) -> None:
         self.session.add(
             {
@@ -107,8 +110,8 @@ async def test_domain_error_raised() -> None:
 
 @pytest.mark.asyncio()
 async def test_dynamodb_error_raised() -> None:
-    session = DynamoDBSession()
-    uow = DynamoDBUnitOfWork(customers=FailingDynamoDBRepository(session))
+    uow = DynamoDBUnitOfWork.create()
+    uow.customers = FailingDynamoDBRepository(uow.customers.session)
     customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
 
     await uow.customers.create(customer)
@@ -116,3 +119,67 @@ async def test_dynamodb_error_raised() -> None:
         await uow.commit()
 
     assert exc_info.value.response["Error"]["Code"] == "TransactionCanceledException"
+
+
+@pytest.mark.asyncio()
+async def test_events_published() -> None:
+    uow = DynamoDBUnitOfWork.create()
+    events: list[Event] = [
+        CustomerCreatedEvent(
+            event_id=uuid.uuid4(),
+            customer_id=uuid.uuid4(),
+            name="John Doe",
+            credit_limit=Decimal("200.00"),
+            created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
+        ),
+        CustomerCreatedEvent(
+            event_id=uuid.uuid4(),
+            customer_id=uuid.uuid4(),
+            name="Mary Doe",
+            credit_limit=Decimal("300.00"),
+            created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
+        ),
+    ]
+
+    await uow.events.publish(events)
+    await uow.commit()
+
+    saved_event = await uow.events.get(events[0].event_id)
+    assert saved_event
+    assert saved_event.event_id == events[0].event_id
+    assert saved_event.topic == "customer--created"
+    assert json.loads(saved_event.message)["data"] == events[0].to_dict()
+    assert saved_event.created_at == events[0].created_at
+
+    saved_event = await uow.events.get(events[1].event_id)
+    assert saved_event
+    assert saved_event.event_id == events[1].event_id
+    assert saved_event.topic == "customer--created"
+    assert json.loads(saved_event.message)["data"] == events[1].to_dict()
+    assert saved_event.created_at == events[1].created_at
+
+
+@pytest.mark.asyncio()
+async def test_cannot_publish_event_with_the_same_event_id() -> None:
+    uow = DynamoDBUnitOfWork.create()
+    event_id = uuid.uuid4()
+    event_1 = CustomerCreatedEvent(
+        event_id=event_id,
+        customer_id=uuid.uuid4(),
+        name="John Doe",
+        credit_limit=Decimal("200.00"),
+        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
+    )
+    event_2 = CustomerCreatedEvent(
+        event_id=event_id,
+        customer_id=uuid.uuid4(),
+        name="Mary Doe",
+        credit_limit=Decimal("300.00"),
+        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
+    )
+    await uow.events.publish([event_1])
+    await uow.commit()
+
+    await uow.events.publish([event_2])
+    with pytest.raises(EventAlreadyPublishedError, match=str(event_id)):
+        await uow.commit()

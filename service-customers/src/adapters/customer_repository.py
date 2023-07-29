@@ -1,48 +1,20 @@
 import datetime
 import uuid
-from contextvars import ContextVar
 from decimal import Decimal
-from typing import Protocol, TypedDict, TypeVar
+from typing import Protocol
 
+import structlog
 from adapters import dynamodb
 from customers.customer import Customer
-from types_aiobotocore_dynamodb.type_defs import TransactWriteItemTypeDef
 
-ModelType = TypeVar("ModelType")
+logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
 class CustomerAlreadyExistsError(Exception):
     pass
 
 
-class DynamoDBSessionItems(TypedDict):
-    transact_item: TransactWriteItemTypeDef
-    raise_on_condition_check_failure: Exception | None
-
-
-class DynamoDBSession:
-    _session: ContextVar[list[DynamoDBSessionItems]]
-
-    def __init__(self) -> None:
-        self._session = ContextVar("service_layer.unit_of_work.dynamodb_session.session", default=[])
-
-    def add(
-        self, transact_item: TransactWriteItemTypeDef, raise_on_condition_check_failure: Exception | None = None
-    ) -> None:
-        item = DynamoDBSessionItems(
-            transact_item=transact_item,
-            raise_on_condition_check_failure=raise_on_condition_check_failure,
-        )
-        self._session.get().append(item)
-
-    def get(self) -> list[DynamoDBSessionItems]:
-        return self._session.get()
-
-    def clear(self) -> None:
-        self._session.get().clear()
-
-
-class AbstractRepository(Protocol):
+class AbstractCustomerRepository(Protocol):
     async def create(self, customer: Customer) -> None:
         ...
 
@@ -50,8 +22,8 @@ class AbstractRepository(Protocol):
         ...
 
 
-class DynamoDBRepository(AbstractRepository):
-    def __init__(self, session: DynamoDBSession) -> None:
+class DynamoDBCustomerRepository(AbstractCustomerRepository):
+    def __init__(self, session: dynamodb.DynamoDBSession) -> None:
         self.session = session
 
     async def create(self, customer: Customer) -> None:
@@ -86,6 +58,7 @@ class DynamoDBRepository(AbstractRepository):
                 }
             }
         )
+        logger.info("dynamodb_customer_repository__customer_created", customer_id=customer.id)
 
     async def get(self, customer_id: uuid.UUID) -> Customer | None:
         async with dynamodb.get_dynamodb_client() as client:
@@ -95,6 +68,7 @@ class DynamoDBRepository(AbstractRepository):
             )
             item = response.get("Item")
             if not item:
+                logger.debug("dynamodb_customer_repository__customer_not_found", customer_id=customer_id)
                 return None
             return Customer(
                 id=uuid.UUID(item["Id"]["S"]),
