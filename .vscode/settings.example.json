@@ -5,9 +5,9 @@
   },
   "python.formatting.provider": "black",
   "terminal.integrated.env.osx": {
-    "PYTHONPATH": "${workspaceFolder}/service-customers/src:${workspaceFolder}/service-orders/src:${env:PYTHONPATH}"
+    "PYTHONPATH": "${workspaceFolder}/service-customers/src:${env:PYTHONPATH}"
   },
   "terminal.integrated.env.linux": {
-    "PYTHONPATH": "${workspaceFolder}/service-customers/src:${workspaceFolder}/service-orders/src:${env:PYTHONPATH}"
+    "PYTHONPATH": "${workspaceFolder}/service-customers/src:${env:PYTHONPATH}"
   }
 }
