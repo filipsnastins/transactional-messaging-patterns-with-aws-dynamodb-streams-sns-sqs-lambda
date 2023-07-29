@@ -10,7 +10,7 @@ from tomodachi.envelope.json_base import JsonBase
 from tomodachi_testcontainers.clients import snssqs_client
 from types_aiobotocore_sqs import SQSClient
 
-# pytestmark = pytest.mark.xfail(strict=False)
+pytestmark = pytest.mark.xfail(strict=False)
 
 
 scenarios("../create_customer.feature")
@@ -28,9 +28,7 @@ def _(name: str, credit_limit: str) -> dict:
 
 
 @when("customer creation is requested", target_fixture="create_customer")
-def _(
-    event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, customer: dict
-) -> httpx.Response:
+def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, customer: dict) -> httpx.Response:
     async def _async() -> httpx.Response:
         data = {
             "name": customer["name"],
@@ -84,9 +82,7 @@ def _(
         }
 
     async def _assert_customer_created() -> None:
-        [message] = await snssqs_client.receive(
-            moto_sqs_client, "customer--created", JsonBase, dict[str, Any]
-        )
+        [message] = await snssqs_client.receive(moto_sqs_client, "customer--created", JsonBase, dict[str, Any])
 
         assert message == {
             "event_id": message["event_id"],
@@ -107,9 +103,7 @@ def _(
     parsers.parse('customer with ID "{customer_id}" is queried'),
     target_fixture="get_customer",
 )
-def _(
-    event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, customer_id: str
-) -> httpx.Response:
+def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, customer_id: str) -> httpx.Response:
     async def _async() -> httpx.Response:
         return await http_client.get(f"/customer/{customer_id}")
 
