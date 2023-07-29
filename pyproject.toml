@@ -43,7 +43,7 @@ pytest-asyncio = "^0.21.1"
 pytest-bdd = "^6.1.1"
 pytest-cov = "^4.1.0"
 ruff = "^0.0.277"
-tomodachi-testcontainers = "^0.2.1"
+tomodachi-testcontainers = "^0.2.2"
 busypie = "^0.5.1"
 
 [build-system]
