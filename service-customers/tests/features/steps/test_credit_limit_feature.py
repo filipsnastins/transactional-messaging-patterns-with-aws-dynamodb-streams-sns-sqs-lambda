@@ -68,7 +68,7 @@ def _(
         }
 
     async def _async() -> None:
-        await wait_at_most(5).until_asserted_async(_assert_customer_credit_reserved)
+        await wait_at_most(3).until_asserted_async(_assert_customer_credit_reserved)
 
     return event_loop.run_until_complete(_async())
 
@@ -108,7 +108,7 @@ def _(
         }
 
     async def _async() -> None:
-        await wait_at_most(5).until_asserted_async(_assert_customer_credit_reserved)
+        await wait_at_most(3).until_asserted_async(_assert_customer_credit_reserved)
 
     return event_loop.run_until_complete(_async())
 
@@ -145,6 +145,6 @@ def _(event_loop: AbstractEventLoop, moto_sqs_client: SQSClient, non_existing_cu
         }
 
     async def _async() -> None:
-        await wait_at_most(5).until_asserted_async(_assert_customer_credit_reserved)
+        await wait_at_most(3).until_asserted_async(_assert_customer_credit_reserved)
 
     return event_loop.run_until_complete(_async())

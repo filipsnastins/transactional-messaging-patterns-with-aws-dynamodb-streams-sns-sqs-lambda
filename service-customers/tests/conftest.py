@@ -7,8 +7,11 @@ import pytest
 import pytest_asyncio
 from adapters import dynamodb
 from docker.models.images import Image as DockerImage
+from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.containers import MotoContainer, TomodachiContainer
 from tomodachi_testcontainers.utils import get_available_port
+from types_aiobotocore_sns import SNSClient
+from types_aiobotocore_sqs import SQSClient
 
 
 @pytest.fixture(scope="session")
@@ -17,9 +20,59 @@ def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
         yield loop
 
 
+@pytest_asyncio.fixture()
+async def _mock_dynamodb(
+    monkeypatch: pytest.MonkeyPatch, moto_container: MotoContainer, _reset_moto_container: None
+) -> None:
+    aws_config = moto_container.get_aws_client_config()
+    monkeypatch.setenv("AWS_REGION", aws_config["region_name"])
+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", aws_config["aws_access_key_id"])
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", aws_config["aws_secret_access_key"])
+    monkeypatch.setenv("AWS_DYNAMODB_ENDPOINT_URL", aws_config["endpoint_url"])
+    monkeypatch.setenv("DYNAMODB_TABLE_NAME", "customers")
+    await dynamodb.create_dynamodb_table()
+
+
+@pytest_asyncio.fixture()
+async def _create_topics_and_queues(moto_sns_client: SNSClient, moto_sqs_client: SQSClient) -> None:
+    await snssqs_client.subscribe_to(
+        moto_sns_client,
+        moto_sqs_client,
+        topic="customer--created",
+        queue="customer--created",
+    )
+    await snssqs_client.subscribe_to(
+        moto_sns_client,
+        moto_sqs_client,
+        topic="customer--credit-reserved",
+        queue="customer--credit-reserved",
+    )
+    await snssqs_client.subscribe_to(
+        moto_sns_client,
+        moto_sqs_client,
+        topic="customer--credit-reservation-failed",
+        queue="customer--credit-reservation-failed",
+    )
+    await snssqs_client.subscribe_to(
+        moto_sns_client,
+        moto_sqs_client,
+        topic="customer--validation-failed",
+        queue="customer--validation-failed",
+    )
+    await snssqs_client.subscribe_to(
+        moto_sns_client,
+        moto_sqs_client,
+        topic="order--created",
+        queue="order--created",
+    )
+
+
 @pytest.fixture()
 def tomodachi_container(
-    tomodachi_image: DockerImage, moto_container: MotoContainer, _reset_moto_container: None
+    tomodachi_image: DockerImage,
+    moto_container: MotoContainer,
+    _create_topics_and_queues: None,
+    _reset_moto_container: None,
 ) -> Generator[TomodachiContainer, None, None]:
     aws_config = moto_container.get_aws_client_config()
     with (
@@ -39,16 +92,3 @@ async def http_client(
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
     async with httpx.AsyncClient(base_url=tomodachi_container.get_external_url()) as client:
         yield client
-
-
-@pytest_asyncio.fixture()
-async def _mock_dynamodb(
-    monkeypatch: pytest.MonkeyPatch, moto_container: MotoContainer, _reset_moto_container: None
-) -> None:
-    aws_config = moto_container.get_aws_client_config()
-    monkeypatch.setenv("AWS_REGION", aws_config["region_name"])
-    monkeypatch.setenv("AWS_ACCESS_KEY_ID", aws_config["aws_access_key_id"])
-    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", aws_config["aws_secret_access_key"])
-    monkeypatch.setenv("AWS_DYNAMODB_ENDPOINT_URL", aws_config["endpoint_url"])
-    monkeypatch.setenv("DYNAMODB_TABLE_NAME", "customers")
-    await dynamodb.create_dynamodb_table()
