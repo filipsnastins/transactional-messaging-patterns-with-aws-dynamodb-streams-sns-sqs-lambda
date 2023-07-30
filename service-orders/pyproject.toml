@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "src"
+version = "0.0.0"
+description = ""
+authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+tomodachi = "^0.25.0"
+uvloop = "^0.17.0"
+
+[tool.poetry.group.dev.dependencies]
+httpx = "^0.24.1"
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+tomodachi-testcontainers = "^0.2.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+test-ci = "dev:test_ci"
