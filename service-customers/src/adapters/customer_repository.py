@@ -23,14 +23,15 @@ class AbstractCustomerRepository(Protocol):
 
 
 class DynamoDBCustomerRepository(AbstractCustomerRepository):
-    def __init__(self, session: dynamodb.DynamoDBSession) -> None:
+    def __init__(self, table_name: str, session: dynamodb.DynamoDBSession) -> None:
+        self.table_name = table_name
         self.session = session
 
     async def create(self, customer: Customer) -> None:
         self.session.add(
             {
                 "ConditionCheck": {
-                    "TableName": dynamodb.get_table_name(),
+                    "TableName": self.table_name,
                     "Key": {"PK": {"S": f"CUSTOMER#{customer.id}"}},
                     "ConditionExpression": "attribute_not_exists(PK)",
                 }
@@ -40,7 +41,7 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
         self.session.add(
             {
                 "Put": {
-                    "TableName": dynamodb.get_table_name(),
+                    "TableName": self.table_name,
                     "Item": {
                         "PK": {"S": f"CUSTOMER#{customer.id}"},
                         "Id": {"S": str(customer.id)},
@@ -63,7 +64,7 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
     async def get(self, customer_id: uuid.UUID) -> Customer | None:
         async with dynamodb.get_dynamodb_client() as client:
             response = await client.get_item(
-                TableName=dynamodb.get_table_name(),
+                TableName=self.table_name,
                 Key={"PK": {"S": f"CUSTOMER#{customer_id}"}},
             )
             item = response.get("Item")

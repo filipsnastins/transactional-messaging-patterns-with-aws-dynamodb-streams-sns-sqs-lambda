@@ -19,7 +19,7 @@ class DynamoDBSession:
     _session: ContextVar[list[DynamoDBSessionItems]]
 
     def __init__(self) -> None:
-        self._session = ContextVar("service_layer.unit_of_work.dynamodb_session.session", default=[])
+        self._session = ContextVar("__dynamodb_session", default=[])
 
     def add(
         self, transact_item: TransactWriteItemTypeDef, raise_on_condition_check_failure: Exception | None = None
@@ -37,10 +37,6 @@ class DynamoDBSession:
         self._session.get().clear()
 
 
-def get_table_name() -> str:
-    return os.environ["DYNAMODB_TABLE_NAME"]
-
-
 def get_dynamodb_client() -> DynamoDBClient:
     session = get_session()
     return session.create_client(
@@ -52,8 +48,42 @@ def get_dynamodb_client() -> DynamoDBClient:
     )
 
 
-async def create_dynamodb_table() -> None:
-    table_name = get_table_name()
+def get_aggregate_table_name() -> str:
+    return os.environ["DYNAMODB_AGGREGATE_TABLE_NAME"]
+
+
+def get_outbox_table_name() -> str:
+    return os.environ["DYNAMODB_OUTBOX_TABLE_NAME"]
+
+
+async def create_aggregate_table() -> None:
+    table_name = get_aggregate_table_name()
+    async with get_dynamodb_client() as client:
+        try:
+            await client.create_table(
+                TableName=table_name,
+                AttributeDefinitions=[
+                    {
+                        "AttributeName": "PK",
+                        "AttributeType": "S",
+                    },
+                ],
+                KeySchema=[
+                    {
+                        "AttributeName": "PK",
+                        "KeyType": "HASH",
+                    },
+                ],
+                BillingMode="PAY_PER_REQUEST",
+            )
+        except client.exceptions.ResourceInUseException:
+            logger.info("dynamodb_table_already_exists", table_name=table_name)
+        else:
+            logger.info("dynamodb_table_created", table_name=table_name)
+
+
+async def create_outbox_table() -> None:
+    table_name = get_outbox_table_name()
     async with get_dynamodb_client() as client:
         try:
             await client.create_table(

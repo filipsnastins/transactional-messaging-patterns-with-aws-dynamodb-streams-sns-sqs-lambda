@@ -28,7 +28,12 @@ class TomodachiService(tomodachi.Service):
     )
 
     async def _start_service(self) -> None:
-        await dynamodb.create_dynamodb_table()
+        await dynamodb.create_aggregate_table()
+        await dynamodb.create_outbox_table()
+
+    @tomodachi.http("GET", r"/health/?", ignore_logging=[200])
+    async def healthcheck(self, request: web.Request) -> web.Response:
+        return web.json_response({"status": "ok"}, status=200)
 
     @tomodachi.http("POST", r"/customers")
     async def create_customer_handler(self, request: web.Request) -> web.Response:

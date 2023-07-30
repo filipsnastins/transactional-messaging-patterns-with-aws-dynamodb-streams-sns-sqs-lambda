@@ -29,8 +29,10 @@ async def _mock_dynamodb(
     monkeypatch.setenv("AWS_ACCESS_KEY_ID", aws_config["aws_access_key_id"])
     monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", aws_config["aws_secret_access_key"])
     monkeypatch.setenv("AWS_DYNAMODB_ENDPOINT_URL", aws_config["endpoint_url"])
-    monkeypatch.setenv("DYNAMODB_TABLE_NAME", "customers")
-    await dynamodb.create_dynamodb_table()
+    monkeypatch.setenv("DYNAMODB_AGGREGATE_TABLE_NAME", "customers")
+    monkeypatch.setenv("DYNAMODB_OUTBOX_TABLE_NAME", "customers-outbox")
+    await dynamodb.create_aggregate_table()
+    await dynamodb.create_outbox_table()
 
 
 @pytest_asyncio.fixture()
@@ -84,7 +86,8 @@ def tomodachi_container(
         .with_env("AWS_SNS_ENDPOINT_URL", endpoint_internal_url)
         .with_env("AWS_SQS_ENDPOINT_URL", endpoint_internal_url)
         .with_env("AWS_DYNAMODB_ENDPOINT_URL", endpoint_internal_url)
-        .with_env("DYNAMODB_TABLE_NAME", "customers")
+        .with_env("DYNAMODB_AGGREGATE_TABLE_NAME", "customers")
+        .with_env("DYNAMODB_OUTBOX_TABLE_NAME", "customers-outbox")
     ) as container:
         yield cast(TomodachiContainer, container)
 

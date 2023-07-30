@@ -15,12 +15,12 @@ from service_layer.unit_of_work import DynamoDBUnitOfWork
 pytestmark = pytest.mark.usefixtures("_mock_dynamodb")
 
 
-class FailingDynamoDBRepository(DynamoDBCustomerRepository):
+class FailingDynamoDBCustomerRepository(DynamoDBCustomerRepository):
     async def create(self, customer: Customer) -> None:
         self.session.add(
             {
                 "ConditionCheck": {
-                    "TableName": dynamodb.get_table_name(),
+                    "TableName": self.table_name,
                     "Key": {"PK": {"S": f"CUSTOMER#{customer.id}"}},
                     "ConditionExpression": "attribute_not_exists(PK)",
                 }
@@ -29,7 +29,7 @@ class FailingDynamoDBRepository(DynamoDBCustomerRepository):
         self.session.add(
             {
                 "Put": {
-                    "TableName": dynamodb.get_table_name(),
+                    "TableName": self.table_name,
                     "Item": {
                         "foo": {"S": "this-is-an-invalid-item"},
                     },
@@ -111,7 +111,7 @@ async def test_domain_error_raised() -> None:
 @pytest.mark.asyncio()
 async def test_dynamodb_error_raised() -> None:
     uow = DynamoDBUnitOfWork.create()
-    uow.customers = FailingDynamoDBRepository(uow.customers.session)
+    uow.customers = FailingDynamoDBCustomerRepository(dynamodb.get_aggregate_table_name(), uow.customers.session)
     customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
 
     await uow.customers.create(customer)
@@ -148,14 +148,14 @@ async def test_events_published() -> None:
     assert saved_event
     assert saved_event.event_id == events[0].event_id
     assert saved_event.topic == "customer--created"
-    assert json.loads(saved_event.message)["data"] == events[0].to_dict()
+    assert json.loads(saved_event.message) == events[0].to_dict()
     assert saved_event.created_at == events[0].created_at
 
     saved_event = await uow.events.get(events[1].event_id)
     assert saved_event
     assert saved_event.event_id == events[1].event_id
     assert saved_event.topic == "customer--created"
-    assert json.loads(saved_event.message)["data"] == events[1].to_dict()
+    assert json.loads(saved_event.message) == events[1].to_dict()
     assert saved_event.created_at == events[1].created_at
 
 
