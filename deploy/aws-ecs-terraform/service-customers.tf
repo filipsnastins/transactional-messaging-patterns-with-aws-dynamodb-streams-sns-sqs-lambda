@@ -1,9 +1,23 @@
+resource "aws_lb_target_group" "service_customers_target_group" {
+  name        = "${var.environment}-t-outbox--customers-tg"
+  port        = 80
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = aws_default_vpc.default_vpc.id
+  health_check {
+    matcher  = "200"
+    path     = "/customers/health"
+    timeout  = 5
+    interval = 10
+  }
+}
+
 resource "aws_ecs_task_definition" "service_customers" {
   family                   = "${var.environment}-tomodachi-transactional-outbox--service-customers"
   container_definitions    = <<DEFINITION
   [
     {
-      "name": "${var.environment}-tomodachi-transactional-outbox--service-customers",
+      "name": "service-customers",
       "image": "${aws_ecr_repository.service_customers.repository_url}",
       "essential": true,
       "portMappings": [
@@ -49,8 +63,8 @@ resource "aws_ecs_service" "service_customers" {
   desired_count   = 1
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.target_group.arn
-    container_name   = aws_ecs_task_definition.service_customers.family
+    target_group_arn = aws_lb_target_group.service_customers_target_group.arn
+    container_name   = "service-customers"
     container_port   = 9700
   }
 

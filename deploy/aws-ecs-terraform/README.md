@@ -14,7 +14,13 @@ terraform apply
 - Build and push Docker image to AWS Elastic Container Registry (ECR)
 
 ```bash
-TODO
+docker build -t test-45d8-tomodachi-transactional-outbox-service-customers --platform=linux/amd64 .
+docker tag test-45d8-tomodachi-transactional-outbox-service-customers:latest 758308814218.dkr.ecr.eu-west-1.amazonaws.com/test-45d8-tomodachi-transactional-outbox-service-customers:latest
+docker push 758308814218.dkr.ecr.eu-west-1.amazonaws.com/test-45d8-tomodachi-transactional-outbox-service-customers:latest
+
+docker build -t test-45d8-tomodachi-transactional-outbox-service-orders --platform=linux/amd64 .
+docker tag test-45d8-tomodachi-transactional-outbox-service-orders:latest 758308814218.dkr.ecr.eu-west-1.amazonaws.com/test-45d8-tomodachi-transactional-outbox-service-orders:latest
+docker push 758308814218.dkr.ecr.eu-west-1.amazonaws.com/test-45d8-tomodachi-transactional-outbox-service-orders:latest
 ```
 
 ## References

@@ -1,9 +1,23 @@
+resource "aws_lb_target_group" "service_orders_target_group" {
+  name        = "${var.environment}-t-outbox--orders-tg"
+  port        = 80
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = aws_default_vpc.default_vpc.id
+  health_check {
+    matcher  = "200"
+    path     = "/orders/health"
+    timeout  = 5
+    interval = 10
+  }
+}
+
 resource "aws_ecs_task_definition" "service_orders" {
   family                   = "${var.environment}-tomodachi-transactional-outbox--service-orders"
   container_definitions    = <<DEFINITION
   [
     {
-      "name": "${var.environment}-tomodachi-transactional-outbox--service-orders",
+      "name": "service-orders",
       "image": "${aws_ecr_repository.service_orders.repository_url}",
       "essential": true,
       "portMappings": [
@@ -49,8 +63,8 @@ resource "aws_ecs_service" "service_orders" {
   desired_count   = 1
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.target_group.arn
-    container_name   = aws_ecs_task_definition.service_orders.family
+    target_group_arn = aws_lb_target_group.service_orders_target_group.arn
+    container_name   = "service-orders"
     container_port   = 9700
   }
 
