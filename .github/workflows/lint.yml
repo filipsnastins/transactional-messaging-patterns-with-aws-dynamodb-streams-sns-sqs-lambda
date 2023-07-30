@@ -44,6 +44,11 @@ jobs:
           poetry install --no-interaction --with dev --all-extras
           poetry show --tree
 
+      - uses: hashicorp/setup-terraform@v2
+        name: Setup Terraform
+        with:
+          terraform_version: 1.4.4
+
       - uses: terraform-linters/setup-tflint@v3
         name: Setup TFLint
         with:
