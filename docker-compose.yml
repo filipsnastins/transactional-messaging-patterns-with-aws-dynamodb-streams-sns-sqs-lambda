@@ -7,7 +7,15 @@ services:
       - 9701:9700
     volumes:
       - ./service-customers:/app
-    command: ['tomodachi', 'run', 'src/entrypoints/tomodachi_app.py']
+    environment:
+      AWS_REGION: eu-west-1
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing
+      AWS_SNS_ENDPOINT_URL: http://localstack:4566
+      AWS_SQS_ENDPOINT_URL: http://localstack:4566
+      AWS_DYNAMODB_ENDPOINT_URL: http://localstack:4566
+      DYNAMODB_AGGREGATE_TABLE_NAME: customers
+      DYNAMODB_OUTBOX_TABLE_NAME: customers-outbox
   localstack:
     image: localstack/localstack:2.2.0
     ports:
@@ -17,4 +25,7 @@ services:
     ports:
       - 8001:8001
     environment:
-      - DYNAMO_ENDPOINT=http://localstack:4566
+      AWS_REGION: eu-west-1
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing
+      DYNAMO_ENDPOINT: http://localstack:4566
