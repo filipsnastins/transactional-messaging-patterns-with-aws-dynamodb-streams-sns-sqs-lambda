@@ -32,39 +32,11 @@ resource "aws_lb_listener" "listener" {
 
   default_action {
     type = "fixed-response"
+
     fixed_response {
       content_type = "text/plain"
       status_code  = "404"
-    }
-  }
-}
-
-resource "aws_lb_listener_rule" "service_customers_route" {
-  listener_arn = aws_lb_listener.listener.arn
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.service_customers_target_group.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/customer*"]
-    }
-  }
-}
-
-resource "aws_lb_listener_rule" "service_orders_route" {
-  listener_arn = aws_lb_listener.listener.arn
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.service_orders_target_group.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/order*"]
+      message_body = "Not Found"
     }
   }
 }

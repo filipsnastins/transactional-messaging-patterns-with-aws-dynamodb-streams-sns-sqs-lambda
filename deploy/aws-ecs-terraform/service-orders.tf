@@ -1,4 +1,9 @@
-resource "aws_lb_target_group" "service_orders_target_group" {
+resource "aws_ecr_repository" "service_orders" {
+  name = "${var.environment}-tomodachi-transactional-outbox-service-orders"
+}
+
+
+resource "aws_lb_target_group" "service_orders" {
   name        = "${var.environment}-t-outbox--orders-tg"
   port        = 80
   protocol    = "HTTP"
@@ -9,6 +14,21 @@ resource "aws_lb_target_group" "service_orders_target_group" {
     path     = "/orders/health"
     timeout  = 5
     interval = 10
+  }
+}
+
+resource "aws_lb_listener_rule" "service_orders" {
+  listener_arn = aws_lb_listener.listener.arn
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.service_orders.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/order*"]
+    }
   }
 }
 
@@ -32,13 +52,13 @@ resource "aws_ecs_task_definition" "service_orders" {
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/ecs/${var.environment}-tomodachi-transactional-outbox--service-orders",
-          "awslogs-region": "eu-west-1",
+          "awslogs-region": "${var.region}",
           "awslogs-create-group": "true",
           "awslogs-stream-prefix": "ecs"
         }
       },
       "environment": [
-        { "name": "AWS_REGION", "value": "eu-west-1" },
+        { "name": "AWS_REGION", "value": "${var.region}" },
         { "name": "AWS_SNS_TOPIC_PREFIX", "value": "${var.environment}" },
         { "name": "AWS_SQS_QUEUE_NAME_PREFIX", "value": "${var.environment}" },
         { "name": "DYNAMODB_AGGREGATE_TABLE_NAME", "value": "${var.environment}-orders" },
@@ -63,7 +83,7 @@ resource "aws_ecs_service" "service_orders" {
   desired_count   = 1
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.service_orders_target_group.arn
+    target_group_arn = aws_lb_target_group.service_orders.arn
     container_name   = "service-orders"
     container_port   = 9700
   }
@@ -81,7 +101,7 @@ resource "aws_ecs_service" "service_orders" {
       log_driver = "awslogs"
       options = {
         awslogs-group         = "/ecs/${var.environment}-tomodachi-transactional-outbox--service-orders",
-        awslogs-region        = "eu-west-1",
+        awslogs-region        = var.region,
         awslogs-create-group  = "true",
         awslogs-stream-prefix = "ecs"
       }

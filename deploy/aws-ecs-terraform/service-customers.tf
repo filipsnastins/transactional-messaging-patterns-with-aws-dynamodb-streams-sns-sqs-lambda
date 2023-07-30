@@ -1,4 +1,8 @@
-resource "aws_lb_target_group" "service_customers_target_group" {
+resource "aws_ecr_repository" "service_customers" {
+  name = "${var.environment}-tomodachi-transactional-outbox-service-customers"
+}
+
+resource "aws_lb_target_group" "service_customers" {
   name        = "${var.environment}-t-outbox--customers-tg"
   port        = 80
   protocol    = "HTTP"
@@ -9,6 +13,21 @@ resource "aws_lb_target_group" "service_customers_target_group" {
     path     = "/customers/health"
     timeout  = 5
     interval = 10
+  }
+}
+
+resource "aws_lb_listener_rule" "service_customers" {
+  listener_arn = aws_lb_listener.listener.arn
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.service_customers.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/customer*"]
+    }
   }
 }
 
@@ -32,13 +51,13 @@ resource "aws_ecs_task_definition" "service_customers" {
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/ecs/${var.environment}-tomodachi-transactional-outbox--service-customers",
-          "awslogs-region": "eu-west-1",
+          "awslogs-region": "${var.region}",
           "awslogs-create-group": "true",
           "awslogs-stream-prefix": "ecs"
         }
       },
       "environment": [
-        { "name": "AWS_REGION", "value": "eu-west-1" },
+        { "name": "AWS_REGION", "value": "${var.region}" },
         { "name": "AWS_SNS_TOPIC_PREFIX", "value": "${var.environment}" },
         { "name": "AWS_SQS_QUEUE_NAME_PREFIX", "value": "${var.environment}" },
         { "name": "DYNAMODB_AGGREGATE_TABLE_NAME", "value": "${var.environment}-customers" },
@@ -63,7 +82,7 @@ resource "aws_ecs_service" "service_customers" {
   desired_count   = 1
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.service_customers_target_group.arn
+    target_group_arn = aws_lb_target_group.service_customers.arn
     container_name   = "service-customers"
     container_port   = 9700
   }
@@ -81,7 +100,7 @@ resource "aws_ecs_service" "service_customers" {
       log_driver = "awslogs"
       options = {
         awslogs-group         = "/ecs/${var.environment}-tomodachi-transactional-outbox--service-customers",
-        awslogs-region        = "eu-west-1",
+        awslogs-region        = var.region,
         awslogs-create-group  = "true",
         awslogs-stream-prefix = "ecs"
       }
