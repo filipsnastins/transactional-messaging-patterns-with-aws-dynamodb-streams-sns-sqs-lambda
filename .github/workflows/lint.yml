@@ -44,5 +44,10 @@ jobs:
           poetry install --no-interaction --with dev --all-extras
           poetry show --tree
 
+      - uses: terraform-linters/setup-tflint@v3
+        name: Setup TFLint
+        with:
+          tflint_version: v0.47.0
+
       - name: Run commit hooks
         run: SKIP=test poetry run hooks
