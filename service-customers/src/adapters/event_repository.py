@@ -43,16 +43,6 @@ class DynamoDBEventRepository(AbstractEventRepository):
             topic = self.topics[type(event)]
             self.session.add(
                 {
-                    "ConditionCheck": {
-                        "TableName": self.table_name,
-                        "Key": {"PK": {"S": f"EVENT#{event.event_id}"}},
-                        "ConditionExpression": "attribute_not_exists(PK)",
-                    }
-                },
-                raise_on_condition_check_failure=EventAlreadyPublishedError(event.event_id),
-            )
-            self.session.add(
-                {
                     "Put": {
                         "TableName": self.table_name,
                         "Item": {
@@ -62,8 +52,10 @@ class DynamoDBEventRepository(AbstractEventRepository):
                             "Message": {"S": json.dumps(event.to_dict())},
                             "CreatedAt": {"S": event.created_at.isoformat()},
                         },
+                        "ConditionExpression": "attribute_not_exists(PK)",
                     }
-                }
+                },
+                raise_on_condition_check_failure=EventAlreadyPublishedError(event.event_id),
             )
             logger.info(
                 "dynamodb_event_repository__event_published",
