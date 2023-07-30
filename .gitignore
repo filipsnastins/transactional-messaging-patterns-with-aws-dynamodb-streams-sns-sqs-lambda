@@ -148,6 +148,8 @@ https://github.com/github/gitignore/blob/main/Terraform.gitignore
 # Local .terraform directories
 **/.terraform/*
 
+.terraform.lock.hcl
+
 # .tfstate files
 *.tfstate
 *.tfstate.*
