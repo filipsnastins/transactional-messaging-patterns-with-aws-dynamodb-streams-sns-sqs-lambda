@@ -6,7 +6,6 @@ from adapters import dynamodb
 from adapters.customer_repository import AbstractCustomerRepository, DynamoDBCustomerRepository
 from adapters.event_repository import AbstractEventRepository, DynamoDBEventRepository
 from service_layer.topics import CUSTOMER_TOPICS_MAP
-from tomodachi.envelope.json_base import JsonBase
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
@@ -48,8 +47,8 @@ class DynamoDBUnitOfWork(AbstractUnitOfWork):
     @staticmethod
     def create() -> "DynamoDBUnitOfWork":
         session = dynamodb.DynamoDBSession()
-        customers = DynamoDBCustomerRepository(session)
-        events = DynamoDBEventRepository(session, envelope=JsonBase(), topics=CUSTOMER_TOPICS_MAP)
+        customers = DynamoDBCustomerRepository(dynamodb.get_aggregate_table_name(), session)
+        events = DynamoDBEventRepository(dynamodb.get_outbox_table_name(), session, CUSTOMER_TOPICS_MAP)
         return DynamoDBUnitOfWork(session, customers, events)
 
     async def commit(self) -> None:
