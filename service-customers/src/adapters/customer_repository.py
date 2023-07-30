@@ -30,16 +30,6 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
     async def create(self, customer: Customer) -> None:
         self.session.add(
             {
-                "ConditionCheck": {
-                    "TableName": self.table_name,
-                    "Key": {"PK": {"S": f"CUSTOMER#{customer.id}"}},
-                    "ConditionExpression": "attribute_not_exists(PK)",
-                }
-            },
-            raise_on_condition_check_failure=CustomerAlreadyExistsError(customer.id),
-        )
-        self.session.add(
-            {
                 "Put": {
                     "TableName": self.table_name,
                     "Item": {
@@ -56,8 +46,10 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
                         "CreatedAt": {"S": customer.created_at.isoformat()},
                         "Version": {"N": str(customer.version)},
                     },
+                    "ConditionExpression": "attribute_not_exists(PK)",
                 }
-            }
+            },
+            raise_on_condition_check_failure=CustomerAlreadyExistsError(customer.id),
         )
         logger.info("dynamodb_customer_repository__customer_created", customer_id=customer.id)
 

@@ -19,15 +19,6 @@ class FailingDynamoDBCustomerRepository(DynamoDBCustomerRepository):
     async def create(self, customer: Customer) -> None:
         self.session.add(
             {
-                "ConditionCheck": {
-                    "TableName": self.table_name,
-                    "Key": {"PK": {"S": f"CUSTOMER#{customer.id}"}},
-                    "ConditionExpression": "attribute_not_exists(PK)",
-                }
-            },
-        )
-        self.session.add(
-            {
                 "Put": {
                     "TableName": self.table_name,
                     "Item": {
