@@ -3,8 +3,9 @@ import uuid
 from dataclasses import dataclass
 from decimal import Decimal
 
-from customers.events import CustomerCreatedEvent, Event
 from stockholm import Money
+
+from customers.events import CustomerCreatedEvent, Event
 
 
 class CustomerCreditLimitExceededError(Exception):
@@ -39,7 +40,7 @@ class Customer:
         self.events = []
 
     @staticmethod
-    def create(name: str, credit_limit: Decimal) -> "Customer":
+    def create(name: str, credit_limit: Decimal, correlation_id: uuid.UUID) -> "Customer":
         customer = Customer(
             id=uuid.uuid4(),
             name=name,
@@ -50,6 +51,7 @@ class Customer:
         )
         event = CustomerCreatedEvent(
             customer_id=customer.id,
+            correlation_id=correlation_id,
             name=customer.name,
             credit_limit=customer.credit_limit,
             created_at=customer.created_at,

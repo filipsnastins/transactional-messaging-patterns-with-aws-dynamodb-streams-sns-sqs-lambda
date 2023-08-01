@@ -1,5 +1,9 @@
 # tomodachi-transactional-outbox
 
+```bash
+poetry build; cp dist/tomodachi_transactional_outbox-0.0.0.tar.gz service-customers/vendors; cp dist/tomodachi_transactional_outbox-0.0.0.tar.gz service-orders/vendors
+```
+
 ## Resources and acknowledgements
 
 - Application example and domain problem:

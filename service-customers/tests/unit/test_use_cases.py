@@ -3,12 +3,14 @@ from decimal import Decimal
 
 import pytest
 from adapters.customer_repository import AbstractCustomerRepository
-from adapters.event_repository import AbstractEventRepository, SavedEvent
+from adapters.event_repository import AbstractEventRepository
 from customers.commands import CreateCustomerCommand
 from customers.customer import Customer
 from customers.events import CustomerCreatedEvent
 from service_layer import use_cases
 from service_layer.unit_of_work import AbstractUnitOfWork
+
+from tomodachi_transactional_outbox.message import Message
 
 
 class FakeCustomerRepository(AbstractCustomerRepository):
@@ -30,7 +32,7 @@ class FakeEventRepository(AbstractEventRepository):
     async def publish(self, events: list[CustomerCreatedEvent]) -> None:
         self.events.extend(events)
 
-    async def get(self, event_id: uuid.UUID) -> SavedEvent | None:
+    async def get(self, event_id: uuid.UUID) -> Message | None:
         pass
 
 

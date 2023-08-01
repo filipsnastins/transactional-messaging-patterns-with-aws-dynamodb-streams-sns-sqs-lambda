@@ -1,8 +1,9 @@
 import os
 
-import outbox
 import structlog
 from adapters import clients, dynamodb
+
+from tomodachi_transactional_outbox import dynamodb_streams
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
@@ -15,7 +16,7 @@ async def create_dynamodb_streams_outbox_lambda() -> None:
         clients.get_iam_client() as iam_client,
         clients.get_dynamodb_client() as dynamodb_client,
     ):
-        await outbox.create_ddb_streams_outbox_lambda(
+        await dynamodb_streams.create_outbox_lambda(
             lambda_client,
             iam_client,
             dynamodb_client,

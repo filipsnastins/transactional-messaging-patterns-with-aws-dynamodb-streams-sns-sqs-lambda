@@ -1,1 +1,0 @@
-# outbox-dynamodb-streams
