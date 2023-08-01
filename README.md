@@ -4,10 +4,8 @@
 
 ```bash
 poetry build; cp dist/tomodachi_transactional_outbox-0.0.0.tar.gz service-customers/vendors; cp dist/tomodachi_transactional_outbox-0.0.0.tar.gz service-orders/vendors
-cd service-customers; poetry update;
-cd ..
-cd service-orders; poetry update;
-cd ..
+cd service-customers; poetry update; cd ..
+cd service-orders; poetry update; cd ..
 ```
 
 - Tail Lambda logs when running locally with Docker Compose
