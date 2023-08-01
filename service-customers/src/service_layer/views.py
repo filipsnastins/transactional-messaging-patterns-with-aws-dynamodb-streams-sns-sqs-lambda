@@ -1,6 +1,7 @@
 import uuid
 
 import structlog
+
 from service_layer.response import GetCustomerNotFoundResponse, GetCustomerResponse
 from service_layer.unit_of_work import AbstractUnitOfWork
 

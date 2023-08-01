@@ -4,8 +4,9 @@ from dataclasses import asdict, dataclass
 from decimal import Decimal
 from typing import Protocol
 
-from customers.customer import Customer
 from stockholm import Money
+
+from customers.customer import Customer
 
 
 class Response(Protocol):

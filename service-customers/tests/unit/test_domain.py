@@ -3,14 +3,16 @@ import uuid
 from decimal import Decimal
 
 import pytest
+from freezegun import freeze_time
+
 from customers.customer import Customer, CustomerCreditLimitExceededError
 from customers.events import CustomerCreatedEvent
-from freezegun import freeze_time
 
 
 @freeze_time("2021-02-03 12:30:00")
 def test_create_new_customer_model() -> None:
-    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
+    correlation_id = uuid.uuid4()
+    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=correlation_id)
 
     assert isinstance(customer.id, uuid.UUID)
     assert customer.name == "John Doe"
@@ -21,6 +23,7 @@ def test_create_new_customer_model() -> None:
     assert customer.events == [
         CustomerCreatedEvent(
             event_id=customer.events[0].event_id,
+            correlation_id=correlation_id,
             customer_id=customer.id,
             name=customer.name,
             credit_limit=customer.credit_limit,
@@ -126,7 +129,7 @@ def test_customer_model_comparison() -> None:
     ],
 )
 def test_reserve_credit(credit_limit: Decimal, order_total: Decimal, expected: Decimal) -> None:
-    customer = Customer.create(name="John Doe", credit_limit=credit_limit)
+    customer = Customer.create(name="John Doe", credit_limit=credit_limit, correlation_id=uuid.uuid4())
 
     customer.reserve_credit(id=uuid.uuid4(), order_total=order_total)
 
@@ -134,7 +137,7 @@ def test_reserve_credit(credit_limit: Decimal, order_total: Decimal, expected: D
 
 
 def test_insufficient_credit_raises_credit_limit_exceeded_error() -> None:
-    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
+    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
 
     with pytest.raises(CustomerCreditLimitExceededError):
         customer.reserve_credit(id=uuid.uuid4(), order_total=Decimal("200.01"))
@@ -143,7 +146,7 @@ def test_insufficient_credit_raises_credit_limit_exceeded_error() -> None:
 
 
 def test_unreserve_credit() -> None:
-    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
+    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
     id = uuid.uuid4()
     customer.reserve_credit(id=id, order_total=Decimal("100.00"))
 
@@ -153,7 +156,7 @@ def test_unreserve_credit() -> None:
 
 
 def test_unreserve_non_existing_order_raises_key_error() -> None:
-    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
+    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
 
     with pytest.raises(KeyError):
         customer.unreserve_credit(id=uuid.uuid4())

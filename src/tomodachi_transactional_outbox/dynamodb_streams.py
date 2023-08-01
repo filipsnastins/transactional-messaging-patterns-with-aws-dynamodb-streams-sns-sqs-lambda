@@ -1,21 +1,22 @@
 import json
 from pathlib import Path
 
-from outbox.utils import create_in_memory_zip
 from types_aiobotocore_dynamodb import DynamoDBClient
 from types_aiobotocore_iam import IAMClient
 from types_aiobotocore_iam.type_defs import CreateRoleResponseTypeDef
 from types_aiobotocore_lambda import LambdaClient
 from types_aiobotocore_lambda.type_defs import FunctionConfigurationResponseMetadataTypeDef
 
+from tomodachi_transactional_outbox.utils import create_in_memory_zip
+
 __all__ = [
-    "create_ddb_streams_outbox_lambda",
+    "create_outbox_lambda",
 ]
 
 DEFAULT_LAMBDA_PATH = Path(__file__).parent / "lambda"
 
 
-async def create_ddb_streams_outbox_lambda(
+async def create_outbox_lambda(
     lambda_client: LambdaClient,
     iam_client: IAMClient,
     dynamodb_client: DynamoDBClient,

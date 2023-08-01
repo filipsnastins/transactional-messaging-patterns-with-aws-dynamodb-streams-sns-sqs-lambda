@@ -25,6 +25,13 @@ jobs:
           load: true
           context: ${{ env.SERVICE_CONTEXT }}
 
+      - name: Run commit hooks
+        run: |
+          docker run \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          "${{ steps.docker_build_dev_image.outputs.imageid }}" \
+          bash -c "git init . && SKIP=test poetry run hooks"
+
       - name: Build Docker image - Release
         id: docker_build_production_image
         uses: docker/build-push-action@v4

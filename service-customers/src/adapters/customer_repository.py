@@ -4,6 +4,7 @@ from decimal import Decimal
 from typing import Protocol
 
 import structlog
+
 from adapters import clients, dynamodb
 from customers.customer import Customer
 

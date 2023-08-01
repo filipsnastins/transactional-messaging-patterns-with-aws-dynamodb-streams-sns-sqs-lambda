@@ -2,7 +2,7 @@ import abc
 from typing import Any
 
 import structlog
-from adapters import dynamodb
+from adapters import clients, dynamodb
 from adapters.customer_repository import AbstractCustomerRepository, DynamoDBCustomerRepository
 from adapters.event_repository import AbstractEventRepository, DynamoDBEventRepository
 from service_layer.topics import CUSTOMER_TOPICS_MAP
@@ -56,7 +56,7 @@ class DynamoDBUnitOfWork(AbstractUnitOfWork):
         if not items:
             logger.debug("dynamodb_unit_of_work__nothing_to_commit")
             return
-        async with dynamodb.get_dynamodb_client() as client:
+        async with clients.get_dynamodb_client() as client:
             try:
                 transact_items = [item["transact_item"] for item in items]
                 await client.transact_write_items(TransactItems=transact_items)

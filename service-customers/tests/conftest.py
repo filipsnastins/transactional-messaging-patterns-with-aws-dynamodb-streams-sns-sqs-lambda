@@ -5,13 +5,14 @@ from typing import AsyncGenerator, Generator, Iterator, cast
 import httpx
 import pytest
 import pytest_asyncio
-from adapters import dynamodb
 from docker.models.images import Image as DockerImage
 from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.containers import MotoContainer, TomodachiContainer
 from tomodachi_testcontainers.utils import get_available_port
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
+
+from adapters import dynamodb
 
 
 @pytest.fixture(scope="session")
@@ -24,7 +25,7 @@ def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
 async def _mock_dynamodb(
     monkeypatch: pytest.MonkeyPatch,
     moto_container: MotoContainer,
-    _reset_moto_container: None,
+    _reset_moto_container_on_teardown: None,
 ) -> None:
     aws_config = moto_container.get_aws_client_config()
     monkeypatch.setenv("AWS_REGION", aws_config["region_name"])
@@ -76,7 +77,7 @@ def tomodachi_container(
     tomodachi_image: DockerImage,
     moto_container: MotoContainer,
     _create_topics_and_queues: None,
-    _reset_moto_container: None,
+    _reset_moto_container_on_teardown: None,
 ) -> Generator[TomodachiContainer, None, None]:
     aws_config = moto_container.get_aws_client_config()
     endpoint_internal_url = moto_container.get_internal_url()

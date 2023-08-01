@@ -3,8 +3,9 @@ from contextvars import ContextVar
 from typing import TypedDict
 
 import structlog
-from adapters import clients
 from types_aiobotocore_dynamodb.type_defs import TransactWriteItemTypeDef
+
+from adapters import clients
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 

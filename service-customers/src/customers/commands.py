@@ -1,14 +1,16 @@
-from dataclasses import dataclass
+import uuid
+from dataclasses import dataclass, field
 from decimal import Decimal
 
 from stockholm import Money
 
 
+@dataclass(kw_only=True)
 class Command:
-    pass
+    correlation_id: uuid.UUID = field(default_factory=uuid.uuid4)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CreateCustomerCommand(Command):
     name: str
     credit_limit: Decimal

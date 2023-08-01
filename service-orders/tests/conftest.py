@@ -9,7 +9,9 @@ from tomodachi_testcontainers.utils import get_available_port
 
 
 @pytest.fixture()
-def tomodachi_container(tomodachi_image: DockerImage) -> Generator[TomodachiContainer, None, None]:
+def tomodachi_container(
+    tomodachi_image: DockerImage,
+) -> Generator[TomodachiContainer, None, None]:
     with TomodachiContainer(image=str(tomodachi_image.id), edge_port=get_available_port()) as container:
         yield cast(TomodachiContainer, container)
 

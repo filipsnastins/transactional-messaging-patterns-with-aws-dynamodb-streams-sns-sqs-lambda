@@ -1,39 +1,33 @@
 import datetime
 import json
 import uuid
-from dataclasses import dataclass
 from typing import Protocol
 
 import structlog
 from adapters import clients, dynamodb
 from customers.events import Event
 
+from tomodachi_transactional_outbox.message import Message
+
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
+
+TopicsMap = dict[type[Event], str]
 
 
 class EventAlreadyPublishedError(Exception):
     pass
 
 
-@dataclass
-class SavedEvent:
-    event_id: uuid.UUID
-    topic: str
-    message: str
-    created_at: datetime.datetime
-    published_at: datetime.datetime | None = None
-
-
 class AbstractEventRepository(Protocol):
     async def publish(self, events: list[Event]) -> None:
         ...
 
-    async def get(self, event_id: uuid.UUID) -> SavedEvent | None:
+    async def get(self, event_id: uuid.UUID) -> Message | None:
         ...
 
 
 class DynamoDBEventRepository(AbstractEventRepository):
-    def __init__(self, table_name: str, session: dynamodb.DynamoDBSession, topics: dict[type[Event], str]) -> None:
+    def __init__(self, table_name: str, session: dynamodb.DynamoDBSession, topics: TopicsMap) -> None:
         self.table_name = table_name
         self.session = session
         self.topics = topics
@@ -48,9 +42,13 @@ class DynamoDBEventRepository(AbstractEventRepository):
                         "Item": {
                             "PK": {"S": f"EVENT#{event.event_id}"},
                             "EventId": {"S": str(event.event_id)},
+                            "AggregateId": {"S": str(event.customer_id)},
+                            "CorrelationId": {"S": str(event.correlation_id)},
                             "Topic": {"S": topic},
                             "Message": {"S": json.dumps(event.to_dict())},
                             "CreatedAt": {"S": event.created_at.isoformat()},
+                            "Dispatched": {"BOOL": False},
+                            "DispatchedAt": {"NULL": True},
                         },
                         "ConditionExpression": "attribute_not_exists(PK)",
                     }
@@ -64,24 +62,23 @@ class DynamoDBEventRepository(AbstractEventRepository):
                 topic=topic,
             )
 
-    async def get(self, event_id: uuid.UUID) -> SavedEvent | None:
+    async def get(self, event_id: uuid.UUID) -> Message | None:
         async with clients.get_dynamodb_client() as client:
-            response = await client.get_item(
-                TableName=self.table_name,
-                Key={"PK": {"S": f"EVENT#{event_id}"}},
-            )
+            response = await client.get_item(TableName=self.table_name, Key={"PK": {"S": f"EVENT#{event_id}"}})
             item = response.get("Item")
             if not item:
                 logger.debug("dynamodb_event_repository__event_not_found", event_id=event_id)
                 return None
-            if published_at := item.get("PublishedAt"):
-                published_at = datetime.datetime.fromisoformat(published_at["S"])
-            else:
-                published_at = None
-            return SavedEvent(
+            dispatched_at = (
+                datetime.datetime.fromisoformat(item["DispatchedAt"]["S"]) if item["DispatchedAt"].get("S") else None
+            )
+            return Message(
                 event_id=uuid.UUID(item["EventId"]["S"]),
+                aggregate_id=uuid.UUID(item["AggregateId"]["S"]),
+                correlation_id=uuid.UUID(item["CorrelationId"]["S"]),
                 topic=item["Topic"]["S"],
                 message=item["Message"]["S"],
                 created_at=datetime.datetime.fromisoformat(item["CreatedAt"]["S"]),
-                published_at=published_at,
+                dispatched=item["Dispatched"]["BOOL"],
+                dispatched_at=dispatched_at,
             )
