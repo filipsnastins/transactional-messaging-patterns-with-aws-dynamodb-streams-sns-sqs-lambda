@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "src"
+name = "tomodachi-transactional-outbox"
 version = "0.0.0"
 description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
@@ -9,7 +9,13 @@ python = "^3.11"
 stockholm = "^0.5.5"
 structlog = "^23.1.0"
 tomodachi = "^0.25.0"
-types-aiobotocore = { extras = ["dynamodb", "sns", "sqs"], version = "^2.5.2" }
+types-aiobotocore = { extras = [
+    "dynamodb",
+    "iam",
+    "lambda",
+    "sns",
+    "sqs",
+], version = "^2.5.2" }
 uvloop = "^0.17.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -44,7 +50,7 @@ pytest-asyncio = "^0.21.1"
 pytest-bdd = "^6.1.1"
 pytest-cov = "^4.1.0"
 ruff = "^0.0.277"
-tomodachi-testcontainers = "^0.2.2"
+tomodachi-testcontainers = "^0.2.3"
 busypie = "^0.5.1"
 
 [build-system]

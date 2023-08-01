@@ -1,4 +1,4 @@
-# Deploying to AWS Elastic Container Service (ECS) with Terraform
+# Deploying Customers and Orders to AWS Elastic Container Service (ECS) with Terraform
 
 - Application stack:
 

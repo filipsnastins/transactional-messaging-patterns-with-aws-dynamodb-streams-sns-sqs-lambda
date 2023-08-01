@@ -3,8 +3,7 @@ from contextvars import ContextVar
 from typing import TypedDict
 
 import structlog
-from aiobotocore.session import get_session
-from types_aiobotocore_dynamodb import DynamoDBClient
+from adapters import clients
 from types_aiobotocore_dynamodb.type_defs import TransactWriteItemTypeDef
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
@@ -37,17 +36,6 @@ class DynamoDBSession:
         self._session.get().clear()
 
 
-def get_dynamodb_client() -> DynamoDBClient:
-    session = get_session()
-    return session.create_client(
-        "dynamodb",
-        region_name=os.environ["AWS_REGION"],
-        aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-        endpoint_url=os.environ.get("AWS_DYNAMODB_ENDPOINT_URL"),
-    )
-
-
 def get_aggregate_table_name() -> str:
     return os.environ["DYNAMODB_AGGREGATE_TABLE_NAME"]
 
@@ -58,7 +46,7 @@ def get_outbox_table_name() -> str:
 
 async def create_aggregate_table() -> None:
     table_name = get_aggregate_table_name()
-    async with get_dynamodb_client() as client:
+    async with clients.get_dynamodb_client() as client:
         try:
             await client.create_table(
                 TableName=table_name,
@@ -84,7 +72,7 @@ async def create_aggregate_table() -> None:
 
 async def create_outbox_table() -> None:
     table_name = get_outbox_table_name()
-    async with get_dynamodb_client() as client:
+    async with clients.get_dynamodb_client() as client:
         try:
             await client.create_table(
                 TableName=table_name,
@@ -101,6 +89,10 @@ async def create_outbox_table() -> None:
                     },
                 ],
                 BillingMode="PAY_PER_REQUEST",
+                StreamSpecification={
+                    "StreamEnabled": True,
+                    "StreamViewType": "NEW_AND_OLD_IMAGES",
+                },
             )
         except client.exceptions.ResourceInUseException:
             logger.info("dynamodb_table_already_exists", table_name=table_name)

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 import structlog
-from adapters import dynamodb
+from adapters import clients, dynamodb
 from customers.events import Event
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
@@ -65,7 +65,7 @@ class DynamoDBEventRepository(AbstractEventRepository):
             )
 
     async def get(self, event_id: uuid.UUID) -> SavedEvent | None:
-        async with dynamodb.get_dynamodb_client() as client:
+        async with clients.get_dynamodb_client() as client:
             response = await client.get_item(
                 TableName=self.table_name,
                 Key={"PK": {"S": f"EVENT#{event_id}"}},

@@ -22,7 +22,9 @@ def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
 
 @pytest_asyncio.fixture()
 async def _mock_dynamodb(
-    monkeypatch: pytest.MonkeyPatch, moto_container: MotoContainer, _reset_moto_container: None
+    monkeypatch: pytest.MonkeyPatch,
+    moto_container: MotoContainer,
+    _reset_moto_container: None,
 ) -> None:
     aws_config = moto_container.get_aws_client_config()
     monkeypatch.setenv("AWS_REGION", aws_config["region_name"])
@@ -80,6 +82,7 @@ def tomodachi_container(
     endpoint_internal_url = moto_container.get_internal_url()
     with (
         TomodachiContainer(image=str(tomodachi_image.id), edge_port=get_available_port())
+        .with_env("ENVIRONMENT", "autotest")
         .with_env("AWS_REGION", aws_config["region_name"])
         .with_env("AWS_ACCESS_KEY_ID", aws_config["aws_access_key_id"])
         .with_env("AWS_SECRET_ACCESS_KEY", aws_config["aws_secret_access_key"])
