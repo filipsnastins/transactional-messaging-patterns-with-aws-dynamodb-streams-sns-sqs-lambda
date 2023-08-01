@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import Protocol
 
 import structlog
-from adapters import dynamodb
+from adapters import clients, dynamodb
 from customers.customer import Customer
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
@@ -54,7 +54,7 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
         logger.info("dynamodb_customer_repository__customer_created", customer_id=customer.id)
 
     async def get(self, customer_id: uuid.UUID) -> Customer | None:
-        async with dynamodb.get_dynamodb_client() as client:
+        async with clients.get_dynamodb_client() as client:
             response = await client.get_item(
                 TableName=self.table_name,
                 Key={"PK": {"S": f"CUSTOMER#{customer_id}"}},

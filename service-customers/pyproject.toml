@@ -9,7 +9,13 @@ python = "^3.11"
 stockholm = "^0.5.5"
 structlog = "^23.1.0"
 tomodachi = "^0.25.0"
-types-aiobotocore = { extras = ["dynamodb", "sns", "sqs"], version = "^2.5.2" }
+types-aiobotocore = { extras = [
+    "dynamodb",
+    "iam",
+    "lambda",
+    "sns",
+    "sqs",
+], version = "^2.5.2" }
 uvloop = "^0.17.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -19,7 +25,7 @@ httpx = "^0.24.1"
 pytest = "^7.4.0"
 pytest-bdd = "^6.1.1"
 pytest-cov = "^4.1.0"
-tomodachi-testcontainers = "^0.2.2"
+tomodachi-testcontainers = "^0.2.3"
 busypie = "^0.5.1"
 
 [build-system]
