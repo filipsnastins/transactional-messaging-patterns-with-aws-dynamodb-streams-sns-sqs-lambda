@@ -8,7 +8,8 @@ services:
     volumes:
       - ./service-customers:/app
     environment:
-      AWS_REGION: eu-west-1
+      ENVIRONMENT: development
+      AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: testing
       AWS_SECRET_ACCESS_KEY: testing
       AWS_SNS_ENDPOINT_URL: http://localstack:4566
@@ -16,8 +17,26 @@ services:
       AWS_DYNAMODB_ENDPOINT_URL: http://localstack:4566
       DYNAMODB_AGGREGATE_TABLE_NAME: customers
       DYNAMODB_OUTBOX_TABLE_NAME: customers-outbox
+  orders:
+    build: ./service-orders
+    ports:
+      - 9702:9700
+    volumes:
+      - ./service-orders:/app
+    environment:
+      ENVIRONMENT: development
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing
+      AWS_SNS_ENDPOINT_URL: http://localstack:4566
+      AWS_SQS_ENDPOINT_URL: http://localstack:4566
+      AWS_DYNAMODB_ENDPOINT_URL: http://localstack:4566
+      DYNAMODB_AGGREGATE_TABLE_NAME: orders
+      DYNAMODB_OUTBOX_TABLE_NAME: orders-outbox
   localstack:
     image: localstack/localstack:2.2.0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - 4566:4566
   dynamodb-admin:
@@ -25,7 +44,7 @@ services:
     ports:
       - 8001:8001
     environment:
-      AWS_REGION: eu-west-1
+      AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: testing
       AWS_SECRET_ACCESS_KEY: testing
       DYNAMO_ENDPOINT: http://localstack:4566

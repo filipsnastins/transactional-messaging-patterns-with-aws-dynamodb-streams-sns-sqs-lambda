@@ -24,7 +24,7 @@ async def create_outbox_lambda(
     dynamodb_table_name: str,
     lambda_path: Path = DEFAULT_LAMBDA_PATH,
 ) -> None:
-    create_role_response = await create_lambda_dynamodb_streams_outbox_role(
+    create_role_response = await create_lambda_dynamodb_streams_role(
         iam_client, dynamodb_client, environment=environment, dynamodb_table_name=dynamodb_table_name
     )
     lambda_role_arn = create_role_response["Role"]["Arn"]
@@ -48,7 +48,7 @@ async def create_lambda_function(
 ) -> FunctionConfigurationResponseMetadataTypeDef:
     code = create_in_memory_zip(lambda_path)
     return await lambda_client.create_function(
-        FunctionName=f"{environment}-lambda-dynamodb-streams-outbox-{dynamodb_table_name}",
+        FunctionName=f"{environment}-lambda-dynamodb-streams-outbox--{dynamodb_table_name}",
         Runtime="python3.10",
         Role=lambda_role_arn,
         Handler="lambda_function.lambda_handler",
@@ -60,13 +60,13 @@ async def create_lambda_function(
     )
 
 
-async def create_lambda_dynamodb_streams_outbox_role(
+async def create_lambda_dynamodb_streams_role(
     iam_client: IAMClient, dynamodb_client: DynamoDBClient, environment: str, dynamodb_table_name: str
 ) -> CreateRoleResponseTypeDef:
     describe_table_response = await dynamodb_client.describe_table(TableName=dynamodb_table_name)
     table_arn = describe_table_response["Table"]["TableArn"]
     return await iam_client.create_role(
-        RoleName=f"{environment}-role-lambda-dynamodb-streams-outbox-{dynamodb_table_name}",
+        RoleName=f"{environment}-role-lambda-dynamodb-streams-outbox--{dynamodb_table_name}",
         AssumeRolePolicyDocument=json.dumps(
             {
                 "Version": "2012-10-17",
@@ -95,12 +95,15 @@ async def create_lambda_dynamodb_streams_outbox_role(
 async def add_dynamodb_stream_on_lambda(
     lambda_client: LambdaClient, dynamodb_client: DynamoDBClient, dynamodb_table_name: str, function_name: str
 ) -> None:
-    describe_table_response = await dynamodb_client.describe_table(TableName=dynamodb_table_name)
-    event_source_arn = describe_table_response["Table"]["LatestStreamArn"]
     get_function_response = await lambda_client.get_function(FunctionName=function_name)
     function_arn = get_function_response["Configuration"]["FunctionArn"]
+
+    describe_table_response = await dynamodb_client.describe_table(TableName=dynamodb_table_name)
+    event_source_arn = describe_table_response["Table"]["LatestStreamArn"]
+
     await lambda_client.create_event_source_mapping(
-        EventSourceArn=event_source_arn,
         FunctionName=function_arn,
+        EventSourceArn=event_source_arn,
         Enabled=True,
+        StartingPosition="LATEST",
     )

@@ -20,8 +20,8 @@ terraform apply
 - Build and push Docker images to AWS Elastic Container Registry (ECR)
 
 ```bash
-export ECR_HOST=758308814218.dkr.ecr.eu-west-1.amazonaws.com # Insert your ECR host here
-aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin $ECR_HOST
+export ECR_HOST=758308814218.dkr.ecr.us-east-1.amazonaws.com # Insert your ECR host here
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_HOST
 
 export CUSTOMERS_IMAGE=test-45d8-tomodachi-transactional-outbox-service-customers:latest
 docker build -t $CUSTOMERS_IMAGE --platform=linux/amd64 service-customers
