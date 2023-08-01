@@ -1,9 +1,9 @@
 import os
 
 import structlog
-from adapters import clients, dynamodb
-
 from tomodachi_transactional_outbox import dynamodb_streams
+
+from adapters import clients, dynamodb
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 

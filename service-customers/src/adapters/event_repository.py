@@ -4,10 +4,10 @@ import uuid
 from typing import Protocol
 
 import structlog
+from tomodachi_transactional_outbox.message import Message
+
 from adapters import clients, dynamodb
 from customers.events import Event
-
-from tomodachi_transactional_outbox.message import Message
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
