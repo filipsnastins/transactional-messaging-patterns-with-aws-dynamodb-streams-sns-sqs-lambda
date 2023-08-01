@@ -2,6 +2,7 @@ import abc
 from typing import Any
 
 import structlog
+
 from adapters import clients, dynamodb
 from adapters.customer_repository import AbstractCustomerRepository, DynamoDBCustomerRepository
 from adapters.event_repository import AbstractEventRepository, DynamoDBEventRepository

@@ -2,6 +2,8 @@ import uuid
 from decimal import Decimal
 
 import pytest
+from tomodachi_transactional_outbox.message import Message
+
 from adapters.customer_repository import AbstractCustomerRepository
 from adapters.event_repository import AbstractEventRepository
 from customers.commands import CreateCustomerCommand
@@ -9,8 +11,6 @@ from customers.customer import Customer
 from customers.events import CustomerCreatedEvent
 from service_layer import use_cases
 from service_layer.unit_of_work import AbstractUnitOfWork
-
-from tomodachi_transactional_outbox.message import Message
 
 
 class FakeCustomerRepository(AbstractCustomerRepository):
