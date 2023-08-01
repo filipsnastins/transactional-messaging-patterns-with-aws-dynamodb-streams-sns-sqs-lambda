@@ -8,7 +8,7 @@ from adapters.customer_repository import AbstractCustomerRepository
 from adapters.event_repository import AbstractEventRepository
 from customers.commands import CreateCustomerCommand
 from customers.customer import Customer
-from customers.events import CustomerCreatedEvent
+from customers.events import CustomerCreatedEvent, Event
 from service_layer import use_cases
 from service_layer.unit_of_work import AbstractUnitOfWork
 
@@ -26,10 +26,10 @@ class FakeCustomerRepository(AbstractCustomerRepository):
 
 
 class FakeEventRepository(AbstractEventRepository):
-    def __init__(self, events: list[CustomerCreatedEvent]) -> None:
+    def __init__(self, events: list[Event]) -> None:
         self.events = events
 
-    async def publish(self, events: list[CustomerCreatedEvent]) -> None:
+    async def publish(self, events: list[Event]) -> None:
         self.events.extend(events)
 
     async def get(self, event_id: uuid.UUID) -> Message | None:
