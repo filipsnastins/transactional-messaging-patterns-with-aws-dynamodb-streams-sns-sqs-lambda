@@ -2090,15 +2090,12 @@ description = ""
 optional = false
 python-versions = ">=3.11,<4.0"
 files = [
-    {file = "tomodachi_transactional_outbox-0.0.0.tar.gz", hash = "sha256:77eaa45dc3346af6843e2aaf2adacef21a41a78b286e016d4c3ac35e82f28bc2"},
+    {file = "tomodachi_transactional_outbox-0.0.0.tar.gz", hash = "sha256:daa74db3743263d82143f7d26d23159ba4947b2acf49cf0e89160a7274982265"},
 ]
 
 [package.dependencies]
-stockholm = ">=0.5.5,<0.6.0"
 structlog = ">=23.1.0,<24.0.0"
-tomodachi = ">=0.25.0,<0.26.0"
-types-aiobotocore = {version = ">=2.5.2,<3.0.0", extras = ["dynamodb", "iam", "lambda", "sns", "sqs"]}
-uvloop = ">=0.17.0,<0.18.0"
+types-aiobotocore = {version = ">=2.5.2,<3.0.0", extras = ["dynamodb", "iam", "lambda"]}
 
 [package.source]
 type = "file"

@@ -1956,20 +1956,6 @@ files = [
 pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
-name = "stockholm"
-version = "0.5.5"
-description = "Human friendly and flexible package for working with monetary amounts"
-optional = false
-python-versions = ">=3.7,<4.0"
-files = [
-    {file = "stockholm-0.5.5-py3-none-any.whl", hash = "sha256:bc3f66693e329561ca8ce97f8ae7cb3e0bdf61701b947dad797e425462b384fc"},
-    {file = "stockholm-0.5.5.tar.gz", hash = "sha256:7d3f3e05f9a2128d81f4c9fefd34db16019d6771dbad33b3a43e250319234a1b"},
-]
-
-[package.extras]
-protobuf = ["protobuf (>=3.20.0,<5.0.0)"]
-
-[[package]]
 name = "structlog"
 version = "23.1.0"
 description = "Structured Logging for Python"
@@ -2090,15 +2076,12 @@ description = ""
 optional = false
 python-versions = ">=3.11,<4.0"
 files = [
-    {file = "tomodachi_transactional_outbox-0.0.0.tar.gz", hash = "sha256:77eaa45dc3346af6843e2aaf2adacef21a41a78b286e016d4c3ac35e82f28bc2"},
+    {file = "tomodachi_transactional_outbox-0.0.0.tar.gz", hash = "sha256:daa74db3743263d82143f7d26d23159ba4947b2acf49cf0e89160a7274982265"},
 ]
 
 [package.dependencies]
-stockholm = ">=0.5.5,<0.6.0"
 structlog = ">=23.1.0,<24.0.0"
-tomodachi = ">=0.25.0,<0.26.0"
-types-aiobotocore = {version = ">=2.5.2,<3.0.0", extras = ["dynamodb", "iam", "lambda", "sns", "sqs"]}
-uvloop = ">=0.17.0,<0.18.0"
+types-aiobotocore = {version = ">=2.5.2,<3.0.0", extras = ["dynamodb", "iam", "lambda"]}
 
 [package.source]
 type = "file"
