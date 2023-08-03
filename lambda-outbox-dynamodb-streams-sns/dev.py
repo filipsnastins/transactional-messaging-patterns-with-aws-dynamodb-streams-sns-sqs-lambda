@@ -7,9 +7,9 @@ def hooks() -> None:
 
 
 def format() -> None:
-    check_call(["ruff", "check", "--fix", "src", "tests"])
-    check_call(["black", "src", "tests"])
-    check_call(["isort", "src", "tests"])
+    check_call(["ruff", "check", "--fix", "."])
+    check_call(["black", "."])
+    check_call(["isort", "."])
     check_call(
         [
             "autoflake",
@@ -18,22 +18,21 @@ def format() -> None:
             "--remove-all-unused-imports",
             "--remove-unused-variables",
             "--ignore-init-module-imports",
-            "src",
-            "tests",
+            ".",
         ]
     )
 
 
 def lint() -> None:
-    check_call(["ruff", "check", "src", "tests"])
-    check_call(["flake8", "src", "tests"])
-    check_call(["pylint", "src", "tests"])
+    check_call(["ruff", "check", "."])
+    check_call(["flake8", "."])
+    check_call(["pylint", "src/lambda", "tests"])
     check_call(["mypy", "src", "tests"])
     check_call(["bandit", "-r", "src"])
 
 
 def test() -> None:
-    check_call(["pytest", "tests"])
+    check_call(["pytest"])
 
 
 def test_ci() -> None:
@@ -46,6 +45,5 @@ def test_ci() -> None:
             "--cov-report=xml:build/coverage.xml",
             "--cov-report=html:build/htmlcov",
             "--junitxml=build/tests.xml",
-            "tests",
         ]
     )

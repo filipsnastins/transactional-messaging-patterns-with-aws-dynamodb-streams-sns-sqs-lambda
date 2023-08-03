@@ -2076,10 +2076,11 @@ description = ""
 optional = false
 python-versions = ">=3.11,<4.0"
 files = [
-    {file = "tomodachi_transactional_outbox-0.0.0.tar.gz", hash = "sha256:daa74db3743263d82143f7d26d23159ba4947b2acf49cf0e89160a7274982265"},
+    {file = "tomodachi_transactional_outbox-0.0.0.tar.gz", hash = "sha256:58a66414856854db9a480eb9fe72aa16078db135278dcb4d2c023f586f68dd9e"},
 ]
 
 [package.dependencies]
+botocore = ">=1.29.161,<2.0.0"
 structlog = ">=23.1.0,<24.0.0"
 types-aiobotocore = {version = ">=2.5.2,<3.0.0", extras = ["dynamodb", "iam", "lambda"]}
 
