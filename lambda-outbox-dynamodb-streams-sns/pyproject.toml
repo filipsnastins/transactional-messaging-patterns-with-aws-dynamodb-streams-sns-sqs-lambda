@@ -5,13 +5,9 @@ description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.11"
-structlog = "^23.1.0"
-types-aiobotocore = { extras = [
-    "dynamodb",
-    "iam",
-    "lambda",
-], version = "^2.5.2" }
+python = "~3.10"
+aws-lambda-powertools = "^2.22.0"
+types-botocore = { extras = ["dynamodb", "sns"], version = "^1.0.2" }
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "^2.2.0"
@@ -34,14 +30,11 @@ flake8-return = "^1.2.0"
 flake8-simplify = "^0.20.0"
 flake8-use-pathlib = "^0.3.0"
 flake8-warnings = "^0.4.0"
-freezegun = "^1.2.2"
 isort = "^5.12.0"
 mypy = "^1.4.1"
 pre-commit = ">=3.3.3"
 pylint = "^2.17.4"
 pytest = "^7.4.0"
-pytest-asyncio = "^0.21.1"
-pytest-cov = "^4.1.0"
 ruff = "^0.0.277"
 
 [build-system]

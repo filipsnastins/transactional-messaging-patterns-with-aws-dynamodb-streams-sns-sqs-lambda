@@ -2090,7 +2090,7 @@ description = ""
 optional = false
 python-versions = ">=3.11,<4.0"
 files = [
-    {file = "tomodachi_transactional_outbox-0.0.0.tar.gz", hash = "sha256:daa74db3743263d82143f7d26d23159ba4947b2acf49cf0e89160a7274982265"},
+    {file = "tomodachi_transactional_outbox-0.0.0.tar.gz", hash = "sha256:bccd05606b20e8708be62823c643c4210c02bf15e69304f2a1829821e36072fc"},
 ]
 
 [package.dependencies]
@@ -2873,4 +2873,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "a5479cd39f11b7ecefcbb81ad4930da7619d4cd3c83707c0c43e1bce7634daa3"
+content-hash = "18171bff86adb81609df1dd4ebf7108993a0c4ab3c76746682401962c77168a9"
