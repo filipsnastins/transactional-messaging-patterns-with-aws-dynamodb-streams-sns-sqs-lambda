@@ -19,10 +19,14 @@ from types_aiobotocore_sqs import SQSClient
 from tomodachi_transactional_outbox.message import Message
 from tomodachi_transactional_outbox.outbox import create_dynamodb_streams_outbox
 
-pytestmark = pytest.mark.usefixtures("_create_topics_and_queues", "_restart_localstack_container_on_teardown")
+pytestmark = pytest.mark.usefixtures(
+    "_create_topics_and_queues",
+    "_create_table",
+    "_restart_localstack_container_on_teardown",
+)
 
 TEST_TABLE_NAME = "outbox"
-TEST_LAMBDA_PATH = Path(__file__).parent.parent / "lambda"
+TEST_LAMBDA_PATH = Path(__file__).parent.parent / "lambda" / "dynamodb_streams_outbox"
 
 
 @pytest_asyncio.fixture()
@@ -32,6 +36,17 @@ async def _create_topics_and_queues(localstack_sns_client: SNSClient, localstack
         localstack_sqs_client,
         topic="test-topic",
         queue="test-queue",
+    )
+
+
+@pytest_asyncio.fixture()
+async def _create_table(localstack_dynamodb_client: DynamoDBClient) -> None:
+    await localstack_dynamodb_client.create_table(
+        TableName=TEST_TABLE_NAME,
+        KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
+        AttributeDefinitions=[{"AttributeName": "PK", "AttributeType": "S"}],
+        BillingMode="PAY_PER_REQUEST",
+        StreamSpecification={"StreamEnabled": True, "StreamViewType": "NEW_AND_OLD_IMAGES"},
     )
 
 
@@ -51,13 +66,6 @@ async def test_create_dynamodb_streams_outbox(
         message=json.dumps({"message": "test-message"}),
         created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
     )
-    await localstack_dynamodb_client.create_table(
-        TableName=TEST_TABLE_NAME,
-        KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
-        AttributeDefinitions=[{"AttributeName": "PK", "AttributeType": "S"}],
-        BillingMode="PAY_PER_REQUEST",
-        StreamSpecification={"StreamEnabled": True, "StreamViewType": "NEW_AND_OLD_IMAGES"},
-    )
 
     await create_dynamodb_streams_outbox(
         localstack_lambda_client,
@@ -65,26 +73,23 @@ async def test_create_dynamodb_streams_outbox(
         localstack_dynamodb_client,
         environment_variables={
             "AWS_REGION": "us-east-1",
-            "DYNAMODB_OUTBOX_TABLE_NAME": TEST_TABLE_NAME,
             "AWS_ENDPOINT_URL": localstack_container.get_internal_url(),
+            "DYNAMODB_OUTBOX_TABLE_NAME": TEST_TABLE_NAME,
         },
         dynamodb_table_name=TEST_TABLE_NAME,
         lambda_path=TEST_LAMBDA_PATH,
     )
 
     async def _wait_until_lambda_ready() -> None:
-        response = await localstack_lambda_client.invoke(
-            FunctionName="lambda-dynamodb-streams--outbox", InvocationType="DryRun"
-        )
-
-        assert response["StatusCode"] == 204
+        waiter = localstack_lambda_client.get_waiter("function_active_v2")
+        await waiter.wait(FunctionName="lambda-dynamodb-streams--outbox")
 
     await probe_until(_wait_until_lambda_ready)
 
     await localstack_dynamodb_client.put_item(
         TableName=TEST_TABLE_NAME,
         Item={
-            "PK": {"S": f"MESSAGE#{str(message.message_id)}"},
+            "PK": {"S": f"MESSAGE#{message.message_id}"},
             "MessageId": {"S": str(message.message_id)},
             "AggregateId": {"S": str(message.aggregate_id)},
             "CorrelationId": {"S": str(message.correlation_id)},
