@@ -11,12 +11,12 @@ class Message:
     topic: str
     message: str
     created_at: datetime.datetime = field(
-        default_factory=lambda: datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
+        default_factory=lambda: datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
     )
 
 
 @dataclass(kw_only=True)
 class DispatchedMessage(Message):
     dispatched_at: datetime.datetime = field(
-        default_factory=lambda: datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
+        default_factory=lambda: datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
     )

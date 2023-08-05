@@ -9,7 +9,7 @@ def test_message_model() -> None:
     message_id = uuid.uuid4()
     aggregate_id = uuid.uuid4()
     correlation_id = uuid.uuid4()
-    created_at = datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
+    created_at = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
 
     message = Message(
         message_id=message_id,
@@ -32,8 +32,8 @@ def test_dispatched_message_model() -> None:
     message_id = uuid.uuid4()
     aggregate_id = uuid.uuid4()
     correlation_id = uuid.uuid4()
-    created_at = datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
-    dispatched_at = datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
+    created_at = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+    dispatched_at = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
 
     message = DispatchedMessage(
         message_id=message_id,

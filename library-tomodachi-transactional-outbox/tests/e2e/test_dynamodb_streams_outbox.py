@@ -26,7 +26,9 @@ pytestmark = pytest.mark.usefixtures(
 )
 
 TEST_TABLE_NAME = "outbox"
-TEST_LAMBDA_PATH = Path(__file__).parent.parent / "lambda" / "dynamodb_streams_outbox"
+TEST_LAMBDA_PATH = (
+    Path(__file__).parent.parent.parent / "src" / "tomodachi_transactional_outbox" / "lambda_outbox_dynamodb_streams"
+)
 
 
 @pytest_asyncio.fixture()
@@ -64,7 +66,7 @@ async def test_create_dynamodb_streams_outbox(
         correlation_id=uuid.uuid4(),
         topic="test-topic",
         message=json.dumps({"message": "test-message"}),
-        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
+        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
     )
 
     await create_dynamodb_streams_outbox(
