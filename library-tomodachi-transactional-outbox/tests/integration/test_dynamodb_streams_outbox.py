@@ -8,7 +8,7 @@ import pytest
 import pytest_asyncio
 from tomodachi.envelope.json_base import JsonBase
 from tomodachi_testcontainers.clients import snssqs_client
-from tomodachi_testcontainers.containers import LocalStackContainer
+from tomodachi_testcontainers.containers import MotoContainer
 from tomodachi_testcontainers.pytest.async_probes import probe_until
 from types_aiobotocore_dynamodb import DynamoDBClient
 from types_aiobotocore_iam import IAMClient
@@ -22,7 +22,7 @@ from tomodachi_transactional_outbox.outbox import create_dynamodb_streams_outbox
 pytestmark = pytest.mark.usefixtures(
     "_create_topics_and_queues",
     "_create_table",
-    "_restart_localstack_container_on_teardown",
+    "_reset_moto_container_on_teardown",
 )
 
 TEST_TABLE_NAME = "outbox"
@@ -30,18 +30,18 @@ TEST_LAMBDA_PATH = Path(__file__).parent.parent / "lambda" / "dynamodb_streams_o
 
 
 @pytest_asyncio.fixture()
-async def _create_topics_and_queues(localstack_sns_client: SNSClient, localstack_sqs_client: SQSClient) -> None:
+async def _create_topics_and_queues(moto_sns_client: SNSClient, moto_sqs_client: SQSClient) -> None:
     await snssqs_client.subscribe_to(
-        localstack_sns_client,
-        localstack_sqs_client,
+        moto_sns_client,
+        moto_sqs_client,
         topic="test-topic",
         queue="test-queue",
     )
 
 
 @pytest_asyncio.fixture()
-async def _create_table(localstack_dynamodb_client: DynamoDBClient) -> None:
-    await localstack_dynamodb_client.create_table(
+async def _create_table(moto_dynamodb_client: DynamoDBClient) -> None:
+    await moto_dynamodb_client.create_table(
         TableName=TEST_TABLE_NAME,
         KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
         AttributeDefinitions=[{"AttributeName": "PK", "AttributeType": "S"}],
@@ -52,11 +52,11 @@ async def _create_table(localstack_dynamodb_client: DynamoDBClient) -> None:
 
 @pytest.mark.asyncio()
 async def test_create_dynamodb_streams_outbox(
-    localstack_container: LocalStackContainer,
-    localstack_iam_client: IAMClient,
-    localstack_lambda_client: LambdaClient,
-    localstack_dynamodb_client: DynamoDBClient,
-    localstack_sqs_client: SQSClient,
+    moto_container: MotoContainer,
+    moto_iam_client: IAMClient,
+    moto_lambda_client: LambdaClient,
+    moto_dynamodb_client: DynamoDBClient,
+    moto_sqs_client: SQSClient,
 ) -> None:
     message = Message(
         message_id=uuid.uuid4(),
@@ -68,12 +68,12 @@ async def test_create_dynamodb_streams_outbox(
     )
 
     await create_dynamodb_streams_outbox(
-        localstack_lambda_client,
-        localstack_iam_client,
-        localstack_dynamodb_client,
+        moto_lambda_client,
+        moto_iam_client,
+        moto_dynamodb_client,
         environment_variables={
             "AWS_REGION": "us-east-1",
-            "AWS_ENDPOINT_URL": localstack_container.get_internal_url(),
+            "AWS_ENDPOINT_URL": moto_container.get_internal_url(),
             "DYNAMODB_OUTBOX_TABLE_NAME": TEST_TABLE_NAME,
         },
         dynamodb_table_name=TEST_TABLE_NAME,
@@ -81,12 +81,12 @@ async def test_create_dynamodb_streams_outbox(
     )
 
     async def _wait_until_lambda_ready() -> None:
-        waiter = localstack_lambda_client.get_waiter("function_active_v2")
+        waiter = moto_lambda_client.get_waiter("function_active_v2")
         await waiter.wait(FunctionName="lambda-dynamodb-streams--outbox")
 
     await probe_until(_wait_until_lambda_ready)
 
-    await localstack_dynamodb_client.put_item(
+    await moto_dynamodb_client.put_item(
         TableName=TEST_TABLE_NAME,
         Item={
             "PK": {"S": f"MESSAGE#{message.message_id}"},
@@ -100,7 +100,7 @@ async def test_create_dynamodb_streams_outbox(
     )
 
     async def _receive_sns_message() -> None:
-        [message] = await snssqs_client.receive(localstack_sqs_client, "test-queue", JsonBase, dict[str, Any])
+        [message] = await snssqs_client.receive(moto_sqs_client, "test-queue", JsonBase, dict[str, Any])
 
         assert message == {"message": "test-message"}
 
