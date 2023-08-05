@@ -13,13 +13,14 @@ types-aiobotocore = { extras = [
     "lambda",
 ], version = "^2.5.2" }
 
-[tool.poetry.group.lambda]
+[tool.poetry.group.test-lambda]
 optional = true
 
-[tool.poetry.group.lambda.dependencies]
+[tool.poetry.group.test-lambda.dependencies]
 aws-lambda-powertools = "^2.22.0"
-botocore = "^1.29.161"
-types-botocore = { extras = ["sns"], version = "^1.0.2" }
+boto3 = "1.26.161"
+boto3-stubs = { extras = ["dynamodb", "sns"], version = "^1.28.19" }
+tomodachi = "^0.25.0"
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "^2.2.0"
@@ -48,8 +49,9 @@ pre-commit = ">=3.3.3"
 pylint = "^2.17.4"
 pytest = "^7.4.0"
 pytest-cov = "^4.1.0"
+pytest-env = "^0.8.2"
 ruff = "^0.0.277"
-tomodachi-testcontainers = "^0.2.3"
+tomodachi-testcontainers = "^0.3.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -150,3 +152,10 @@ junit_family = "xunit2"
 testpaths = ["tests"]
 norecursedirs = [".venv", "__pycache__", ".git"]
 log_cli_level = "INFO"
+env = [
+    "AWS_ACCESS_KEY_ID=testing",
+    "AWS_SECRET_ACCESS_KEY=testing",
+    "AWS_SECURITY_TOKEN=testing",
+    "AWS_SESSION_TOKEN=testing",
+    "AWS_DEFAULT_REGION=us-east-1",
+]
