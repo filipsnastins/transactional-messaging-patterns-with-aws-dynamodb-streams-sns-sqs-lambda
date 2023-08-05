@@ -5,7 +5,7 @@ description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "~3.10"
 structlog = "^23.1.0"
 types-aiobotocore = { extras = [
     "dynamodb",
@@ -13,10 +13,10 @@ types-aiobotocore = { extras = [
     "lambda",
 ], version = "^2.5.2" }
 
-[tool.poetry.group.test-lambda]
+[tool.poetry.group.lambda]
 optional = true
 
-[tool.poetry.group.test-lambda.dependencies]
+[tool.poetry.group.lambda.dependencies]
 aws-lambda-powertools = "^2.22.0"
 boto3 = "1.26.161"
 boto3-stubs = { extras = ["dynamodb", "sns"], version = "^1.28.19" }
