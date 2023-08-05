@@ -1,3 +1,7 @@
+# library-tomodachi-transactional-outbox
+
+- Get Lambda logs from LocalStack
+
 ```bash
 awslocal --endpoint-url=http://localhost:59792 --region=us-east-1 logs tail /aws/lambda/development-lambda-dynamodb-streams-outbox--customers-outbox
 
@@ -7,6 +11,8 @@ awslocal --endpoint-url=http://localhost:59792 --region=us-east-1 dynamodb list-
 
 awslocal --endpoint-url=http://localhost:59792 --region=us-east-1 lambda list-functions
 ```
+
+- Example of a DynamoDB Stream Record
 
 ```python
 {
@@ -37,4 +43,11 @@ awslocal --endpoint-url=http://localhost:59792 --region=us-east-1 lambda list-fu
     "raw_event": "[SENSITIVE]",
     "user_identity": None,
 }
+```
+
+- <https://github.com/mLupine/docker-lambda/issues/22>
+
+```bash
+docker pull mlupin/docker-lambda:python3.10-arm64-202304201629
+docker tag mlupin/docker-lambda:python3.10-arm64-202304201629 mlupin/docker-lambda:python3.10
 ```
