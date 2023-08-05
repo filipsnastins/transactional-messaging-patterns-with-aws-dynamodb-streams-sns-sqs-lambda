@@ -22,7 +22,7 @@ async def create_lambda_function(
         FunctionName=f"lambda-{function_name}",
         Runtime="python3.10",
         Role=lambda_role_arn,
-        Handler="lambda_function.lambda_handler",
+        Handler="app.lambda_function.lambda_handler",
         Code={"ZipFile": code.read()},
         Publish=True,
         Timeout=30,
