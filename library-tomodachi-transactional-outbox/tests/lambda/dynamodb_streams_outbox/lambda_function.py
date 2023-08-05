@@ -24,7 +24,7 @@ region_name = os.environ["AWS_REGION"]
 endpoint_url = os.environ["AWS_ENDPOINT_URL"]
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Message:
     message_id: uuid.UUID
     aggregate_id: uuid.UUID
@@ -32,8 +32,6 @@ class Message:
     topic: str
     message: str
     created_at: datetime.datetime
-    dispatched: bool = False
-    dispatched_at: datetime.datetime | None = None
 
     @staticmethod
     def from_stream_record(record: StreamRecord | dict[str, Any]) -> "Message":
@@ -44,7 +42,6 @@ class Message:
             topic=record["Topic"],
             message=record["Message"],
             created_at=datetime.datetime.fromisoformat(record["CreatedAt"]).replace(tzinfo=datetime.timezone.utc),
-            dispatched=bool(record.get("Dispatched", False)),
         )
 
 
@@ -55,6 +52,10 @@ def get_sns_client() -> SNSClient:
 @event_source(data_class=DynamoDBStreamEvent)
 def lambda_handler(event: DynamoDBStreamEvent, context: LambdaContext) -> None:
     for record in event.records:
+        if record.event_name != DynamoDBRecordEventName.INSERT:
+            logger.debug("not_dynamodb_insert_event", event_name=record.event_name)
+            continue
+
         if new_image := record.dynamodb and record.dynamodb.new_image:
             message = Message.from_stream_record(new_image)
             logger.info("received_message", message_id=message.message_id)

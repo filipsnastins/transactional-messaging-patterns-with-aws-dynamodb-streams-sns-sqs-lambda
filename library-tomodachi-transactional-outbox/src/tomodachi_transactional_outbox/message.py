@@ -3,7 +3,7 @@ import uuid
 from dataclasses import dataclass, field
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Message:
     message_id: uuid.UUID
     aggregate_id: uuid.UUID
@@ -13,5 +13,10 @@ class Message:
     created_at: datetime.datetime = field(
         default_factory=lambda: datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
     )
-    dispatched: bool = False
-    dispatched_at: datetime.datetime | None = None
+
+
+@dataclass(kw_only=True)
+class DispatchedMessage(Message):
+    dispatched_at: datetime.datetime = field(
+        default_factory=lambda: datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
+    )
