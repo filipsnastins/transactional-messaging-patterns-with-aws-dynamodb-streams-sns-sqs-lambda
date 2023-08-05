@@ -6,13 +6,13 @@ from tomodachi_transactional_outbox.message import Message
 
 
 def test_message_model() -> None:
-    event_id = uuid.uuid4()
+    message_id = uuid.uuid4()
     aggregate_id = uuid.uuid4()
     correlation_id = uuid.uuid4()
     created_at = datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
 
     message = Message(
-        event_id=event_id,
+        message_id=message_id,
         aggregate_id=aggregate_id,
         correlation_id=correlation_id,
         topic="test-topic",
@@ -20,7 +20,7 @@ def test_message_model() -> None:
         created_at=created_at,
     )
 
-    assert message.event_id == event_id
+    assert message.message_id == message_id
     assert message.aggregate_id == aggregate_id
     assert message.correlation_id == correlation_id
     assert message.topic == "test-topic"
