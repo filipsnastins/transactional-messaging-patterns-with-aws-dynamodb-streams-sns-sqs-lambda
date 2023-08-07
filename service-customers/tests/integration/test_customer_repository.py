@@ -54,8 +54,10 @@ async def test_update_customer() -> None:
     assert customer_from_db.name == "John Doe Jr."
     assert customer_from_db.credit_limit == Decimal("399.99")
     assert customer_from_db.credit_reservations == credit_reservations
-    assert customer_from_db.created_at == customer.created_at
     assert customer_from_db.version == 1
+    assert customer_from_db.created_at == customer.created_at
+    assert customer_from_db.updated_at
+    assert customer_from_db.updated_at > customer.created_at
 
 
 @pytest.mark.asyncio()

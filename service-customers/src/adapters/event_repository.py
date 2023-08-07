@@ -1,4 +1,3 @@
-import datetime
 import json
 import uuid
 from typing import Protocol
@@ -8,6 +7,7 @@ from tomodachi_outbox.message import Message
 
 from adapters import clients, dynamodb
 from customers.events import Event
+from utils.time import datetime_to_str, str_to_datetime
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
@@ -46,7 +46,7 @@ class DynamoDBEventRepository(AbstractEventRepository):
                             "CorrelationId": {"S": str(event.correlation_id)},
                             "Topic": {"S": topic},
                             "Message": {"S": json.dumps(event.to_dict())},
-                            "CreatedAt": {"S": event.created_at.isoformat()},
+                            "CreatedAt": {"S": datetime_to_str(event.created_at)},
                         },
                         "ConditionExpression": "attribute_not_exists(PK)",
                     }
@@ -73,5 +73,5 @@ class DynamoDBEventRepository(AbstractEventRepository):
                 correlation_id=uuid.UUID(item["CorrelationId"]["S"]),
                 topic=item["Topic"]["S"],
                 message=item["Message"]["S"],
-                created_at=datetime.datetime.fromisoformat(item["CreatedAt"]["S"]),
+                created_at=str_to_datetime(item["CreatedAt"]["S"]),
             )

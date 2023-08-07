@@ -5,6 +5,8 @@ from decimal import Decimal
 
 from stockholm import Money
 
+from utils.time import datetime_to_str, utcnow
+
 
 class OptimisticLockError(Exception):
     pass
@@ -29,6 +31,7 @@ class Customer:
     credit_limit: Decimal
     credit_reservations: dict[uuid.UUID, Decimal]
     created_at: datetime.datetime
+    updated_at: datetime.datetime | None
     version: int
 
     def __init__(
@@ -37,15 +40,17 @@ class Customer:
         credit_limit: Decimal,
         id: uuid.UUID,
         credit_reservations: dict[uuid.UUID, Decimal],
-        created_at: datetime.datetime,
         version: int,
+        created_at: datetime.datetime,
+        updated_at: datetime.datetime | None = None,
     ) -> None:
         self.id = id or uuid.uuid4()
         self.name = name
         self.credit_limit = credit_limit
         self.credit_reservations = credit_reservations
-        self.created_at = created_at
         self.version = version
+        self.created_at = created_at
+        self.updated_at = updated_at
 
     @staticmethod
     def create(name: str, credit_limit: Decimal) -> "Customer":
@@ -54,8 +59,9 @@ class Customer:
             name=name,
             credit_limit=credit_limit,
             credit_reservations={},
-            created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
             version=0,
+            created_at=utcnow(),
+            updated_at=None,
         )
 
     @staticmethod
@@ -68,8 +74,9 @@ class Customer:
             "name": self.name,
             "credit_limit": int(Money(self.credit_limit).to_sub_units()),
             "credit_reservations": self.credit_reservations,
-            "created_at": self.created_at.isoformat(),
             "version": self.version,
+            "created_at": datetime_to_str(self.created_at),
+            "updated_at": datetime_to_str(self.updated_at) if self.updated_at else None,
         }
 
     def available_credit(self) -> Decimal:

@@ -1,4 +1,3 @@
-import datetime
 import uuid
 from decimal import Decimal
 from typing import Protocol
@@ -7,6 +6,7 @@ import structlog
 
 from adapters import clients, dynamodb
 from customers.customer import Customer, CustomerNotFoundError, OptimisticLockError
+from utils.time import datetime_to_str, str_to_datetime, utcnow
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
@@ -47,8 +47,8 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
                                 for order_id, order_total in customer.credit_reservations.items()
                             }
                         },
-                        "CreatedAt": {"S": customer.created_at.isoformat()},
                         "Version": {"N": str(customer.version)},
+                        "CreatedAt": {"S": datetime_to_str(customer.created_at)},
                     },
                     "ConditionExpression": "attribute_not_exists(PK)",
                 }
@@ -83,8 +83,9 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
                                 for order_id, order_total in customer.credit_reservations.items()
                             }
                         },
-                        "CreatedAt": {"S": customer.created_at.isoformat()},
                         "Version": {"N": str(customer.version + 1)},
+                        "CreatedAt": {"S": datetime_to_str(customer.created_at)},
+                        "UpdatedAt": {"S": datetime_to_str(utcnow())},
                     },
                     "ConditionExpression": "Version = :version",
                     "ExpressionAttributeValues": {":version": {"N": str(customer.version)}},
@@ -112,6 +113,6 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
                     uuid.UUID(order_id): Decimal(order_total["N"])
                     for order_id, order_total in item["CreditReservations"]["M"].items()
                 },
-                created_at=datetime.datetime.fromisoformat(item["CreatedAt"]["S"]),
                 version=int(item["Version"]["N"]),
+                created_at=str_to_datetime(item["CreatedAt"]["S"]),
             )

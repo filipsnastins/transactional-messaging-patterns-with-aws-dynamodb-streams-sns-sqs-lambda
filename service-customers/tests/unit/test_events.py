@@ -2,6 +2,7 @@ import datetime
 import uuid
 
 from customers.events import Event
+from utils.time import utcnow
 
 
 def test_event_model() -> None:
@@ -33,5 +34,5 @@ def test_default_datetime() -> None:
     )
 
     assert event.created_at
-    assert datetime.timedelta(seconds=1) > datetime.datetime.utcnow().replace(tzinfo=datetime.UTC) - event.created_at
+    assert datetime.timedelta(seconds=1) > utcnow() - event.created_at
     assert event.created_at.tzinfo == datetime.UTC
