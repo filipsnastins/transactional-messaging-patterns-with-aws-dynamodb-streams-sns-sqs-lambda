@@ -21,6 +21,18 @@ async def test_update_non_existing_customer() -> None:
 
 
 @pytest.mark.asyncio()
+async def test_create_customer() -> None:
+    uow = DynamoDBUnitOfWork.create()
+    [customer, _] = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
+
+    await uow.customers.create(customer)
+    await uow.commit()
+
+    customer_from_db = await uow.customers.get(customer.id)
+    assert customer_from_db == customer
+
+
+@pytest.mark.asyncio()
 async def test_update_customer() -> None:
     uow = DynamoDBUnitOfWork.create()
     [customer, _] = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
