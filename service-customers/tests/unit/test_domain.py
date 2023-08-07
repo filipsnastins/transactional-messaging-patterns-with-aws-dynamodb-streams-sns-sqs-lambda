@@ -6,28 +6,17 @@ import pytest
 from freezegun import freeze_time
 
 from customers.customer import Customer
-from customers.events import CustomerCreatedEvent
 
 
 @freeze_time("2021-02-03 12:30:00")
 def test_create_new_customer_model() -> None:
-    correlation_id = uuid.uuid4()
-    [customer, event] = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=correlation_id)
+    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
 
     assert isinstance(customer.id, uuid.UUID)
     assert customer.name == "John Doe"
     assert customer.credit_limit == Decimal("200.00")
     assert customer.created_at == datetime.datetime(2021, 2, 3, 12, 30, 0, tzinfo=datetime.UTC)
     assert customer.version == 0
-    assert isinstance(event.event_id, uuid.UUID)
-    assert event == CustomerCreatedEvent(
-        event_id=event.event_id,
-        correlation_id=correlation_id,
-        customer_id=customer.id,
-        name=customer.name,
-        credit_limit=customer.credit_limit,
-        created_at=customer.created_at,
-    )
 
 
 def test_restore_customer_model() -> None:
@@ -116,7 +105,7 @@ def test_customer_model_comparison() -> None:
 
 
 def test_unreserve_credit() -> None:
-    [customer, _] = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
+    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
     id = uuid.uuid4()
     customer.reserve_credit(order_id=id, order_total=Decimal("100.00"))
 
@@ -126,7 +115,7 @@ def test_unreserve_credit() -> None:
 
 
 def test_unreserve_non_existing_order_raises_key_error() -> None:
-    [customer, _] = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
+    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
 
     with pytest.raises(KeyError):
         customer.unreserve_credit(id=uuid.uuid4())
