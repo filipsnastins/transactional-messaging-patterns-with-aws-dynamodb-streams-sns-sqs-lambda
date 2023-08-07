@@ -5,14 +5,10 @@ from typing import Protocol
 import structlog
 
 from adapters import clients, dynamodb
-from customers.customer import Customer, CustomerNotFoundError, OptimisticLockError
+from customers.customer import Customer, CustomerAlreadyExistsError, CustomerNotFoundError, OptimisticLockError
 from utils.time import datetime_to_str, str_to_datetime, utcnow
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
-
-
-class CustomerAlreadyExistsError(Exception):
-    pass
 
 
 class AbstractCustomerRepository(Protocol):

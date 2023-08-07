@@ -16,6 +16,10 @@ class CustomerNotFoundError(Exception):
     pass
 
 
+class CustomerAlreadyExistsError(Exception):
+    pass
+
+
 class CustomerCreditLimitExceededError(Exception):
     pass
 
