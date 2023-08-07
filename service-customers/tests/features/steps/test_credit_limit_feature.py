@@ -5,14 +5,13 @@ from typing import Any
 
 import httpx
 import pytest
-from busypie import wait_at_most
 from pytest_bdd import given, parsers, scenarios, then, when
 from stockholm import Money
 from tomodachi.envelope.json_base import JsonBase
+from tomodachi_testcontainers.clients import snssqs_client
+from tomodachi_testcontainers.pytest.async_probes import probe_until
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
-
-from tomodachi_testcontainers.clients import snssqs_client
 
 pytestmark = pytest.mark.xfail(strict=True)
 
@@ -69,7 +68,7 @@ def _(
         }
 
     async def _async() -> None:
-        await wait_at_most(3).until_asserted_async(_assert_customer_credit_reserved)
+        await probe_until(_assert_customer_credit_reserved)
 
     return event_loop.run_until_complete(_async())
 
@@ -109,7 +108,7 @@ def _(
         }
 
     async def _async() -> None:
-        await wait_at_most(3).until_asserted_async(_assert_customer_credit_reserved)
+        await probe_until(_assert_customer_credit_reserved)
 
     return event_loop.run_until_complete(_async())
 
@@ -146,6 +145,6 @@ def _(event_loop: AbstractEventLoop, moto_sqs_client: SQSClient, non_existing_cu
         }
 
     async def _async() -> None:
-        await wait_at_most(3).until_asserted_async(_assert_customer_credit_reserved)
+        await probe_until(_assert_customer_credit_reserved)
 
     return event_loop.run_until_complete(_async())

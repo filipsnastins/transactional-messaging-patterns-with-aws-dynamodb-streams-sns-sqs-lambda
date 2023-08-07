@@ -2,17 +2,12 @@ from asyncio import AbstractEventLoop
 from typing import Any
 
 import httpx
-import pytest
-from busypie import wait_at_most
 from pytest_bdd import given, parsers, scenarios, then, when
 from stockholm import Money
 from tomodachi.envelope.json_base import JsonBase
-from types_aiobotocore_sqs import SQSClient
-
 from tomodachi_testcontainers.clients import snssqs_client
-
-pytestmark = pytest.mark.xfail(strict=False)
-
+from tomodachi_testcontainers.pytest.async_probes import probe_until
+from types_aiobotocore_sqs import SQSClient
 
 scenarios("../create_customer.feature")
 
@@ -87,6 +82,7 @@ def _(
 
         assert message == {
             "event_id": message["event_id"],
+            "correlation_id": message["correlation_id"],
             "customer_id": customer_id,
             "name": "John Doe",
             "credit_limit": 24999,
@@ -94,8 +90,8 @@ def _(
         }
 
     async def _async() -> None:
-        await wait_at_most(3).until_asserted_async(_assert_get_customer)
-        await wait_at_most(3).until_asserted_async(_assert_customer_created)
+        await probe_until(_assert_get_customer)
+        await probe_until(_assert_customer_created)
 
     return event_loop.run_until_complete(_async())
 

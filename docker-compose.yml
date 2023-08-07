@@ -14,9 +14,7 @@ services:
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: testing
       AWS_SECRET_ACCESS_KEY: testing
-      AWS_SNS_ENDPOINT_URL: http://localstack:4566
-      AWS_SQS_ENDPOINT_URL: http://localstack:4566
-      AWS_DYNAMODB_ENDPOINT_URL: http://localstack:4566
+      AWS_ENDPOINT_URL: http://localstack:4566
       DYNAMODB_AGGREGATE_TABLE_NAME: customers
       DYNAMODB_OUTBOX_TABLE_NAME: customers-outbox
   orders:
@@ -32,9 +30,7 @@ services:
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: testing
       AWS_SECRET_ACCESS_KEY: testing
-      AWS_SNS_ENDPOINT_URL: http://localstack:4566
-      AWS_SQS_ENDPOINT_URL: http://localstack:4566
-      AWS_DYNAMODB_ENDPOINT_URL: http://localstack:4566
+      AWS_ENDPOINT_URL: http://localstack:4566
       DYNAMODB_AGGREGATE_TABLE_NAME: orders
       DYNAMODB_OUTBOX_TABLE_NAME: orders-outbox
   localstack:

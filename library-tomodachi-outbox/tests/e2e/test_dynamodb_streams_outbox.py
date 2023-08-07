@@ -1,10 +1,8 @@
 import datetime
 import json
 import uuid
-from pathlib import Path
 from typing import Any
 
-import lambda_outbox_dynamodb_streams
 import pytest
 import pytest_asyncio
 from tomodachi.envelope.json_base import JsonBase
@@ -27,7 +25,6 @@ pytestmark = pytest.mark.usefixtures(
 )
 
 TEST_TABLE_NAME = "outbox"
-TEST_LAMBDA_PATH = Path(lambda_outbox_dynamodb_streams.__file__).parent
 
 
 @pytest_asyncio.fixture()
@@ -59,6 +56,7 @@ async def test_create_dynamodb_streams_outbox(
     moto_dynamodb_client: DynamoDBClient,
     moto_sqs_client: SQSClient,
 ) -> None:
+    aws_config = moto_container.get_aws_client_config()
     message = Message(
         message_id=uuid.uuid4(),
         aggregate_id=uuid.uuid4(),
@@ -73,19 +71,12 @@ async def test_create_dynamodb_streams_outbox(
         moto_iam_client,
         moto_dynamodb_client,
         environment_variables={
-            "AWS_REGION": "us-east-1",
+            "AWS_REGION": aws_config["region_name"],
             "AWS_ENDPOINT_URL": moto_container.get_internal_url(),
             "DYNAMODB_OUTBOX_TABLE_NAME": TEST_TABLE_NAME,
         },
         dynamodb_table_name=TEST_TABLE_NAME,
-        lambda_path=TEST_LAMBDA_PATH,
     )
-
-    async def _wait_until_lambda_ready() -> None:
-        waiter = moto_lambda_client.get_waiter("function_active_v2")
-        await waiter.wait(FunctionName="lambda-dynamodb-streams--outbox")
-
-    await probe_until(_wait_until_lambda_ready)
 
     await moto_dynamodb_client.put_item(
         TableName=TEST_TABLE_NAME,
