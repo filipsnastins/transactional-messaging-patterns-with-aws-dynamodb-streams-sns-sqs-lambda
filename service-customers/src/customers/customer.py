@@ -5,8 +5,6 @@ from decimal import Decimal
 
 from stockholm import Money
 
-from customers.events import CustomerCreatedEvent
-
 
 class OptimisticLockError(Exception):
     pass
@@ -46,10 +44,8 @@ class Customer:
         self.version = version
 
     @staticmethod
-    def create(
-        name: str, credit_limit: Decimal, correlation_id: uuid.UUID
-    ) -> tuple["Customer", "CustomerCreatedEvent"]:
-        customer = Customer(
+    def create(name: str, credit_limit: Decimal) -> "Customer":
+        return Customer(
             id=uuid.uuid4(),
             name=name,
             credit_limit=credit_limit,
@@ -57,14 +53,6 @@ class Customer:
             created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
             version=0,
         )
-        event = CustomerCreatedEvent(
-            customer_id=customer.id,
-            correlation_id=correlation_id,
-            name=customer.name,
-            credit_limit=customer.credit_limit,
-            created_at=customer.created_at,
-        )
-        return customer, event
 
     @staticmethod
     def from_dict(data: dict) -> "Customer":
