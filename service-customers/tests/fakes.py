@@ -18,9 +18,9 @@ class FakeCustomerRepository(AbstractCustomerRepository):
     async def create(self, customer: Customer) -> None:
         self._customers.append(copy.deepcopy(customer))
 
-    async def save(self, customer: Customer) -> None:
+    async def update(self, customer: Customer) -> None:
         indices = [i for i, x in enumerate(self._customers) if x.id == customer.id]
-        if not len(indices):
+        if len(indices) == 0:
             raise CustomerNotFoundError(customer.id)
         assert len(indices) == 1
         self._customers[indices[0]] = copy.deepcopy(customer)

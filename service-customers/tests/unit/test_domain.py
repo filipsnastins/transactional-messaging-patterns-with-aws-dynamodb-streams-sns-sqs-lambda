@@ -5,7 +5,7 @@ from decimal import Decimal
 import pytest
 from freezegun import freeze_time
 
-from customers.customer import Customer, CustomerCreditLimitExceededError
+from customers.customer import Customer
 from customers.events import CustomerCreatedEvent
 
 
