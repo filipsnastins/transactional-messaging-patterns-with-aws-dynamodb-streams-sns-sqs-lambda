@@ -2,7 +2,7 @@ import datetime
 import json
 import uuid
 
-from tomodachi_transactional_outbox.message import DispatchedMessage, Message
+from tomodachi_outbox.message import DispatchedMessage, Message
 
 
 def test_message_model() -> None:

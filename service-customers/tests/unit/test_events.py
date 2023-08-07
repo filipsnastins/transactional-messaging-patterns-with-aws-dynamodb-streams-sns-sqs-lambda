@@ -9,7 +9,7 @@ def test_create_customer_created_event_model() -> None:
     event_id = uuid.uuid4()
     customer_id = uuid.uuid4()
     correlation_id = uuid.uuid4()
-    created_at = datetime.datetime(2021, 1, 1, 12, 0, 0).replace(tzinfo=datetime.UTC)
+    created_at = datetime.datetime(2021, 1, 1, 12, 0, 0).replace(tzinfo=datetime.timezone.utc)
     event = CustomerCreatedEvent(
         event_id=event_id,
         customer_id=customer_id,

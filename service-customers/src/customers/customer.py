@@ -46,7 +46,7 @@ class Customer:
             name=name,
             credit_limit=credit_limit,
             credit_reservations={},
-            created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
+            created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
             version=0,
         )
         event = CustomerCreatedEvent(

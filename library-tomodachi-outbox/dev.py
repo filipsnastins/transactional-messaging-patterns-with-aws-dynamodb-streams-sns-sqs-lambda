@@ -26,7 +26,7 @@ def format() -> None:
 def lint() -> None:
     check_call(["ruff", "check", "."])
     check_call(["flake8", "."])
-    check_call(["pylint", "src/tomodachi_transactional_outbox", "tests"])
+    check_call(["pylint", "src/tomodachi_outbox", "tests"])
     check_call(["mypy", "src", "tests"])
     check_call(["bandit", "-r", "src"])
 

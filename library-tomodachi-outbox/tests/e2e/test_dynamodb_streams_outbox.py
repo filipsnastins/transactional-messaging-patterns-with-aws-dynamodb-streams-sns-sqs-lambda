@@ -4,6 +4,7 @@ import uuid
 from pathlib import Path
 from typing import Any
 
+import lambda_outbox_dynamodb_streams
 import pytest
 import pytest_asyncio
 from tomodachi.envelope.json_base import JsonBase
@@ -16,8 +17,8 @@ from types_aiobotocore_lambda import LambdaClient
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
 
-from tomodachi_transactional_outbox.message import Message
-from tomodachi_transactional_outbox.outbox import create_dynamodb_streams_outbox
+from tomodachi_outbox.message import Message
+from tomodachi_outbox.outbox import create_dynamodb_streams_outbox
 
 pytestmark = pytest.mark.usefixtures(
     "_create_topics_and_queues",
@@ -26,9 +27,7 @@ pytestmark = pytest.mark.usefixtures(
 )
 
 TEST_TABLE_NAME = "outbox"
-TEST_LAMBDA_PATH = (
-    Path(__file__).parent.parent.parent / "src" / "tomodachi_transactional_outbox" / "lambda_outbox_dynamodb_streams"
-)
+TEST_LAMBDA_PATH = Path(lambda_outbox_dynamodb_streams.__file__).parent
 
 
 @pytest_asyncio.fixture()

@@ -4,7 +4,7 @@ import uuid
 import tomodachi
 from aiohttp import web
 
-from adapters import dynamodb
+from adapters import dynamodb, outbox
 from customers.commands import CreateCustomerCommand
 from service_layer import use_cases, views
 from service_layer.response import CreateCustomerResponse
@@ -27,10 +27,6 @@ class TomodachiService(tomodachi.Service):
             queue_name_prefix=os.environ.get("AWS_SQS_QUEUE_NAME_PREFIX", ""),
         ),
     )
-
-    async def _start_service(self) -> None:
-        await dynamodb.create_aggregate_table()
-        await dynamodb.create_outbox_table()
 
     @tomodachi.http("GET", r"/customers/health/?", ignore_logging=[200])
     async def healthcheck(self, request: web.Request) -> web.Response:

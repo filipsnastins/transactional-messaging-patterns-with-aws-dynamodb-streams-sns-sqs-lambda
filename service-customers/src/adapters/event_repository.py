@@ -4,10 +4,10 @@ import uuid
 from typing import Protocol
 
 import structlog
-from tomodachi_transactional_outbox.message import Message
 
 from adapters import clients, dynamodb
 from customers.events import Event
+from tomodachi_outbox.message import Message
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
@@ -41,7 +41,9 @@ class DynamoDBEventRepository(AbstractEventRepository):
                         "TableName": self.table_name,
                         "Item": {
                             "PK": {"S": f"EVENT#{event.event_id}"},
-                            "EventId": {"S": str(event.event_id)},
+                            "MessageId": {
+                                "S": str(event.event_id)
+                            },  # TODO MessageId; split into event and command outbox
                             "AggregateId": {"S": str(event.customer_id)},
                             "CorrelationId": {"S": str(event.correlation_id)},
                             "Topic": {"S": topic},
@@ -73,12 +75,10 @@ class DynamoDBEventRepository(AbstractEventRepository):
                 datetime.datetime.fromisoformat(item["DispatchedAt"]["S"]) if item["DispatchedAt"].get("S") else None
             )
             return Message(
-                event_id=uuid.UUID(item["EventId"]["S"]),
+                message_id=uuid.UUID(item["MessageId"]["S"]),  # TODO MessageId
                 aggregate_id=uuid.UUID(item["AggregateId"]["S"]),
                 correlation_id=uuid.UUID(item["CorrelationId"]["S"]),
                 topic=item["Topic"]["S"],
                 message=item["Message"]["S"],
                 created_at=datetime.datetime.fromisoformat(item["CreatedAt"]["S"]),
-                dispatched=item["Dispatched"]["BOOL"],
-                dispatched_at=dispatched_at,
             )

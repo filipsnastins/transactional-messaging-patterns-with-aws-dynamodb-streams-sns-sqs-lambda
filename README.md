@@ -1,19 +1,9 @@
 # tomodachi-transactional-outbox
 
-- Build `library-tomodachi-transactional-outbox` and copy to service's `vendors` folder - for Docker build
-
-```bash
-cd library-tomodachi-transactional-outbox
-poetry build; cp dist/tomodachi_transactional_outbox-0.0.0.tar.gz ../service-customers/vendors
-cd ..
-cd service-customers; poetry update
-cd ..
-```
-
 - Tail Lambda logs when running locally with Docker Compose
 
 ```bash
-awslocal --region=us-east-1 logs tail /aws/lambda/development-lambda-dynamodb-streams-outbox--customers-outbox
+awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams-outbox--customers-outbox
 ```
 
 ## Resources and acknowledgements

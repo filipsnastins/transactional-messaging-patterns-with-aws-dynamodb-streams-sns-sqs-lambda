@@ -38,7 +38,7 @@ async def test_session_not_committed_by_default() -> None:
         name="John Doe",
         credit_limit=Decimal("200.00"),
         credit_reservations={},
-        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
+        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
         version=0,
     )
 
@@ -56,7 +56,7 @@ async def test_session_rollbacked() -> None:
         name="John Doe",
         credit_limit=Decimal("200.00"),
         credit_reservations={},
-        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
+        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
         version=0,
     )
 
@@ -76,7 +76,7 @@ async def test_commit_is_idempotent() -> None:
         name="John Doe",
         credit_limit=Decimal("200.00"),
         credit_reservations={},
-        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
+        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
         version=0,
     )
 
@@ -123,7 +123,7 @@ async def test_events_published() -> None:
             correlation_id=uuid.uuid4(),
             name="John Doe",
             credit_limit=Decimal("200.00"),
-            created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
+            created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
         ),
         CustomerCreatedEvent(
             event_id=uuid.uuid4(),
@@ -131,7 +131,7 @@ async def test_events_published() -> None:
             correlation_id=uuid.uuid4(),
             name="Mary Doe",
             credit_limit=Decimal("300.00"),
-            created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
+            created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
         ),
     ]
 
@@ -167,7 +167,7 @@ async def test_cannot_publish_event_with_the_same_event_id() -> None:
         correlation_id=uuid.uuid4(),
         name="John Doe",
         credit_limit=Decimal("200.00"),
-        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
+        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
     )
     event_2 = CustomerCreatedEvent(
         event_id=event_id,
@@ -175,7 +175,7 @@ async def test_cannot_publish_event_with_the_same_event_id() -> None:
         correlation_id=uuid.uuid4(),
         name="Mary Doe",
         credit_limit=Decimal("300.00"),
-        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.UTC),
+        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
     )
     await uow.events.publish([event_1])
     await uow.commit()

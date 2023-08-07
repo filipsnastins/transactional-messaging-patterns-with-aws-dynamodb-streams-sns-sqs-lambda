@@ -17,7 +17,7 @@ def test_create_new_customer_model() -> None:
     assert isinstance(customer.id, uuid.UUID)
     assert customer.name == "John Doe"
     assert customer.credit_limit == Decimal("200.00")
-    assert customer.created_at == datetime.datetime(2021, 2, 3, 12, 30, 0, tzinfo=datetime.UTC)
+    assert customer.created_at == datetime.datetime(2021, 2, 3, 12, 30, 0, tzinfo=datetime.timezone.utc)
     assert customer.version == 0
     assert isinstance(customer.events[0].event_id, uuid.UUID)
     assert customer.events == [

@@ -7,7 +7,7 @@ from types_aiobotocore_iam.type_defs import CreateRoleResponseTypeDef
 from types_aiobotocore_lambda import LambdaClient
 from types_aiobotocore_lambda.type_defs import FunctionConfigurationResponseTypeDef
 
-from tomodachi_transactional_outbox.aws.utils import package_lambda_as_zip
+from tomodachi_outbox.aws.utils import package_lambda_as_zip
 
 
 async def create_lambda_function(

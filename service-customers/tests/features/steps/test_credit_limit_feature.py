@@ -44,7 +44,7 @@ def _(
             "order_id": str(order_id),
             "customer_id": create_customer.json()["id"],
             "order_total": int(Money(order_total).to_sub_units()),
-            "created_at": datetime.datetime.utcnow().replace(tzinfo=datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat(),
         }
 
         await snssqs_client.publish(moto_sns_client, "order--created", data, JsonBase)
@@ -121,7 +121,7 @@ def _(event_loop: AbstractEventLoop, moto_sns_client: SNSClient) -> uuid.UUID:
             "order_id": str(uuid.uuid4()),
             "customer_id": str(customer_id),
             "order_total": 10000,
-            "created_at": datetime.datetime.utcnow().replace(tzinfo=datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat(),
         }
 
         await snssqs_client.publish(moto_sns_client, "order--created", data, JsonBase)
