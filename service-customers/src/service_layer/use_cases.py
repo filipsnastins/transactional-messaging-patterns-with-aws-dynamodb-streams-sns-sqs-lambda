@@ -21,8 +21,8 @@ async def create_customer(uow: AbstractUnitOfWork, cmd: CreateCustomerCommand) -
     async with uow:
         customer = Customer.create(name=cmd.name, credit_limit=cmd.credit_limit)
         event = CustomerCreatedEvent(
-            customer_id=customer.id,
             correlation_id=cmd.correlation_id,
+            customer_id=customer.id,
             name=customer.name,
             credit_limit=customer.credit_limit,
             created_at=customer.created_at,
@@ -41,6 +41,7 @@ async def reserve_credit(uow: AbstractUnitOfWork, event: OrderCreatedExternalEve
         await uow.events.publish(
             [
                 CustomerValidationFailedEvent(
+                    correlation_id=event.correlation_id,
                     customer_id=event.customer_id,
                     order_id=event.order_id,
                     error=CustomerValidationErrors.CUSTOMER_NOT_FOUND,
@@ -54,11 +55,21 @@ async def reserve_credit(uow: AbstractUnitOfWork, event: OrderCreatedExternalEve
     try:
         customer.reserve_credit(order_id=event.order_id, order_total=event.order_total)
         await uow.customers.update(customer)
-        await uow.events.publish([CustomerCreditReservedEvent(customer_id=event.customer_id, order_id=event.order_id)])
+        await uow.events.publish(
+            [
+                CustomerCreditReservedEvent(
+                    correlation_id=event.correlation_id, customer_id=event.customer_id, order_id=event.order_id
+                )
+            ]
+        )
         log.info("credit_reserved")
     except CustomerCreditLimitExceededError:
         await uow.events.publish(
-            [CustomerCreditReservationFailedEvent(customer_id=event.customer_id, order_id=event.order_id)]
+            [
+                CustomerCreditReservationFailedEvent(
+                    correlation_id=event.correlation_id, customer_id=event.customer_id, order_id=event.order_id
+                )
+            ]
         )
         log.info("credit_limit_exceeded")
     await uow.commit()
@@ -85,9 +96,7 @@ async def release_credit(uow: AbstractUnitOfWork, event: OrderCanceledExternalEv
     await uow.events.publish(
         [
             CustomerCreditReleasedEvent(
-                customer_id=event.customer_id,
-                order_id=event.order_id,
-                correlation_id=event.correlation_id,
+                correlation_id=event.correlation_id, customer_id=event.customer_id, order_id=event.order_id
             )
         ]
     )
