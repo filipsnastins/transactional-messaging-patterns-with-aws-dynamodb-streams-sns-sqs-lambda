@@ -18,6 +18,10 @@ class CustomerCreditLimitExceededError(Exception):
     pass
 
 
+class OrderNotFoundError(Exception):
+    pass
+
+
 @dataclass
 class Customer:
     id: uuid.UUID
@@ -77,5 +81,8 @@ class Customer:
         else:
             raise CustomerCreditLimitExceededError(self.id)
 
-    def unreserve_credit(self, id: uuid.UUID) -> None:
-        self.credit_reservations.pop(id)
+    def release_credit(self, order_id: uuid.UUID) -> None:
+        try:
+            self.credit_reservations.pop(order_id)
+        except KeyError as e:
+            raise OrderNotFoundError(order_id) from e

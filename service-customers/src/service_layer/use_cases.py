@@ -1,13 +1,14 @@
 import structlog
 
 from customers.commands import CreateCustomerCommand
-from customers.customer import Customer, CustomerCreditLimitExceededError
+from customers.customer import Customer, CustomerCreditLimitExceededError, OrderNotFoundError
 from customers.events import (
     CustomerCreatedEvent,
     CustomerCreditReservationFailedEvent,
     CustomerCreditReservedEvent,
     CustomerValidationErrors,
     CustomerValidationFailedEvent,
+    OrderCanceledExternalEvent,
     OrderCreatedExternalEvent,
 )
 from service_layer.unit_of_work import AbstractUnitOfWork
@@ -60,3 +61,26 @@ async def reserve_credit(uow: AbstractUnitOfWork, event: OrderCreatedExternalEve
         )
         log.info("credit_limit_exceeded")
     await uow.commit()
+
+
+async def release_credit(uow: AbstractUnitOfWork, event: OrderCanceledExternalEvent) -> None:
+    log = logger.bind(customer_id=event.customer_id, order_id=event.order_id)
+    customer = await uow.customers.get(customer_id=event.customer_id)
+
+    try:
+        customer.release_credit(order_id=event.order_id)
+    except OrderNotFoundError:
+        await uow.events.publish(
+            [
+                CustomerValidationFailedEvent(
+                    correlation_id=event.correlation_id,
+                    customer_id=event.customer_id,
+                    order_id=event.order_id,
+                    error=CustomerValidationErrors.ORDER_NOT_FOUND,
+                )
+            ]
+        )
+        log.info("order_not_found")
+        return
+
+    log.info("credit_released")
