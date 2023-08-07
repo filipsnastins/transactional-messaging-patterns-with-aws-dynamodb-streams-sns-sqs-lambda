@@ -70,8 +70,9 @@ def _(
             "name": customer["name"],
             "credit_limit": customer["credit_limit"],
             "available_credit": customer["credit_limit"],
-            "created_at": body["created_at"],
             "version": 0,
+            "created_at": body["created_at"],
+            "updated_at": None,
             "_links": {
                 "self": {"href": get_customer_link},
             },
