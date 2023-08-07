@@ -107,7 +107,7 @@ def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, customer_id
     return event_loop.run_until_complete(_async())
 
 
-@then("the customer is not found")
+@then("the customer not found")
 def _(get_customer: httpx.Response) -> None:
     customer_id = get_customer.url.path.split("/")[-1]
 

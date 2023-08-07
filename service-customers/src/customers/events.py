@@ -63,7 +63,10 @@ class CustomerValidationFailedEvent(Event):
     error: CustomerValidationErrors
 
     def to_dict(self) -> dict:
-        return super().to_dict() | {"order_id": str(self.order_id)}
+        return super().to_dict() | {
+            "order_id": str(self.order_id),
+            "error": self.error.value,
+        }
 
 
 @dataclass(kw_only=True)
