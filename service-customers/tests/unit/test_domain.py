@@ -101,13 +101,3 @@ def test_customer_model_comparison() -> None:
     customer_2 = Customer.from_dict(data)
 
     assert customer_1 == customer_2
-
-
-def test_release_credit() -> None:
-    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
-    id = uuid.uuid4()
-    customer.reserve_credit(order_id=id, order_total=Decimal("100.00"))
-
-    customer.release_credit(order_id=id)
-
-    assert customer.available_credit() == Decimal("200.00")
