@@ -8,7 +8,14 @@ from adapters.customer_repository import AbstractCustomerRepository
 from adapters.event_repository import AbstractEventRepository
 from customers.commands import CreateCustomerCommand
 from customers.customer import Customer
-from customers.events import CustomerCreatedEvent, Event
+from customers.events import (
+    CustomerCreatedEvent,
+    CustomerCreditReservedEvent,
+    CustomerValidationErrors,
+    CustomerValidationFailedEvent,
+    Event,
+    OrderCreatedExternalEvent,
+)
 from service_layer import use_cases
 from service_layer.unit_of_work import AbstractUnitOfWork
 
@@ -71,14 +78,13 @@ async def test_create_customer() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_customer_created_event_published() -> None:
+async def test_create_customer__customer_created_event_published() -> None:
     uow = FakeUnitOfWork()
     cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
 
     customer = await use_cases.create_customer(uow, cmd)
-    [event] = customer.events
+    [event] = uow.events.events
 
-    assert uow.events.events == [event]
     assert isinstance(event, CustomerCreatedEvent)
     assert isinstance(event.event_id, uuid.UUID)
     assert event.event_id != customer.id
@@ -89,10 +95,64 @@ async def test_customer_created_event_published() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_created_customer_has_full_available_credit() -> None:
+async def test_create_customer__new_customer_has_full_available_credit() -> None:
     uow = FakeUnitOfWork()
     cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
-
     customer = await use_cases.create_customer(uow, cmd)
 
     assert customer.available_credit() == Decimal("200.00")
+
+
+@pytest.mark.asyncio()
+async def test_reserve_credit__customer_not_found() -> None:
+    uow = FakeUnitOfWork()
+    event = OrderCreatedExternalEvent(customer_id=uuid.uuid4(), order_id=uuid.uuid4(), order_total=Decimal("100.00"))
+
+    await use_cases.reserve_credit(uow, event)
+    [event] = uow.events.events
+
+    assert isinstance(event, CustomerValidationFailedEvent)
+    assert event.customer_id == event.customer_id
+    assert event.order_id == event.order_id
+    assert event.error == CustomerValidationErrors.CUSTOMER_NOT_FOUND
+
+
+@pytest.mark.parametrize(
+    ("credit_limit", "order_total", "expected_available_credit"),
+    [
+        (Decimal("200.00"), Decimal("0"), Decimal("200.00")),
+        (Decimal("200.00"), Decimal("100.00"), Decimal("100.00")),
+        (Decimal("200.00"), Decimal("100.01"), Decimal("99.99")),
+        (Decimal("200.00"), Decimal("200.00"), Decimal("0.00")),
+    ],
+)
+@pytest.mark.asyncio()
+async def test_reserve_credit(credit_limit: Decimal, order_total: Decimal, expected_available_credit: Decimal) -> None:
+    uow = FakeUnitOfWork()
+    cmd = CreateCustomerCommand(name="John Doe", credit_limit=credit_limit)
+    customer = await use_cases.create_customer(uow, cmd)
+    event = OrderCreatedExternalEvent(customer_id=customer.id, order_id=uuid.uuid4(), order_total=order_total)
+
+    await use_cases.reserve_credit(uow, event)
+
+    assert customer.available_credit() == expected_available_credit
+
+
+@pytest.mark.asyncio()
+async def test_reserve_credit__customer_credit_limit_reserved_event_published() -> None:
+    uow = FakeUnitOfWork()
+    cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
+    customer = await use_cases.create_customer(uow, cmd)
+    event = OrderCreatedExternalEvent(
+        customer_id=customer.id,
+        order_id=uuid.uuid4(),
+        order_total=Decimal("100.00"),
+        created_at=customer.created_at,
+    )
+
+    await use_cases.reserve_credit(uow, event)
+    [_, event] = uow.events.events
+
+    assert isinstance(event, CustomerCreditReservedEvent)
+    assert event.customer_id == customer.id
+    assert event.order_id == event.order_id

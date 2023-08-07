@@ -2,8 +2,9 @@ import os
 import uuid
 
 import tomodachi
-from adapters import dynamodb, outbox, sns
 from aiohttp import web
+
+from adapters import dynamodb, outbox, sns
 from customers.commands import CreateCustomerCommand
 from service_layer import use_cases, views
 from service_layer.response import CreateCustomerResponse
@@ -28,11 +29,10 @@ class TomodachiService(tomodachi.Service):
     )
 
     async def _start_service(self) -> None:
-        if os.environ["ENVIRONMENT"] in ["development", "autotest"]:
-            await sns.create_topics()
-            await dynamodb.create_aggregate_table()
-            await dynamodb.create_outbox_table()
-            await outbox.create_dynamodb_streams_outbox()
+        await sns.create_topics()
+        await dynamodb.create_aggregate_table()
+        await dynamodb.create_outbox_table()
+        await outbox.create_dynamodb_streams_outbox()
 
     @tomodachi.http("GET", r"/customers/health/?", ignore_logging=[200])
     async def healthcheck(self, request: web.Request) -> web.Response:
