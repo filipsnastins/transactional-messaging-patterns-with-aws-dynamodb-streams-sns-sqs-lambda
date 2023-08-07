@@ -9,7 +9,6 @@ from stockholm import Money
 
 class CustomerValidationErrors(Enum):
     CUSTOMER_NOT_FOUND = "CUSTOMER_NOT_FOUND"
-    ORDER_NOT_FOUND = "ORDER_NOT_FOUND"
 
 
 @dataclass(kw_only=True)
@@ -68,6 +67,14 @@ class CustomerValidationFailedEvent(Event):
             "order_id": str(self.order_id),
             "error": self.error.value,
         }
+
+
+@dataclass(kw_only=True)
+class CustomerCreditReleasedEvent(Event):
+    order_id: uuid.UUID
+
+    def to_dict(self) -> dict:
+        return super().to_dict() | {"order_id": str(self.order_id)}
 
 
 @dataclass(kw_only=True)

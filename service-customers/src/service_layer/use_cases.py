@@ -1,9 +1,10 @@
 import structlog
 
 from customers.commands import CreateCustomerCommand
-from customers.customer import Customer, CustomerCreditLimitExceededError, OrderNotFoundError
+from customers.customer import Customer, CustomerCreditLimitExceededError
 from customers.events import (
     CustomerCreatedEvent,
+    CustomerCreditReleasedEvent,
     CustomerCreditReservationFailedEvent,
     CustomerCreditReservedEvent,
     CustomerValidationErrors,
@@ -66,21 +67,29 @@ async def reserve_credit(uow: AbstractUnitOfWork, event: OrderCreatedExternalEve
 async def release_credit(uow: AbstractUnitOfWork, event: OrderCanceledExternalEvent) -> None:
     log = logger.bind(customer_id=event.customer_id, order_id=event.order_id)
     customer = await uow.customers.get(customer_id=event.customer_id)
-
-    try:
-        customer.release_credit(order_id=event.order_id)
-    except OrderNotFoundError:
+    if not customer:
         await uow.events.publish(
             [
                 CustomerValidationFailedEvent(
                     correlation_id=event.correlation_id,
                     customer_id=event.customer_id,
                     order_id=event.order_id,
-                    error=CustomerValidationErrors.ORDER_NOT_FOUND,
+                    error=CustomerValidationErrors.CUSTOMER_NOT_FOUND,
                 )
             ]
         )
-        log.info("order_not_found")
+        log.error("customer_not_found")
         return
-
+    customer.release_credit(order_id=event.order_id)
+    await uow.customers.update(customer)
+    await uow.events.publish(
+        [
+            CustomerCreditReleasedEvent(
+                customer_id=event.customer_id,
+                order_id=event.order_id,
+                correlation_id=event.correlation_id,
+            )
+        ]
+    )
+    await uow.commit()
     log.info("credit_released")

@@ -2,7 +2,6 @@ import datetime
 import uuid
 from decimal import Decimal
 
-import pytest
 from freezegun import freeze_time
 
 from customers.customer import Customer

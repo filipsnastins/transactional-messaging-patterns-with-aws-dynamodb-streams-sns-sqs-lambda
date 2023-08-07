@@ -11,8 +11,3 @@ Feature: Release customer credit when an order is canceled
     Scenario: Release credit for non-existing customer
         When order is canceled
         Then the customer validation fails - customer not found
-
-    Scenario: Release credit for non-existing order
-        When non-existing order is canceled
-        Then the customer validation fails - order not found
-
