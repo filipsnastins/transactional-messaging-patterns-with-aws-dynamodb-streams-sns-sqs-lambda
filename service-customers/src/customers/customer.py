@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from stockholm import Money
 
-from customers.events import CustomerCreatedEvent, Event
+from customers.events import CustomerCreatedEvent
 
 
 class CustomerCreditLimitExceededError(Exception):
@@ -20,7 +20,6 @@ class Customer:
     credit_reservations: dict[uuid.UUID, Decimal]
     created_at: datetime.datetime
     version: int
-    events: list[Event]
 
     def __init__(
         self,
@@ -37,10 +36,11 @@ class Customer:
         self.credit_reservations = credit_reservations
         self.created_at = created_at
         self.version = version
-        self.events = []
 
     @staticmethod
-    def create(name: str, credit_limit: Decimal, correlation_id: uuid.UUID) -> "Customer":
+    def create(
+        name: str, credit_limit: Decimal, correlation_id: uuid.UUID
+    ) -> tuple["Customer", "CustomerCreatedEvent"]:
         customer = Customer(
             id=uuid.uuid4(),
             name=name,
@@ -56,8 +56,7 @@ class Customer:
             credit_limit=customer.credit_limit,
             created_at=customer.created_at,
         )
-        customer.events.append(event)
-        return customer
+        return customer, event
 
     @staticmethod
     def from_dict(data: dict) -> "Customer":
@@ -76,9 +75,9 @@ class Customer:
     def available_credit(self) -> Decimal:
         return self.credit_limit - sum(self.credit_reservations.values())
 
-    def reserve_credit(self, id: uuid.UUID, order_total: Decimal) -> None:
+    def reserve_credit(self, order_id: uuid.UUID, order_total: Decimal) -> None:
         if self.available_credit() >= order_total:
-            self.credit_reservations[id] = order_total
+            self.credit_reservations[order_id] = order_total
         else:
             raise CustomerCreditLimitExceededError
 

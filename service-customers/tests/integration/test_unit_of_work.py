@@ -33,14 +33,7 @@ class FailingDynamoDBCustomerRepository(DynamoDBCustomerRepository):
 @pytest.mark.asyncio()
 async def test_session_not_committed_by_default() -> None:
     uow = DynamoDBUnitOfWork.create()
-    customer = Customer(
-        id=uuid.uuid4(),
-        name="John Doe",
-        credit_limit=Decimal("200.00"),
-        credit_reservations={},
-        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
-        version=0,
-    )
+    [customer, _] = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
 
     await uow.customers.create(customer)
 
@@ -51,14 +44,7 @@ async def test_session_not_committed_by_default() -> None:
 @pytest.mark.asyncio()
 async def test_session_rollbacked() -> None:
     uow = DynamoDBUnitOfWork.create()
-    customer = Customer(
-        id=uuid.uuid4(),
-        name="John Doe",
-        credit_limit=Decimal("200.00"),
-        credit_reservations={},
-        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
-        version=0,
-    )
+    [customer, _] = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
 
     await uow.customers.create(customer)
     await uow.rollback()
@@ -71,14 +57,7 @@ async def test_session_rollbacked() -> None:
 @pytest.mark.asyncio()
 async def test_commit_is_idempotent() -> None:
     uow = DynamoDBUnitOfWork.create()
-    customer = Customer(
-        id=uuid.uuid4(),
-        name="John Doe",
-        credit_limit=Decimal("200.00"),
-        credit_reservations={},
-        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
-        version=0,
-    )
+    [customer, _] = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
 
     await uow.customers.create(customer)
     await uow.commit()
@@ -91,7 +70,7 @@ async def test_commit_is_idempotent() -> None:
 @pytest.mark.asyncio()
 async def test_domain_error_raised() -> None:
     uow = DynamoDBUnitOfWork.create()
-    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
+    [customer, _] = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
     await uow.customers.create(customer)
     await uow.commit()
 
@@ -104,7 +83,7 @@ async def test_domain_error_raised() -> None:
 async def test_dynamodb_error_raised() -> None:
     uow = DynamoDBUnitOfWork.create()
     uow.customers = FailingDynamoDBCustomerRepository(dynamodb.get_aggregate_table_name(), uow.customers.session)
-    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
+    [customer, _] = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
 
     await uow.customers.create(customer)
     with pytest.raises(ClientError) as exc_info:
@@ -123,7 +102,6 @@ async def test_events_published() -> None:
             correlation_id=uuid.uuid4(),
             name="John Doe",
             credit_limit=Decimal("200.00"),
-            created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
         ),
         CustomerCreatedEvent(
             event_id=uuid.uuid4(),
@@ -131,7 +109,6 @@ async def test_events_published() -> None:
             correlation_id=uuid.uuid4(),
             name="Mary Doe",
             credit_limit=Decimal("300.00"),
-            created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
         ),
     ]
 
@@ -167,7 +144,6 @@ async def test_cannot_publish_event_with_the_same_event_id() -> None:
         correlation_id=uuid.uuid4(),
         name="John Doe",
         credit_limit=Decimal("200.00"),
-        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
     )
     event_2 = CustomerCreatedEvent(
         event_id=event_id,
@@ -175,7 +151,6 @@ async def test_cannot_publish_event_with_the_same_event_id() -> None:
         correlation_id=uuid.uuid4(),
         name="Mary Doe",
         credit_limit=Decimal("300.00"),
-        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
     )
     await uow.events.publish([event_1])
     await uow.commit()
