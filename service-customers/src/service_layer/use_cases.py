@@ -45,7 +45,7 @@ async def reserve_credit(uow: AbstractUnitOfWork, event: OrderCreatedExternalEve
 
     try:
         customer.reserve_credit(order_id=event.order_id, order_total=event.order_total)
-        await uow.customers.save(customer)
+        await uow.customers.update(customer)
         await uow.events.publish([CustomerCreditReservedEvent(customer_id=event.customer_id, order_id=event.order_id)])
         log.info("credit_reserved")
     except CustomerCreditLimitExceededError:

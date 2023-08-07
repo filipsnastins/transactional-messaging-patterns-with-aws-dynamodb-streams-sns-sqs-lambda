@@ -8,6 +8,10 @@ from stockholm import Money
 from customers.events import CustomerCreatedEvent
 
 
+class OptimisticLockError(Exception):
+    pass
+
+
 class CustomerNotFoundError(Exception):
     pass
 
@@ -83,7 +87,7 @@ class Customer:
         if self.available_credit() >= order_total:
             self.credit_reservations[order_id] = order_total
         else:
-            raise CustomerCreditLimitExceededError
+            raise CustomerCreditLimitExceededError(self.id)
 
     def unreserve_credit(self, id: uuid.UUID) -> None:
         self.credit_reservations.pop(id)
