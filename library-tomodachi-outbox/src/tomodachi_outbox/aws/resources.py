@@ -7,28 +7,26 @@ from types_aiobotocore_iam.type_defs import CreateRoleResponseTypeDef
 from types_aiobotocore_lambda import LambdaClient
 from types_aiobotocore_lambda.type_defs import FunctionConfigurationResponseTypeDef
 
-from tomodachi_outbox.aws.utils import package_lambda_as_zip
-
 
 async def create_lambda_function(
     lambda_client: LambdaClient,
     function_name: str,
     environment_variables: dict[str, str],
     lambda_role_arn: str,
-    lambda_path: Path,
+    lambda_zip_path: Path,
 ) -> FunctionConfigurationResponseTypeDef:
-    code = package_lambda_as_zip(lambda_path)
-    return await lambda_client.create_function(
-        FunctionName=f"lambda-{function_name}",
-        Runtime="python3.10",
-        Role=lambda_role_arn,
-        Handler="app.lambda_function.lambda_handler",
-        Code={"ZipFile": code.read()},
-        Publish=True,
-        Timeout=30,
-        MemorySize=256,
-        Environment={"Variables": environment_variables},
-    )
+    with open(lambda_zip_path, "rb") as f:
+        return await lambda_client.create_function(
+            FunctionName=f"lambda-{function_name}",
+            Runtime="python3.10",
+            Role=lambda_role_arn,
+            Handler="app.lambda_function.lambda_handler",
+            Code={"ZipFile": f.read()},
+            Publish=True,
+            Timeout=30,
+            MemorySize=256,
+            Environment={"Variables": environment_variables},
+        )
 
 
 async def create_lambda_dynamodb_streams_role(

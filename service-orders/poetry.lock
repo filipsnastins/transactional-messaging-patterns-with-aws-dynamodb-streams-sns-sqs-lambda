@@ -180,7 +180,6 @@ files = [
 ]
 
 [package.dependencies]
-exceptiongroup = {version = "*", markers = "python_version < \"3.11\""}
 idna = ">=2.8"
 sniffio = ">=1.1"
 
@@ -227,8 +226,7 @@ files = [
 
 [package.dependencies]
 lazy-object-proxy = ">=1.4.0"
-typing-extensions = {version = ">=4.0.0", markers = "python_version < \"3.11\""}
-wrapt = {version = ">=1.11,<2", markers = "python_version < \"3.11\""}
+wrapt = {version = ">=1.14,<2", markers = "python_version >= \"3.11\""}
 
 [[package]]
 name = "async-timeout"
@@ -272,7 +270,6 @@ files = [
 
 [package.dependencies]
 pyflakes = ">=3.0.0"
-tomli = {version = ">=2.0.1", markers = "python_version < \"3.11\""}
 
 [[package]]
 name = "bandit"
@@ -334,7 +331,6 @@ mypy-extensions = ">=0.4.3"
 packaging = ">=22.0"
 pathspec = ">=0.9.0"
 platformdirs = ">=2"
-tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
 
 [package.extras]
 colorama = ["colorama (>=0.4.3)"]
@@ -586,9 +582,6 @@ files = [
     {file = "coverage-7.2.7.tar.gz", hash = "sha256:924d94291ca674905fe9481f12294eb11f2d3d3fd1adb20314ba89e94f44ed59"},
 ]
 
-[package.dependencies]
-tomli = {version = "*", optional = true, markers = "python_full_version <= \"3.11.0a6\" and extra == \"toml\""}
-
 [package.extras]
 toml = ["tomli"]
 
@@ -653,20 +646,6 @@ websocket-client = ">=0.32.0"
 ssh = ["paramiko (>=2.4.3)"]
 
 [[package]]
-name = "exceptiongroup"
-version = "1.1.2"
-description = "Backport of PEP 654 (exception groups)"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "exceptiongroup-1.1.2-py3-none-any.whl", hash = "sha256:e346e69d186172ca7cf029c8c1d16235aa0e04035e5750b4b95039e65204328f"},
-    {file = "exceptiongroup-1.1.2.tar.gz", hash = "sha256:12c3e887d6485d16943a309616de20ae5582633e0a2eda17f4e10fd61c1e8af5"},
-]
-
-[package.extras]
-test = ["pytest (>=6)"]
-
-[[package]]
 name = "filelock"
 version = "3.12.2"
 description = "A platform independent file lock."
@@ -726,7 +705,6 @@ files = [
 [package.dependencies]
 black = ">=22.1.0"
 flake8 = ">=3"
-tomli = {version = "*", markers = "python_version < \"3.11\""}
 
 [package.extras]
 develop = ["build", "twine"]
@@ -859,7 +837,6 @@ files = [
 
 [package.dependencies]
 Flake8 = ">=5"
-TOMLi = {version = "*", markers = "python_version < \"3.11\""}
 
 [package.extras]
 dev = ["pyTest", "pyTest-cov"]
@@ -1367,7 +1344,6 @@ files = [
 
 [package.dependencies]
 mypy-extensions = ">=1.0.0"
-tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
 typing-extensions = ">=4.1.0"
 
 [package.extras]
@@ -1547,11 +1523,10 @@ files = [
 [package.dependencies]
 astroid = ">=2.15.6,<=2.17.0-dev0"
 colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
-dill = {version = ">=0.2", markers = "python_version < \"3.11\""}
+dill = {version = ">=0.3.6", markers = "python_version >= \"3.11\""}
 isort = ">=4.2.5,<6"
 mccabe = ">=0.6,<0.8"
 platformdirs = ">=2.2.0"
-tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
 tomlkit = ">=0.10.1"
 
 [package.extras]
@@ -1571,11 +1546,9 @@ files = [
 
 [package.dependencies]
 colorama = {version = "*", markers = "sys_platform == \"win32\""}
-exceptiongroup = {version = ">=1.0.0rc8", markers = "python_version < \"3.11\""}
 iniconfig = "*"
 packaging = "*"
 pluggy = ">=0.12,<2.0"
-tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 
 [package.extras]
 testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
@@ -1842,6 +1815,20 @@ files = [
 pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
+name = "tenacity"
+version = "8.2.2"
+description = "Retry code until it succeeds"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "tenacity-8.2.2-py3-none-any.whl", hash = "sha256:2f277afb21b851637e8f52e6a613ff08734c347dc19ade928e519d7d2d8569b0"},
+    {file = "tenacity-8.2.2.tar.gz", hash = "sha256:43af037822bd0029025877f3b2d97cc4d7bb0c2991000a3d59d71517c5c969e0"},
+]
+
+[package.extras]
+doc = ["reno", "sphinx", "tornado (>=4.5)"]
+
+[[package]]
 name = "testcontainers"
 version = "3.7.1"
 description = "Library provides lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container"
@@ -1873,17 +1860,6 @@ postgresql = ["psycopg2-binary", "sqlalchemy"]
 rabbitmq = ["pika"]
 redis = ["redis"]
 selenium = ["selenium"]
-
-[[package]]
-name = "tomli"
-version = "2.0.1"
-description = "A lil' TOML parser"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
-    {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
-]
 
 [[package]]
 name = "tomlkit"
@@ -1930,21 +1906,22 @@ uvloop = ["uvloop (>=0.14.0,<1.0.0)"]
 
 [[package]]
 name = "tomodachi-testcontainers"
-version = "0.2.3"
+version = "0.3.2"
 description = "Collection of Testcontainers, pytest fixtures and test clients for end-to-end/integration testing for Python Tomodachi framework. A great starting point to learn more about Testcontainers and necessity of integration testing."
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "tomodachi_testcontainers-0.2.3-py3-none-any.whl", hash = "sha256:3948f3100b6aa6ce35c69a2aa060354d1ee8ad25cbfa54d123660d0a22ca8ac7"},
-    {file = "tomodachi_testcontainers-0.2.3.tar.gz", hash = "sha256:b1eaf4ce2ef753c0f69dbec43e1d1c195ef64d76f73302e4e2299f66cfb8354d"},
+    {file = "tomodachi_testcontainers-0.3.2-py3-none-any.whl", hash = "sha256:3c5f8a876fc9a75077e558d28b81162460799277a0076663a4041910b7947fa1"},
+    {file = "tomodachi_testcontainers-0.3.2.tar.gz", hash = "sha256:e87eb887619ef609677199d79458c2988c14e41d57a6c114f3d2f0adfb021a75"},
 ]
 
 [package.dependencies]
 aiobotocore = ">=2.5.2,<3.0.0"
 pytest = ">=7.1.2,<8.0.0"
 pytest-asyncio = ">=0.21.1,<0.22.0"
+tenacity = ">=8.2.2,<9.0.0"
 testcontainers = ">=3.7.1,<4.0.0"
-types-aiobotocore = {version = ">=2.5.2,<3.0.0", extras = ["dynamodb", "s3", "sns", "sqs", "ssm"]}
+types-aiobotocore = {version = ">=2.5.2,<3.0.0", extras = ["dynamodb", "iam", "lambda", "s3", "sns", "sqs", "ssm"]}
 
 [package.extras]
 sftp = ["asyncssh (>=2.13.2,<3.0.0)"]
@@ -1963,6 +1940,8 @@ files = [
 [package.dependencies]
 botocore-stubs = "*"
 types-aiobotocore-dynamodb = {version = ">=2.5.0,<2.6.0", optional = true, markers = "extra == \"dynamodb\""}
+types-aiobotocore-iam = {version = ">=2.5.0,<2.6.0", optional = true, markers = "extra == \"iam\""}
+types-aiobotocore-lambda = {version = ">=2.5.0,<2.6.0", optional = true, markers = "extra == \"lambda\""}
 types-aiobotocore-s3 = {version = ">=2.5.0,<2.6.0", optional = true, markers = "extra == \"s3\""}
 types-aiobotocore-sns = {version = ">=2.5.0,<2.6.0", optional = true, markers = "extra == \"sns\""}
 types-aiobotocore-sqs = {version = ">=2.5.0,<2.6.0", optional = true, markers = "extra == \"sqs\""}
@@ -2338,6 +2317,28 @@ files = [
 ]
 
 [[package]]
+name = "types-aiobotocore-iam"
+version = "2.5.2.post2"
+description = "Type annotations for aiobotocore.IAM 2.5.2 service generated with mypy-boto3-builder 7.17.2"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "types-aiobotocore-iam-2.5.2.post2.tar.gz", hash = "sha256:09c75d9ed28175cbea6eb3cba61b2899fc8868be256fd493487c0fb7611c6a1e"},
+    {file = "types_aiobotocore_iam-2.5.2.post2-py3-none-any.whl", hash = "sha256:4d8def91668539057f54fc356e3b188b5775ded7ed9d01eef59f5ae3bde0b603"},
+]
+
+[[package]]
+name = "types-aiobotocore-lambda"
+version = "2.5.2.post2"
+description = "Type annotations for aiobotocore.Lambda 2.5.2 service generated with mypy-boto3-builder 7.17.2"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "types-aiobotocore-lambda-2.5.2.post2.tar.gz", hash = "sha256:49ce0a514eece5c93d464e7c8a87a9cb5aee0e3e1d312e65e5f223f13a985330"},
+    {file = "types_aiobotocore_lambda-2.5.2.post2-py3-none-any.whl", hash = "sha256:53d3ef506f3dd06d4636664e51796bb72a02c645a8e1efab3ec5c94d46118b8d"},
+]
+
+[[package]]
 name = "types-aiobotocore-s3"
 version = "2.5.2.post2"
 description = "Type annotations for aiobotocore.S3 2.5.2 service generated with mypy-boto3-builder 7.17.2"
@@ -2700,5 +2701,5 @@ multidict = ">=4.0"
 
 [metadata]
 lock-version = "2.0"
-python-versions = "~3.10"
-content-hash = "07fd5976e4c640e42e6e252b74a2ae67e02b18b3417c446356c5f3f30c7c7420"
+python-versions = "^3.11"
+content-hash = "14148a6cf5c77f9da054cde114eb3195a9eda8fc8683498b1aa5678497d341f8"

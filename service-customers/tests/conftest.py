@@ -6,13 +6,13 @@ import httpx
 import pytest
 import pytest_asyncio
 from docker.models.images import Image as DockerImage
+from tomodachi_testcontainers.clients import snssqs_client
+from tomodachi_testcontainers.containers import MotoContainer, TomodachiContainer
+from tomodachi_testcontainers.utils import get_available_port
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
 
 from adapters import dynamodb
-from tomodachi_testcontainers.clients import snssqs_client
-from tomodachi_testcontainers.containers import MotoContainer, TomodachiContainer
-from tomodachi_testcontainers.utils import get_available_port
 
 
 @pytest.fixture(scope="session")
@@ -21,28 +21,22 @@ def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
         yield loop
 
 
-@pytest_asyncio.fixture()
-async def _aws_credentials(
-    monkeypatch: pytest.MonkeyPatch, moto_container: MotoContainer, _reset_moto_container_on_teardown: None
-) -> None:
+@pytest.fixture()
+def _environment(monkeypatch: pytest.MonkeyPatch, moto_container: MotoContainer) -> None:
     aws_config = moto_container.get_aws_client_config()
+    monkeypatch.setenv("ENVIRONMENT", "autotest")
     monkeypatch.setenv("AWS_REGION", aws_config["region_name"])
     monkeypatch.setenv("AWS_ACCESS_KEY_ID", aws_config["aws_access_key_id"])
     monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", aws_config["aws_secret_access_key"])
-    monkeypatch.setenv("AWS_DYNAMODB_ENDPOINT_URL", aws_config["endpoint_url"])
+    monkeypatch.setenv("AWS_ENDPOINT_URL", aws_config["endpoint_url"])
     monkeypatch.setenv("DYNAMODB_AGGREGATE_TABLE_NAME", "customers")
     monkeypatch.setenv("DYNAMODB_OUTBOX_TABLE_NAME", "customers-outbox")
 
 
 @pytest_asyncio.fixture()
-async def _create_tables(_aws_credentials: None) -> None:
+async def _mock_dynamodb(_environment: None, _reset_moto_container_on_teardown: None) -> None:
     await dynamodb.create_aggregate_table()
     await dynamodb.create_outbox_table()
-
-
-@pytest.fixture()
-def _mock_dynamodb(_create_tables: None) -> None:
-    pass
 
 
 @pytest_asyncio.fixture()
@@ -84,20 +78,16 @@ def tomodachi_container(
     tomodachi_image: DockerImage,
     moto_container: MotoContainer,
     _create_topics_and_queues: None,
-    _create_tables: None,
     _reset_moto_container_on_teardown: None,
 ) -> Generator[TomodachiContainer, None, None]:
     aws_config = moto_container.get_aws_client_config()
-    endpoint_internal_url = moto_container.get_internal_url()
     with (
         TomodachiContainer(image=str(tomodachi_image.id), edge_port=get_available_port())
         .with_env("ENVIRONMENT", "autotest")
         .with_env("AWS_REGION", aws_config["region_name"])
         .with_env("AWS_ACCESS_KEY_ID", aws_config["aws_access_key_id"])
         .with_env("AWS_SECRET_ACCESS_KEY", aws_config["aws_secret_access_key"])
-        .with_env("AWS_SNS_ENDPOINT_URL", endpoint_internal_url)
-        .with_env("AWS_SQS_ENDPOINT_URL", endpoint_internal_url)
-        .with_env("AWS_DYNAMODB_ENDPOINT_URL", endpoint_internal_url)
+        .with_env("AWS_ENDPOINT_URL", moto_container.get_internal_url())
         .with_env("DYNAMODB_AGGREGATE_TABLE_NAME", "customers")
         .with_env("DYNAMODB_OUTBOX_TABLE_NAME", "customers-outbox")
     ) as container:

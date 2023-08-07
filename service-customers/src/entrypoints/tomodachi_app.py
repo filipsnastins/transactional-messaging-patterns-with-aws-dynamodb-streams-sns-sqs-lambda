@@ -2,8 +2,8 @@ import os
 import uuid
 
 import tomodachi
+from adapters import dynamodb, outbox, sns
 from aiohttp import web
-
 from customers.commands import CreateCustomerCommand
 from service_layer import use_cases, views
 from service_layer.response import CreateCustomerResponse
@@ -15,8 +15,8 @@ class TomodachiService(tomodachi.Service):
 
     options = tomodachi.Options(
         aws_endpoint_urls=tomodachi.Options.AWSEndpointURLs(
-            sns=os.environ.get("AWS_SNS_ENDPOINT_URL"),
-            sqs=os.environ.get("AWS_SQS_ENDPOINT_URL"),
+            sns=os.environ.get("AWS_ENDPOINT_URL"),
+            sqs=os.environ.get("AWS_ENDPOINT_URL"),
         ),
         aws_sns_sqs=tomodachi.Options.AWSSNSSQS(
             region_name=os.environ["AWS_REGION"],
@@ -26,6 +26,13 @@ class TomodachiService(tomodachi.Service):
             queue_name_prefix=os.environ.get("AWS_SQS_QUEUE_NAME_PREFIX", ""),
         ),
     )
+
+    async def _start_service(self) -> None:
+        if os.environ["ENVIRONMENT"] in ["development", "autotest"]:
+            await sns.create_topics()
+            await dynamodb.create_aggregate_table()
+            await dynamodb.create_outbox_table()
+            await outbox.create_dynamodb_streams_outbox()
 
     @tomodachi.http("GET", r"/customers/health/?", ignore_logging=[200])
     async def healthcheck(self, request: web.Request) -> web.Response:

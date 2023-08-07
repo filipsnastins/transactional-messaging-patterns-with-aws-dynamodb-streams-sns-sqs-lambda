@@ -1,4 +1,4 @@
-FROM python:3.10.12-slim-buster AS python-base
+FROM python:3.11.4-slim-buster AS python-base
 WORKDIR /app
 ARG VIRTUAL_ENV=/opt/venv
 RUN addgroup --gid 1001 app && adduser --uid 1000 --gid 1001 app

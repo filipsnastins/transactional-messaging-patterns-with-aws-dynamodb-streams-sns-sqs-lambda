@@ -3,13 +3,13 @@
 - Get Lambda logs from LocalStack
 
 ```bash
-awslocal --endpoint-url=http://localhost:59792 --region=us-east-1 logs tail /aws/lambda/development-lambda-dynamodb-streams-outbox--customers-outbox
+awslocal --endpoint-url=http://localhost:55852 --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--outbox
 
-awslocal --endpoint-url=http://localhost:59792 --region=us-east-1 logs describe-log-groups
+awslocal --endpoint-url=http://localhost:55852 --region=us-east-1 logs describe-log-groups
 
-awslocal --endpoint-url=http://localhost:59792 --region=us-east-1 dynamodb list-tables
+awslocal --endpoint-url=http://localhost:55852 --region=us-east-1 dynamodb list-tables
 
-awslocal --endpoint-url=http://localhost:59792 --region=us-east-1 lambda list-functions
+awslocal --endpoint-url=http://localhost:55852 --region=us-east-1 lambda list-functions
 ```
 
 - Example of a DynamoDB Stream Record
@@ -50,4 +50,7 @@ awslocal --endpoint-url=http://localhost:59792 --region=us-east-1 lambda list-fu
 ```bash
 docker pull mlupin/docker-lambda:python3.10-arm64-202304201629
 docker tag mlupin/docker-lambda:python3.10-arm64-202304201629 mlupin/docker-lambda:python3.10
+
+docker pull mlupin/docker-lambda:python3.11-arm64-202304201629
+docker tag mlupin/docker-lambda:python3.11-arm64-202304201629 mlupin/docker-lambda:python3.11
 ```

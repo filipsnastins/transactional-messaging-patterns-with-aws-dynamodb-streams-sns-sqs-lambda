@@ -5,9 +5,10 @@ description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "~3.10"
+python = "^3.11"
 lambda-outbox-dynamodb-streams = { path = "../lambda-outbox-dynamodb-streams" }
 structlog = "^23.1.0"
+tomodachi = "^0.25.0"
 types-aiobotocore = { extras = [
     "dynamodb",
     "iam",
@@ -43,7 +44,7 @@ pytest = "^7.4.0"
 pytest-cov = "^4.1.0"
 pytest-env = "^0.8.2"
 ruff = "^0.0.277"
-tomodachi-testcontainers = "^0.3.1"
+tomodachi-testcontainers = "^0.3.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -145,9 +146,10 @@ testpaths = ["tests"]
 norecursedirs = [".venv", "__pycache__", ".git"]
 log_cli_level = "INFO"
 env = [
+    # Set dummy AWS credentials so that we don't accidentally mutate real infrastructure
+    "AWS_DEFAULT_REGION=us-east-1",
     "AWS_ACCESS_KEY_ID=testing",
     "AWS_SECRET_ACCESS_KEY=testing",
     "AWS_SECURITY_TOKEN=testing",
     "AWS_SESSION_TOKEN=testing",
-    "AWS_DEFAULT_REGION=us-east-1",
 ]
