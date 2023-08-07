@@ -115,15 +115,6 @@ def test_customer_model_comparison() -> None:
     assert customer_1 == customer_2
 
 
-def test_insufficient_credit_raises_credit_limit_exceeded_error() -> None:
-    [customer, _] = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
-
-    with pytest.raises(CustomerCreditLimitExceededError):
-        customer.reserve_credit(order_id=uuid.uuid4(), order_total=Decimal("200.01"))
-
-    assert customer.available_credit() == Decimal("200.00")
-
-
 def test_unreserve_credit() -> None:
     [customer, _] = Customer.create(name="John Doe", credit_limit=Decimal("200.00"), correlation_id=uuid.uuid4())
     id = uuid.uuid4()

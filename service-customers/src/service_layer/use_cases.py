@@ -1,8 +1,9 @@
 import structlog
 
 from customers.commands import CreateCustomerCommand
-from customers.customer import Customer
+from customers.customer import Customer, CustomerCreditLimitExceededError
 from customers.events import (
+    CustomerCreditReservationFailedEvent,
     CustomerCreditReservedEvent,
     CustomerValidationErrors,
     CustomerValidationFailedEvent,
@@ -29,18 +30,27 @@ async def reserve_credit(uow: AbstractUnitOfWork, event: OrderCreatedExternalEve
     log = logger.bind(customer_id=event.customer_id, order_id=event.order_id, order_total=event.order_total)
     customer = await uow.customers.get(customer_id=event.customer_id)
     if not customer:
-        customer_validation_failed_event = CustomerValidationFailedEvent(
-            customer_id=event.customer_id,
-            order_id=event.order_id,
-            error=CustomerValidationErrors.CUSTOMER_NOT_FOUND,
+        await uow.events.publish(
+            [
+                CustomerValidationFailedEvent(
+                    customer_id=event.customer_id,
+                    order_id=event.order_id,
+                    error=CustomerValidationErrors.CUSTOMER_NOT_FOUND,
+                )
+            ]
         )
-        await uow.events.publish([customer_validation_failed_event])
         await uow.commit()
         log.error("customer_not_found")
         return
 
-    customer.reserve_credit(order_id=event.order_id, order_total=event.order_total)
-    credit_reserved_event = CustomerCreditReservedEvent(customer_id=event.customer_id, order_id=event.order_id)
-    await uow.events.publish([credit_reserved_event])
+    try:
+        customer.reserve_credit(order_id=event.order_id, order_total=event.order_total)
+        await uow.customers.save(customer)
+        await uow.events.publish([CustomerCreditReservedEvent(customer_id=event.customer_id, order_id=event.order_id)])
+        log.info("credit_reserved")
+    except CustomerCreditLimitExceededError:
+        await uow.events.publish(
+            [CustomerCreditReservationFailedEvent(customer_id=event.customer_id, order_id=event.order_id)]
+        )
+        log.info("credit_limit_exceeded")
     await uow.commit()
-    log.info("credit_reserved")

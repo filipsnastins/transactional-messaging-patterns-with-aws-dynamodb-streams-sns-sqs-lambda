@@ -19,6 +19,9 @@ class AbstractCustomerRepository(Protocol):
     async def create(self, customer: Customer) -> None:
         ...
 
+    async def save(self, customer: Customer) -> None:
+        ...
+
     async def get(self, customer_id: uuid.UUID) -> Customer | None:
         ...
 
