@@ -115,4 +115,5 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
                 },
                 version=int(item["Version"]["N"]),
                 created_at=str_to_datetime(item["CreatedAt"]["S"]),
+                updated_at=str_to_datetime(item["UpdatedAt"]["S"]) if item.get("UpdatedAt") else None,
             )
