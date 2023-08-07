@@ -38,6 +38,7 @@ async def test_customer_created_event_published() -> None:
     assert isinstance(event, CustomerCreatedEvent)
     assert isinstance(event.event_id, uuid.UUID)
     assert event.event_id != customer.id
+    assert event.correlation_id == cmd.correlation_id
     assert event.customer_id == customer.id
     assert event.name == "John Doe"
     assert event.credit_limit == Decimal("200.00")

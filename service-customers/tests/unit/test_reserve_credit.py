@@ -26,6 +26,7 @@ async def test_customer_not_found() -> None:
     [event] = uow.events.events
 
     assert isinstance(event, CustomerValidationFailedEvent)
+    assert event.correlation_id == order_created_event.correlation_id
     assert event.customer_id == event.customer_id
     assert event.order_id == order_created_event.order_id
     assert event.error == CustomerValidationErrors.CUSTOMER_NOT_FOUND
@@ -94,6 +95,7 @@ async def test_customer_credit_limit_reserved_event_published() -> None:
     [_, event] = uow.events.events
 
     assert isinstance(event, CustomerCreditReservedEvent)
+    assert event.correlation_id == order_created_event.correlation_id
     assert event.customer_id == customer.id
     assert event.order_id == order_created_event.order_id
 
@@ -111,5 +113,6 @@ async def test_insufficient_credit() -> None:
     [_, event] = uow.events.events
 
     assert isinstance(event, CustomerCreditReservationFailedEvent)
+    assert event.correlation_id == order_created_event.correlation_id
     assert event.customer_id == customer.id
     assert event.order_id == order_created_event.order_id

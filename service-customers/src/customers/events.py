@@ -14,8 +14,8 @@ class CustomerValidationErrors(Enum):
 @dataclass(kw_only=True)
 class Event:
     event_id: uuid.UUID = field(default_factory=uuid.uuid4)
-    customer_id: uuid.UUID
     correlation_id: uuid.UUID = field(default_factory=uuid.uuid4)
+    customer_id: uuid.UUID
     created_at: datetime.datetime = field(
         default_factory=lambda: datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
     )
