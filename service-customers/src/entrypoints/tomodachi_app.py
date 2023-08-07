@@ -1,11 +1,15 @@
+import datetime
 import os
 import uuid
 
 import tomodachi
 from aiohttp import web
+from stockholm import Money
+from tomodachi.envelope.json_base import JsonBase
 
 from adapters import dynamodb, outbox, sns
 from customers.commands import CreateCustomerCommand
+from customers.events import OrderCreatedExternalEvent
 from service_layer import use_cases, views
 from service_layer.response import CreateCustomerResponse
 from service_layer.unit_of_work import DynamoDBUnitOfWork
@@ -52,3 +56,19 @@ class TomodachiService(tomodachi.Service):
         uow = DynamoDBUnitOfWork.create()
         response = await views.get_customer(uow, customer_id=uuid.UUID(customer_id))
         return web.json_response(response.to_dict(), status=response.status_code)
+
+    @tomodachi.aws_sns_sqs(
+        "order--created",
+        queue="customer--order-created",
+        message_envelope=JsonBase,
+    )
+    async def order_created_handler(self, data: dict) -> None:
+        uow = DynamoDBUnitOfWork.create()
+        event = OrderCreatedExternalEvent(
+            event_id=uuid.UUID(data["event_id"]),
+            order_id=uuid.UUID(data["order_id"]),
+            customer_id=uuid.UUID(data["customer_id"]),
+            order_total=Money.from_sub_units(int(data["order_total"])).as_decimal(),
+            created_at=datetime.datetime.fromisoformat(data["created_at"]),
+        )
+        await use_cases.reserve_credit(uow, event)

@@ -1,4 +1,4 @@
-Feature: Credit limit
+Feature: Reserve customer credit for a new order
 
     Background:
         Given customer exists with credit limit "249.99"
@@ -15,4 +15,4 @@ Feature: Credit limit
 
     Scenario: Credit reservation for non-existing customer
         When order is created for non-existing customer
-        Then the customer validation fails - customer is not found
+        Then the customer validation fails - customer not found

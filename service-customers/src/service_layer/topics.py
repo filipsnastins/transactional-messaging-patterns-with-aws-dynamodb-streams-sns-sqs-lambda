@@ -1,5 +1,14 @@
-from customers.events import CustomerCreatedEvent, Event
+from customers.events import (
+    CustomerCreatedEvent,
+    CustomerCreditReservationFailedEvent,
+    CustomerCreditReservedEvent,
+    CustomerValidationFailedEvent,
+    Event,
+)
 
 CUSTOMER_TOPICS_MAP: dict[type[Event], str] = {
     CustomerCreatedEvent: "customer--created",
+    CustomerCreditReservedEvent: "customer--credit-reserved",
+    CustomerCreditReservationFailedEvent: "customer--credit-reservation-failed",
+    CustomerValidationFailedEvent: "customer--validation-failed",
 }

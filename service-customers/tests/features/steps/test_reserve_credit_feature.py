@@ -4,7 +4,6 @@ from asyncio import AbstractEventLoop
 from typing import Any
 
 import httpx
-import pytest
 from pytest_bdd import given, parsers, scenarios, then, when
 from stockholm import Money
 from tomodachi.envelope.json_base import JsonBase
@@ -13,9 +12,7 @@ from tomodachi_testcontainers.pytest.async_probes import probe_until
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
 
-pytestmark = pytest.mark.xfail(strict=True)
-
-scenarios("../credit_limit.feature")
+scenarios("../reserve_credit.feature")
 
 
 @given(parsers.parse('customer exists with credit limit "{credit_limit}"'), target_fixture="create_customer")
@@ -40,11 +37,14 @@ def _(
 ) -> uuid.UUID:
     async def _async() -> uuid.UUID:
         order_id = uuid.uuid4()
+        customer_id = create_customer.json()["id"]
         data = {
+            "event_id": str(uuid.uuid4()),
+            "correlation_id": str(uuid.uuid4()),
             "order_id": str(order_id),
-            "customer_id": create_customer.json()["id"],
+            "customer_id": customer_id,
             "order_total": int(Money(order_total).to_sub_units()),
-            "created_at": datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat(),
+            "created_at": datetime.datetime.utcnow().replace(tzinfo=datetime.UTC).isoformat(),
         }
 
         await snssqs_client.publish(moto_sns_client, "order--created", data, JsonBase)
@@ -59,11 +59,14 @@ def _(
     event_loop: AbstractEventLoop, moto_sqs_client: SQSClient, create_customer: httpx.Response, order_id: uuid.UUID
 ) -> None:
     async def _assert_customer_credit_reserved() -> None:
+        customer_id = create_customer.json()["id"]
         [message] = await snssqs_client.receive(moto_sqs_client, "customer--credit-reserved", JsonBase, dict[str, Any])
 
         assert message == {
-            "order_id": order_id,
-            "customer_id": create_customer.json()["id"],
+            "event_id": message["event_id"],
+            "correlation_id": message["correlation_id"],
+            "order_id": str(order_id),
+            "customer_id": customer_id,
             "created_at": message["created_at"],
         }
 
@@ -97,13 +100,16 @@ def _(
     event_loop: AbstractEventLoop, moto_sqs_client: SQSClient, create_customer: httpx.Response, order_id: uuid.UUID
 ) -> None:
     async def _assert_customer_credit_reserved() -> None:
+        customer_id = create_customer.json()["id"]
         [message] = await snssqs_client.receive(
             moto_sqs_client, "customer--credit-reservation-failed", JsonBase, dict[str, Any]
         )
 
         assert message == {
-            "order_id": order_id,
-            "customer_id": create_customer.json()["id"],
+            "event_id": message["event_id"],
+            "correlation_id": message["correlation_id"],
+            "order_id": str(order_id),
+            "customer_id": customer_id,
             "created_at": message["created_at"],
         }
 
@@ -118,10 +124,12 @@ def _(event_loop: AbstractEventLoop, moto_sns_client: SNSClient) -> uuid.UUID:
     async def _async() -> uuid.UUID:
         customer_id = uuid.uuid4()
         data = {
+            "event_id": str(uuid.uuid4()),
+            "correlation_id": str(uuid.uuid4()),
             "order_id": str(uuid.uuid4()),
             "customer_id": str(customer_id),
             "order_total": 10000,
-            "created_at": datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat(),
+            "created_at": datetime.datetime.utcnow().replace(tzinfo=datetime.UTC).isoformat(),
         }
 
         await snssqs_client.publish(moto_sns_client, "order--created", data, JsonBase)
@@ -131,7 +139,7 @@ def _(event_loop: AbstractEventLoop, moto_sns_client: SNSClient) -> uuid.UUID:
     return event_loop.run_until_complete(_async())
 
 
-@then("the customer validation fails - customer is not found")
+@then("the customer validation fails - customer not found")
 def _(event_loop: AbstractEventLoop, moto_sqs_client: SQSClient, non_existing_customer_id: uuid.UUID) -> None:
     async def _assert_customer_credit_reserved() -> None:
         [message] = await snssqs_client.receive(
@@ -139,6 +147,9 @@ def _(event_loop: AbstractEventLoop, moto_sqs_client: SQSClient, non_existing_cu
         )
 
         assert message == {
+            "event_id": message["event_id"],
+            "correlation_id": message["correlation_id"],
+            "order_id": message["order_id"],
             "customer_id": str(non_existing_customer_id),
             "error": "CUSTOMER_NOT_FOUND",
             "created_at": message["created_at"],
