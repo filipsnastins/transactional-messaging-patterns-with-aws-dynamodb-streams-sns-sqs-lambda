@@ -3,9 +3,9 @@ from pathlib import Path
 
 import lambda_outbox_dynamodb_streams
 import structlog
+from tomodachi_outbox import outbox
 
 from adapters import clients, dynamodb
-from tomodachi_outbox import outbox
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 

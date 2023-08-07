@@ -6,13 +6,13 @@ import httpx
 import pytest
 import pytest_asyncio
 from docker.models.images import Image as DockerImage
-from tomodachi_testcontainers.clients import snssqs_client
-from tomodachi_testcontainers.containers import MotoContainer, TomodachiContainer
-from tomodachi_testcontainers.utils import get_available_port
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
 
 from adapters import dynamodb
+from tomodachi_testcontainers.clients import snssqs_client
+from tomodachi_testcontainers.containers import MotoContainer, TomodachiContainer
+from tomodachi_testcontainers.utils import get_available_port
 
 
 @pytest.fixture(scope="session")
@@ -22,10 +22,8 @@ def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
 
 
 @pytest_asyncio.fixture()
-async def _mock_dynamodb(
-    monkeypatch: pytest.MonkeyPatch,
-    moto_container: MotoContainer,
-    _reset_moto_container_on_teardown: None,
+async def _aws_credentials(
+    monkeypatch: pytest.MonkeyPatch, moto_container: MotoContainer, _reset_moto_container_on_teardown: None
 ) -> None:
     aws_config = moto_container.get_aws_client_config()
     monkeypatch.setenv("AWS_REGION", aws_config["region_name"])
@@ -34,8 +32,17 @@ async def _mock_dynamodb(
     monkeypatch.setenv("AWS_DYNAMODB_ENDPOINT_URL", aws_config["endpoint_url"])
     monkeypatch.setenv("DYNAMODB_AGGREGATE_TABLE_NAME", "customers")
     monkeypatch.setenv("DYNAMODB_OUTBOX_TABLE_NAME", "customers-outbox")
+
+
+@pytest_asyncio.fixture()
+async def _create_tables(_aws_credentials: None) -> None:
     await dynamodb.create_aggregate_table()
     await dynamodb.create_outbox_table()
+
+
+@pytest.fixture()
+def _mock_dynamodb(_create_tables: None) -> None:
+    pass
 
 
 @pytest_asyncio.fixture()
@@ -77,6 +84,7 @@ def tomodachi_container(
     tomodachi_image: DockerImage,
     moto_container: MotoContainer,
     _create_topics_and_queues: None,
+    _create_tables: None,
     _reset_moto_container_on_teardown: None,
 ) -> Generator[TomodachiContainer, None, None]:
     aws_config = moto_container.get_aws_client_config()
