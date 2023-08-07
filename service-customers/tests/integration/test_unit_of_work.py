@@ -6,9 +6,9 @@ import pytest
 from botocore.exceptions import ClientError
 
 from adapters import dynamodb
-from adapters.customer_repository import CustomerAlreadyExistsError, DynamoDBCustomerRepository
+from adapters.customer_repository import DynamoDBCustomerRepository
 from adapters.event_repository import EventAlreadyPublishedError
-from customers.customer import Customer
+from customers.customer import Customer, CustomerAlreadyExistsError
 from customers.events import CustomerCreatedEvent, Event
 from service_layer.unit_of_work import DynamoDBUnitOfWork
 
