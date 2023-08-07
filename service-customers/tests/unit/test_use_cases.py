@@ -2,7 +2,7 @@ import uuid
 from decimal import Decimal
 
 import pytest
-from tomodachi_transactional_outbox.message import Message
+from tomodachi_outbox.message import Message
 
 from adapters.customer_repository import AbstractCustomerRepository
 from adapters.event_repository import AbstractEventRepository

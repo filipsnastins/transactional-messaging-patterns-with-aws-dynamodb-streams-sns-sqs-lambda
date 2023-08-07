@@ -5,17 +5,17 @@ description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "~3.10"
 botocore = "^1.29.161"
 stockholm = "^0.5.5"
 structlog = "^23.1.0"
 tomodachi = "^0.25.0"
+tomodachi-outbox = { path = "../library-tomodachi-outbox" }
 types-aiobotocore = { extras = [
     "dynamodb",
     "iam",
     "lambda",
 ], version = "^2.5.2" }
-tomodachi-transactional-outbox = { path = "vendors/tomodachi_transactional_outbox-0.0.0.tar.gz" }
 uvloop = "^0.17.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -52,6 +52,7 @@ pytest-bdd = "^6.1.1"
 pytest-cov = "^4.1.0"
 ruff = "^0.0.277"
 tomodachi-testcontainers = "^0.2.3"
+pytest-env = "^0.8.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -152,3 +153,15 @@ junit_family = "xunit2"
 testpaths = ["tests"]
 norecursedirs = [".venv", "__pycache__", ".git"]
 log_cli_level = "INFO"
+env = [
+    # Set dummy AWS credentials so that we don't accidentally mutate real infrastructure
+    "AWS_DEFAULT_REGION=us-east-1",
+    "AWS_ACCESS_KEY_ID=testing",
+    "AWS_SECRET_ACCESS_KEY=testing",
+    "AWS_SECURITY_TOKEN=testing",
+    "AWS_SESSION_TOKEN=testing",
+    # Testcontainers configuration
+    "DOCKER_BUILDKIT=1",
+    "TOMODACHI_TESTCONTAINER_DOCKERFILE_PATH=./Dockerfile",
+    "TOMODACHI_TESTCONTAINER_DOCKER_BUILD_CONTEXT=..",
+]

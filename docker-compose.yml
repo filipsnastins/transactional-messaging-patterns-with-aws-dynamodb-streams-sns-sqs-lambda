@@ -3,9 +3,8 @@ version: '3.8'
 services:
   customers:
     build:
-      context: ./service-customers
-      args:
-        SERVICE_NAME: service-customers
+      context: .
+      dockerfile: ./service-customers/Dockerfile
     ports:
       - 9701:9700
     volumes:
@@ -22,7 +21,8 @@ services:
       DYNAMODB_OUTBOX_TABLE_NAME: customers-outbox
   orders:
     build:
-      context: ./service-orders
+      context: .
+      dockerfile: ./service-orders/Dockerfile
     ports:
       - 9702:9700
     volumes:

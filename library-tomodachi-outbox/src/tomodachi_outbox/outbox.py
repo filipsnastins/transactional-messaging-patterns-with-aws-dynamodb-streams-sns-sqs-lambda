@@ -4,7 +4,7 @@ from types_aiobotocore_dynamodb import DynamoDBClient
 from types_aiobotocore_iam import IAMClient
 from types_aiobotocore_lambda import LambdaClient
 
-from tomodachi_transactional_outbox.aws.resources import (
+from tomodachi_outbox.aws.resources import (
     add_dynamodb_stream_on_lambda,
     create_lambda_dynamodb_streams_role,
     create_lambda_function,
