@@ -3,9 +3,11 @@
 ## Customers
 
 - [x] Domain logic
-- [ ] Use cases
+- [x] Use cases
 - [ ] Don't inherit from Protocols
 - [ ] Hypermedia links should include full URL with protocol and host
+
+## Orders
 
 ## Inbox
 
@@ -14,7 +16,7 @@
 
 ## Outbox
 
-- [ ] DynamoDB Streams on event store table (outbox)
+- [x] DynamoDB Streams on event store table (outbox)
 - [x] Separate DynamoDB tables for aggregate store and event store (outbox)
 - [ ] Move generic UOW and Repository code to a library
 - [ ] Configurable aggregate ID on the outbox table (customer_id, order_id) with GSI
