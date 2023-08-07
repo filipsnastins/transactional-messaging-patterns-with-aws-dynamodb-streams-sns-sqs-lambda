@@ -4,7 +4,6 @@ import uuid
 import tomodachi
 from aiohttp import web
 
-from adapters import dynamodb, outbox
 from customers.commands import CreateCustomerCommand
 from service_layer import use_cases, views
 from service_layer.response import CreateCustomerResponse

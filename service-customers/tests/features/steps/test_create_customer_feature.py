@@ -7,8 +7,9 @@ from busypie import wait_at_most
 from pytest_bdd import given, parsers, scenarios, then, when
 from stockholm import Money
 from tomodachi.envelope.json_base import JsonBase
-from tomodachi_testcontainers.clients import snssqs_client
 from types_aiobotocore_sqs import SQSClient
+
+from tomodachi_testcontainers.clients import snssqs_client
 
 pytestmark = pytest.mark.xfail(strict=False)
 

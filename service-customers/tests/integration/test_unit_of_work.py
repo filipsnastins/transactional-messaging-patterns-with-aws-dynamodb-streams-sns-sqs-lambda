@@ -140,7 +140,7 @@ async def test_events_published() -> None:
 
     message = await uow.events.get(events[0].event_id)
     assert message
-    assert message.event_id == events[0].event_id
+    assert message.message_id == events[0].event_id
     assert message.aggregate_id == events[0].customer_id
     assert message.correlation_id == events[0].correlation_id
     assert message.topic == "customer--created"
@@ -149,7 +149,7 @@ async def test_events_published() -> None:
 
     message = await uow.events.get(events[1].event_id)
     assert message
-    assert message.event_id == events[1].event_id
+    assert message.message_id == events[1].event_id
     assert message.aggregate_id == events[1].customer_id
     assert message.correlation_id == events[1].correlation_id
     assert message.topic == "customer--created"

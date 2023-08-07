@@ -4,10 +4,10 @@ import uuid
 from typing import Protocol
 
 import structlog
+from tomodachi_outbox.message import Message
 
 from adapters import clients, dynamodb
 from customers.events import Event
-from tomodachi_outbox.message import Message
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
@@ -41,16 +41,12 @@ class DynamoDBEventRepository(AbstractEventRepository):
                         "TableName": self.table_name,
                         "Item": {
                             "PK": {"S": f"EVENT#{event.event_id}"},
-                            "MessageId": {
-                                "S": str(event.event_id)
-                            },  # TODO MessageId; split into event and command outbox
+                            "MessageId": {"S": str(event.event_id)},
                             "AggregateId": {"S": str(event.customer_id)},
                             "CorrelationId": {"S": str(event.correlation_id)},
                             "Topic": {"S": topic},
                             "Message": {"S": json.dumps(event.to_dict())},
                             "CreatedAt": {"S": event.created_at.isoformat()},
-                            "Dispatched": {"BOOL": False},
-                            "DispatchedAt": {"NULL": True},
                         },
                         "ConditionExpression": "attribute_not_exists(PK)",
                     }
@@ -71,11 +67,8 @@ class DynamoDBEventRepository(AbstractEventRepository):
             if not item:
                 logger.debug("dynamodb_event_repository__event_not_found", event_id=event_id)
                 return None
-            dispatched_at = (
-                datetime.datetime.fromisoformat(item["DispatchedAt"]["S"]) if item["DispatchedAt"].get("S") else None
-            )
             return Message(
-                message_id=uuid.UUID(item["MessageId"]["S"]),  # TODO MessageId
+                message_id=uuid.UUID(item["MessageId"]["S"]),
                 aggregate_id=uuid.UUID(item["AggregateId"]["S"]),
                 correlation_id=uuid.UUID(item["CorrelationId"]["S"]),
                 topic=item["Topic"]["S"],
