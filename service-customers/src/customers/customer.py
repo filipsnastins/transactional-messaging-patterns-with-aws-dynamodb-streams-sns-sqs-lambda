@@ -8,6 +8,10 @@ from stockholm import Money
 from customers.events import CustomerCreatedEvent
 
 
+class CustomerNotFoundError(Exception):
+    pass
+
+
 class CustomerCreditLimitExceededError(Exception):
     pass
 
