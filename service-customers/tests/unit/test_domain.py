@@ -64,9 +64,9 @@ def test_customer_model_from_dict() -> None:
 
 
 def test_customer_model_to_dict() -> None:
-    customer_id = uuid.uuid4()
+    id = uuid.uuid4()
     init_dict = {
-        "id": customer_id,
+        "id": id,
         "name": "John Doe",
         "credit_limit": Decimal("200.00"),
         "credit_reservations": {},
@@ -76,7 +76,7 @@ def test_customer_model_to_dict() -> None:
     customer = Customer.from_dict(init_dict)
 
     assert customer.to_dict() == {
-        "id": str(customer_id),
+        "id": str(id),
         "name": init_dict["name"],
         "credit_limit": 20000,
         "credit_reservations": {},
