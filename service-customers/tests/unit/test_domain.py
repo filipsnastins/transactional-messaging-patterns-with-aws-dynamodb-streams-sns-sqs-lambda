@@ -104,18 +104,11 @@ def test_customer_model_comparison() -> None:
     assert customer_1 == customer_2
 
 
-def test_unreserve_credit() -> None:
+def test_release_credit() -> None:
     customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
     id = uuid.uuid4()
     customer.reserve_credit(order_id=id, order_total=Decimal("100.00"))
 
-    customer.unreserve_credit(id=id)
+    customer.release_credit(order_id=id)
 
     assert customer.available_credit() == Decimal("200.00")
-
-
-def test_unreserve_non_existing_order_raises_key_error() -> None:
-    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
-
-    with pytest.raises(KeyError):
-        customer.unreserve_credit(id=uuid.uuid4())

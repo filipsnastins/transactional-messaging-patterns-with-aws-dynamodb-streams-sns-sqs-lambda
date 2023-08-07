@@ -9,6 +9,7 @@ from stockholm import Money
 
 class CustomerValidationErrors(Enum):
     CUSTOMER_NOT_FOUND = "CUSTOMER_NOT_FOUND"
+    ORDER_NOT_FOUND = "ORDER_NOT_FOUND"
 
 
 @dataclass(kw_only=True)
@@ -79,3 +80,11 @@ class OrderCreatedExternalEvent(Event):
             "order_id": str(self.order_id),
             "order_total": int(Money(self.order_total).to_sub_units()),
         }
+
+
+@dataclass(kw_only=True)
+class OrderCanceledExternalEvent(Event):
+    order_id: uuid.UUID
+
+    def to_dict(self) -> dict:
+        return super().to_dict() | {"order_id": str(self.order_id)}
