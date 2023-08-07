@@ -1,4 +1,3 @@
-import datetime
 import uuid
 from asyncio import AbstractEventLoop
 from typing import Any
@@ -11,6 +10,8 @@ from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.pytest.async_probes import probe_until
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
+
+from utils.time import datetime_to_str, utcnow
 
 scenarios("../reserve_credit.feature")
 
@@ -44,7 +45,7 @@ def _(
             "order_id": str(order_id),
             "customer_id": customer_id,
             "order_total": int(Money(order_total).to_sub_units()),
-            "created_at": datetime.datetime.utcnow().replace(tzinfo=datetime.UTC).isoformat(),
+            "created_at": datetime_to_str(utcnow()),
         }
 
         await snssqs_client.publish(moto_sns_client, "order--created", data, JsonBase)
@@ -129,7 +130,7 @@ def _(event_loop: AbstractEventLoop, moto_sns_client: SNSClient) -> uuid.UUID:
             "order_id": str(uuid.uuid4()),
             "customer_id": str(customer_id),
             "order_total": 10000,
-            "created_at": datetime.datetime.utcnow().replace(tzinfo=datetime.UTC).isoformat(),
+            "created_at": datetime_to_str(utcnow()),
         }
 
         await snssqs_client.publish(moto_sns_client, "order--created", data, JsonBase)

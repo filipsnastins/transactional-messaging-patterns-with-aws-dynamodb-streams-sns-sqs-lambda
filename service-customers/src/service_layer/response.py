@@ -7,6 +7,7 @@ from typing import Protocol
 from stockholm import Money
 
 from customers.customer import Customer
+from utils.time import datetime_to_str
 
 
 class Response(Protocol):
@@ -64,8 +65,9 @@ class GetCustomerResponse(Response):
     name: str
     credit_limit: Decimal
     available_credit: Decimal
-    created_at: datetime.datetime
     version: int
+    created_at: datetime.datetime
+    updated_at: datetime.datetime | None
     _links: SelfCustomerLink
 
     @staticmethod
@@ -75,8 +77,9 @@ class GetCustomerResponse(Response):
             name=customer.name,
             credit_limit=customer.credit_limit,
             available_credit=customer.available_credit(),
-            created_at=customer.created_at,
             version=customer.version,
+            created_at=customer.created_at,
+            updated_at=customer.updated_at,
             _links=SelfCustomerLink.create(customer_id=customer.id),
         )
 
@@ -86,8 +89,9 @@ class GetCustomerResponse(Response):
             "name": self.name,
             "credit_limit": int(Money(self.credit_limit).to_sub_units()),
             "available_credit": int(Money(self.available_credit).to_sub_units()),
-            "created_at": self.created_at.isoformat(),
             "version": self.version,
+            "created_at": datetime_to_str(self.created_at),
+            "updated_at": datetime_to_str(self.updated_at) if self.updated_at else None,
             "_links": asdict(self._links),
         }
 

@@ -6,6 +6,7 @@ import pytest
 from customers.commands import CreateCustomerCommand
 from service_layer import use_cases, views
 from service_layer.unit_of_work import DynamoDBUnitOfWork
+from utils.time import datetime_to_str
 
 pytestmark = pytest.mark.usefixtures("_mock_dynamodb")
 
@@ -38,8 +39,9 @@ async def test_get_customer() -> None:
         "name": "John Doe",
         "credit_limit": 24999,
         "available_credit": 24999,
-        "created_at": customer.created_at.isoformat(),
         "version": 0,
+        "created_at": datetime_to_str(customer.created_at),
+        "updated_at": None,
         "_links": {
             "self": {"href": f"/customer/{customer.id}"},
         },

@@ -13,6 +13,7 @@ from customers.events import OrderCreatedExternalEvent
 from service_layer import use_cases, views
 from service_layer.response import CreateCustomerResponse
 from service_layer.unit_of_work import DynamoDBUnitOfWork
+from utils.time import str_to_datetime
 
 
 class TomodachiService(tomodachi.Service):
@@ -69,6 +70,6 @@ class TomodachiService(tomodachi.Service):
             order_id=uuid.UUID(data["order_id"]),
             customer_id=uuid.UUID(data["customer_id"]),
             order_total=Money.from_sub_units(int(data["order_total"])).as_decimal(),
-            created_at=datetime.datetime.fromisoformat(data["created_at"]),
+            created_at=str_to_datetime(data["created_at"]),
         )
         await use_cases.reserve_credit(uow, event)

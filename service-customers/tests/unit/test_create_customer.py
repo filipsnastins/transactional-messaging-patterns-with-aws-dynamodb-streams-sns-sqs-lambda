@@ -25,6 +25,7 @@ async def test_create_customer() -> None:
     assert customer.credit_reservations == {}
     assert customer.version == 0
     assert customer.created_at
+    assert customer.updated_at is None
 
 
 @pytest.mark.asyncio()
