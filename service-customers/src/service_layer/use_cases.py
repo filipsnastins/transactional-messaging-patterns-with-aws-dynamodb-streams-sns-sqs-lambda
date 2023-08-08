@@ -1,10 +1,9 @@
 import structlog
 
 from customers.commands import CreateCustomerCommand
-from customers.customer import Customer, CustomerCreditLimitExceededError
+from customers.customer import Customer, CustomerCreditLimitExceededError, CustomerNotFoundError
 from customers.events import (
     CustomerCreatedEvent,
-    CustomerCreditReleasedEvent,
     CustomerCreditReservationFailedEvent,
     CustomerCreditReservedEvent,
     CustomerValidationErrors,
@@ -62,6 +61,7 @@ async def reserve_credit(uow: AbstractUnitOfWork, event: OrderCreatedExternalEve
                 )
             ]
         )
+        await uow.commit()
         log.info("credit_reserved")
     except CustomerCreditLimitExceededError:
         await uow.events.publish(
@@ -71,35 +71,17 @@ async def reserve_credit(uow: AbstractUnitOfWork, event: OrderCreatedExternalEve
                 )
             ]
         )
+        await uow.commit()
         log.info("credit_limit_exceeded")
-    await uow.commit()
 
 
 async def release_credit(uow: AbstractUnitOfWork, event: OrderCancelledExternalEvent) -> None:
     log = logger.bind(customer_id=event.customer_id, order_id=event.order_id)
     customer = await uow.customers.get(customer_id=event.customer_id)
     if not customer:
-        await uow.events.publish(
-            [
-                CustomerValidationFailedEvent(
-                    correlation_id=event.correlation_id,
-                    customer_id=event.customer_id,
-                    order_id=event.order_id,
-                    error=CustomerValidationErrors.CUSTOMER_NOT_FOUND,
-                )
-            ]
-        )
-        log.error("customer_not_found")
-        return
+        raise CustomerNotFoundError(event.customer_id)
 
     customer.release_credit(order_id=event.order_id)
     await uow.customers.update(customer)
-    await uow.events.publish(
-        [
-            CustomerCreditReleasedEvent(
-                correlation_id=event.correlation_id, customer_id=event.customer_id, order_id=event.order_id
-            )
-        ]
-    )
     await uow.commit()
     log.info("credit_released")

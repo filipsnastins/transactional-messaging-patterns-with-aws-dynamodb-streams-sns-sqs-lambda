@@ -9,7 +9,7 @@ from tomodachi.envelope.json_base import JsonBase
 from adapters import dynamodb, outbox, sns
 from adapters.settings import get_settings
 from customers.commands import CreateCustomerCommand
-from customers.events import OrderCreatedExternalEvent
+from customers.events import OrderCancelledExternalEvent, OrderCreatedExternalEvent
 from service_layer import use_cases, views
 from service_layer.response import CreateCustomerResponse
 from service_layer.unit_of_work import DynamoDBUnitOfWork
@@ -75,3 +75,18 @@ class TomodachiService(tomodachi.Service):
             created_at=str_to_datetime(data["created_at"]),
         )
         await use_cases.reserve_credit(uow, event)
+
+    @tomodachi.aws_sns_sqs(
+        "order--cancelled",
+        queue="customer--order-cancelled",
+        message_envelope=JsonBase,
+    )
+    async def order_cancelled_handler(self, data: dict) -> None:
+        uow = DynamoDBUnitOfWork.create()
+        event = OrderCancelledExternalEvent(
+            event_id=uuid.UUID(data["event_id"]),
+            order_id=uuid.UUID(data["order_id"]),
+            customer_id=uuid.UUID(data["customer_id"]),
+            created_at=str_to_datetime(data["created_at"]),
+        )
+        await use_cases.release_credit(uow, event)

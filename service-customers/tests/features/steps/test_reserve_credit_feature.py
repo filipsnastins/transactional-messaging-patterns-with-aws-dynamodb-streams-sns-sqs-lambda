@@ -34,7 +34,7 @@ def _(
         }
 
     async def _async() -> None:
-        await probe_until(_assert_customer_credit_reserved)
+        await probe_until(_assert_customer_credit_reserved, probe_interval=0.3, stop_after=8)
 
     return event_loop.run_until_complete(_async())
 
