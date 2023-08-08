@@ -1,4 +1,3 @@
-import os
 from contextvars import ContextVar
 from typing import TypedDict
 
@@ -6,6 +5,7 @@ import structlog
 from types_aiobotocore_dynamodb.type_defs import TransactWriteItemTypeDef
 
 from adapters import clients
+from adapters.settings import get_settings
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
@@ -38,11 +38,11 @@ class DynamoDBSession:
 
 
 def get_aggregate_table_name() -> str:
-    return os.environ["DYNAMODB_AGGREGATE_TABLE_NAME"]
+    return get_settings().dynamodb_aggregate_table_name
 
 
 def get_outbox_table_name() -> str:
-    return os.environ["DYNAMODB_OUTBOX_TABLE_NAME"]
+    return get_settings().dynamodb_outbox_table_name
 
 
 async def create_aggregate_table() -> None:

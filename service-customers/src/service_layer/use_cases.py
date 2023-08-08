@@ -91,6 +91,7 @@ async def release_credit(uow: AbstractUnitOfWork, event: OrderCanceledExternalEv
         )
         log.error("customer_not_found")
         return
+
     customer.release_credit(order_id=event.order_id)
     await uow.customers.update(customer)
     await uow.events.publish(
