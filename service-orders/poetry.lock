@@ -16,13 +16,13 @@ pamqp = ">=3.1.0"
 
 [[package]]
 name = "aiobotocore"
-version = "2.5.3"
+version = "2.5.4"
 description = "Async client for aws services using botocore and aiohttp"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "aiobotocore-2.5.3-py3-none-any.whl", hash = "sha256:50caff54a0035835714240210f2fe4ad3fa9dcdcc2368bfd05e742e346d01aea"},
-    {file = "aiobotocore-2.5.3.tar.gz", hash = "sha256:a6249a84a18448dd36080f294f70ee24304fb138194a8d3bbca3fa6f33aab750"},
+    {file = "aiobotocore-2.5.4-py3-none-any.whl", hash = "sha256:4b32218728ca3d0be83835b604603a0cd6c329066e884bb78149334267f92440"},
+    {file = "aiobotocore-2.5.4.tar.gz", hash = "sha256:60341f19eda77e41e1ab11eef171b5a98b5dbdb90804f5334b6f90e560e31fae"},
 ]
 
 [package.dependencies]
@@ -359,28 +359,17 @@ crt = ["awscrt (==0.16.26)"]
 
 [[package]]
 name = "botocore-stubs"
-version = "1.31.20"
+version = "1.31.21"
 description = "Type annotations and code completion for botocore"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "botocore_stubs-1.31.20-py3-none-any.whl", hash = "sha256:4608756e770398104e5577b9dbc90654c2bebf39d72aaf28536933dabe5eaf0b"},
-    {file = "botocore_stubs-1.31.20.tar.gz", hash = "sha256:4aa97c672a9ce162363bf177d003bd715c06a86f9fb69353515cc1ea00b4f163"},
+    {file = "botocore_stubs-1.31.21-py3-none-any.whl", hash = "sha256:938e8b05a36a9df087272b645df25ea426b6e85582d9a6ddf4d987f69955c703"},
+    {file = "botocore_stubs-1.31.21.tar.gz", hash = "sha256:e8d68728a3a8ba2f53fee554bf2d743fc0cd9f02fc198b8b9c80ce172806ec9e"},
 ]
 
 [package.dependencies]
 types-awscrt = "*"
-
-[[package]]
-name = "busypie"
-version = "0.5.1"
-description = "Easy and expressive busy-waiting for Python"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "busypie-0.5.1-py3-none-any.whl", hash = "sha256:0f7d6a3e549357a8d59087985919af11276cd11a6be162dadd7f8d60a4718a86"},
-    {file = "busypie-0.5.1.tar.gz", hash = "sha256:5a6ec2a60973a9708a2b6aada5d9904ab73636f2432f19db2940c811af559d02"},
-]
 
 [[package]]
 name = "certifi"
@@ -391,17 +380,6 @@ python-versions = ">=3.6"
 files = [
     {file = "certifi-2023.7.22-py3-none-any.whl", hash = "sha256:92d6037539857d8206b8f6ae472e8b77db8058fec5937a1ef3f54304089edbb9"},
     {file = "certifi-2023.7.22.tar.gz", hash = "sha256:539cc1d13202e33ca466e88b2807e29f4c13049d6d87031a3c110744495cb082"},
-]
-
-[[package]]
-name = "cfgv"
-version = "3.3.1"
-description = "Validate configuration and produce human readable error messages."
-optional = false
-python-versions = ">=3.6.1"
-files = [
-    {file = "cfgv-3.3.1-py2.py3-none-any.whl", hash = "sha256:c6a0883f3917a037485059700b9e75da2464e6c27051014ad85ba6aaa5884426"},
-    {file = "cfgv-3.3.1.tar.gz", hash = "sha256:f5a830efb9ce7a445376bb66ec94c638a9787422f96264c98edc6bdeed8ab736"},
 ]
 
 [[package]]
@@ -614,17 +592,6 @@ files = [
 graph = ["objgraph (>=1.7.2)"]
 
 [[package]]
-name = "distlib"
-version = "0.3.7"
-description = "Distribution utilities"
-optional = false
-python-versions = "*"
-files = [
-    {file = "distlib-0.3.7-py2.py3-none-any.whl", hash = "sha256:2e24928bc811348f0feb63014e97aaae3037f2cf48712d51ae61df7fd6075057"},
-    {file = "distlib-0.3.7.tar.gz", hash = "sha256:9dafe54b34a028eafd95039d5e5d4851a13734540f1331060d31c9916e7147a8"},
-]
-
-[[package]]
 name = "docker"
 version = "6.1.3"
 description = "A Python library for the Docker Engine API."
@@ -644,21 +611,6 @@ websocket-client = ">=0.32.0"
 
 [package.extras]
 ssh = ["paramiko (>=2.4.3)"]
-
-[[package]]
-name = "filelock"
-version = "3.12.2"
-description = "A platform independent file lock."
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "filelock-3.12.2-py3-none-any.whl", hash = "sha256:cbb791cdea2a72f23da6ac5b5269ab0a0d161e9ef0100e653b69049a7706d1ec"},
-    {file = "filelock-3.12.2.tar.gz", hash = "sha256:002740518d8aa59a26b0c76e10fb8c6e15eae825d34b6fdf670333fd7b938d81"},
-]
-
-[package.extras]
-docs = ["furo (>=2023.5.20)", "sphinx (>=7.0.1)", "sphinx-autodoc-typehints (>=1.23,!=1.23.4)"]
-testing = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "diff-cover (>=7.5)", "pytest (>=7.3.1)", "pytest-cov (>=4.1)", "pytest-mock (>=3.10)", "pytest-timeout (>=2.1)"]
 
 [[package]]
 name = "flake8"
@@ -1070,20 +1022,6 @@ http2 = ["h2 (>=3,<5)"]
 socks = ["socksio (==1.*)"]
 
 [[package]]
-name = "identify"
-version = "2.5.26"
-description = "File identification library for Python"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "identify-2.5.26-py2.py3-none-any.whl", hash = "sha256:c22a8ead0d4ca11f1edd6c9418c3220669b3b7533ada0a0ffa6cc0ef85cf9b54"},
-    {file = "identify-2.5.26.tar.gz", hash = "sha256:7243800bce2f58404ed41b7c002e53d4d22bcf3ae1b7900c2d7aefd95394bf7f"},
-]
-
-[package.extras]
-license = ["ukkonen"]
-
-[[package]]
 name = "idna"
 version = "3.4"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -1364,20 +1302,6 @@ files = [
 ]
 
 [[package]]
-name = "nodeenv"
-version = "1.8.0"
-description = "Node.js virtual environment builder"
-optional = false
-python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*"
-files = [
-    {file = "nodeenv-1.8.0-py2.py3-none-any.whl", hash = "sha256:df865724bb3c3adc86b3876fa209771517b0cfe596beff01a92700e0e8be4cec"},
-    {file = "nodeenv-1.8.0.tar.gz", hash = "sha256:d51e0c37e64fbf47d017feac3145cdbb58836d7eee8c6f6d3b6880c5456227d2"},
-]
-
-[package.dependencies]
-setuptools = "*"
-
-[[package]]
 name = "packaging"
 version = "23.1"
 description = "Core utilities for Python packages"
@@ -1454,24 +1378,6 @@ files = [
 [package.extras]
 dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
-
-[[package]]
-name = "pre-commit"
-version = "3.3.3"
-description = "A framework for managing and maintaining multi-language pre-commit hooks."
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "pre_commit-3.3.3-py2.py3-none-any.whl", hash = "sha256:10badb65d6a38caff29703362271d7dca483d01da88f9d7e05d0b97171c136cb"},
-    {file = "pre_commit-3.3.3.tar.gz", hash = "sha256:a2256f489cd913d575c145132ae196fe335da32d91a8294b7afe6622335dd023"},
-]
-
-[package.dependencies]
-cfgv = ">=2.0.0"
-identify = ">=1.0.0"
-nodeenv = ">=0.11.1"
-pyyaml = ">=5.1"
-virtualenv = ">=20.10.0"
 
 [[package]]
 name = "pycodestyle"
@@ -1750,22 +1656,6 @@ files = [
     {file = "ruff-0.0.277-py3-none-win_arm64.whl", hash = "sha256:2d4444c60f2e705c14cd802b55cd2b561d25bf4311702c463a002392d3116b22"},
     {file = "ruff-0.0.277.tar.gz", hash = "sha256:2dab13cdedbf3af6d4427c07f47143746b6b95d9e4a254ac369a0edb9280a0d2"},
 ]
-
-[[package]]
-name = "setuptools"
-version = "68.0.0"
-description = "Easily download, build, install, upgrade, and uninstall Python packages"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "setuptools-68.0.0-py3-none-any.whl", hash = "sha256:11e52c67415a381d10d6b462ced9cfb97066179f0e871399e006c4ab101fc85f"},
-    {file = "setuptools-68.0.0.tar.gz", hash = "sha256:baf1fdb41c6da4cd2eae722e135500da913332ab3f2f5c7d33af9b492acb5235"},
-]
-
-[package.extras]
-docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-hoverxref (<2)", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (==0.8.3)", "sphinx-reredirects", "sphinxcontrib-towncrier"]
-testing = ["build[virtualenv]", "filelock (>=3.4.0)", "flake8-2020", "ini2toml[lite] (>=0.9)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "pip (>=19.1)", "pip-run (>=8.8)", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-mypy (>=0.9.1)", "pytest-perf", "pytest-ruff", "pytest-timeout", "pytest-xdist", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
-testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "pytest", "pytest-enabler", "pytest-xdist", "tomli", "virtualenv (>=13.0.0)", "wheel"]
 
 [[package]]
 name = "six"
@@ -2307,79 +2197,79 @@ xray = ["types-aiobotocore-xray (>=2.5.0,<2.6.0)"]
 
 [[package]]
 name = "types-aiobotocore-dynamodb"
-version = "2.5.2.post5"
-description = "Type annotations for aiobotocore.DynamoDB 2.5.2 service generated with mypy-boto3-builder 7.17.2"
+version = "2.5.4"
+description = "Type annotations for aiobotocore.DynamoDB 2.5.4 service generated with mypy-boto3-builder 7.17.2"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "types-aiobotocore-dynamodb-2.5.2.post5.tar.gz", hash = "sha256:30306013189112cd2159629c7eab203b476744a59837a7f6cf05f8c467b47e56"},
-    {file = "types_aiobotocore_dynamodb-2.5.2.post5-py3-none-any.whl", hash = "sha256:5c7420a58f95fdb3679ba804b863929b600824f5fa9439cf0d10a21124282655"},
+    {file = "types-aiobotocore-dynamodb-2.5.4.tar.gz", hash = "sha256:14e9691d7fddc5707825e3c6665adc8de86598fd6e1803340a7a778deef9a716"},
+    {file = "types_aiobotocore_dynamodb-2.5.4-py3-none-any.whl", hash = "sha256:550d8ac1fb5dec3a76f5ca12bb6540032b36eb2048b716c999c209079cb5e89c"},
 ]
 
 [[package]]
 name = "types-aiobotocore-iam"
-version = "2.5.2.post2"
-description = "Type annotations for aiobotocore.IAM 2.5.2 service generated with mypy-boto3-builder 7.17.2"
+version = "2.5.4"
+description = "Type annotations for aiobotocore.IAM 2.5.4 service generated with mypy-boto3-builder 7.17.2"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "types-aiobotocore-iam-2.5.2.post2.tar.gz", hash = "sha256:09c75d9ed28175cbea6eb3cba61b2899fc8868be256fd493487c0fb7611c6a1e"},
-    {file = "types_aiobotocore_iam-2.5.2.post2-py3-none-any.whl", hash = "sha256:4d8def91668539057f54fc356e3b188b5775ded7ed9d01eef59f5ae3bde0b603"},
+    {file = "types-aiobotocore-iam-2.5.4.tar.gz", hash = "sha256:1145209e4fecaf5dd7578f09409c182f61e47ab3d22802f6263bd64315a35137"},
+    {file = "types_aiobotocore_iam-2.5.4-py3-none-any.whl", hash = "sha256:04098934570201c5ad24714ca6e69ee039d85657d416bf5918e01ab17314d214"},
 ]
 
 [[package]]
 name = "types-aiobotocore-lambda"
-version = "2.5.2.post2"
-description = "Type annotations for aiobotocore.Lambda 2.5.2 service generated with mypy-boto3-builder 7.17.2"
+version = "2.5.4"
+description = "Type annotations for aiobotocore.Lambda 2.5.4 service generated with mypy-boto3-builder 7.17.2"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "types-aiobotocore-lambda-2.5.2.post2.tar.gz", hash = "sha256:49ce0a514eece5c93d464e7c8a87a9cb5aee0e3e1d312e65e5f223f13a985330"},
-    {file = "types_aiobotocore_lambda-2.5.2.post2-py3-none-any.whl", hash = "sha256:53d3ef506f3dd06d4636664e51796bb72a02c645a8e1efab3ec5c94d46118b8d"},
+    {file = "types-aiobotocore-lambda-2.5.4.tar.gz", hash = "sha256:e114222b92626102eec8714b1eb2738f9db8f6b88d7eac10f9f43784be69cd37"},
+    {file = "types_aiobotocore_lambda-2.5.4-py3-none-any.whl", hash = "sha256:6d07efd96b17c50574ead4e83479873906eb93559dab85f14b8b357d02f629c7"},
 ]
 
 [[package]]
 name = "types-aiobotocore-s3"
-version = "2.5.2.post2"
-description = "Type annotations for aiobotocore.S3 2.5.2 service generated with mypy-boto3-builder 7.17.2"
+version = "2.5.4"
+description = "Type annotations for aiobotocore.S3 2.5.4 service generated with mypy-boto3-builder 7.17.2"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "types-aiobotocore-s3-2.5.2.post2.tar.gz", hash = "sha256:31cc59db28f3900f47107315de898584f6fd2f3e0803b16a26a0ac2426809d2f"},
-    {file = "types_aiobotocore_s3-2.5.2.post2-py3-none-any.whl", hash = "sha256:21ea785cffccde835ce9315b38fb8cab67b9f6ce0be54e06c2e3a9a629723253"},
+    {file = "types-aiobotocore-s3-2.5.4.tar.gz", hash = "sha256:747da7e7dca50ca93d86f379733d2c53cea2c1e9ee052d653c2db584fb599f7b"},
+    {file = "types_aiobotocore_s3-2.5.4-py3-none-any.whl", hash = "sha256:33d51ff1cc8046efcf48cb69f6663fd90d0d824db4b480a20ab3f2689fc574de"},
 ]
 
 [[package]]
 name = "types-aiobotocore-sns"
-version = "2.5.2.post2"
-description = "Type annotations for aiobotocore.SNS 2.5.2 service generated with mypy-boto3-builder 7.17.2"
+version = "2.5.4"
+description = "Type annotations for aiobotocore.SNS 2.5.4 service generated with mypy-boto3-builder 7.17.2"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "types-aiobotocore-sns-2.5.2.post2.tar.gz", hash = "sha256:bf1dfce6aad1557f6ce5164508144b48f57250131fc20d4cf47e9e667eb64cb5"},
-    {file = "types_aiobotocore_sns-2.5.2.post2-py3-none-any.whl", hash = "sha256:570b52b2e9872371490902fe7620b4b0f2d8ca46df5df4794ef1d9f7f81f6458"},
+    {file = "types-aiobotocore-sns-2.5.4.tar.gz", hash = "sha256:9638f66eefc173c7ab755a2137188ca873f0e527b6eca132b1726cc9a288237c"},
+    {file = "types_aiobotocore_sns-2.5.4-py3-none-any.whl", hash = "sha256:4d1ed92b1eeb00977aa9c18c469565f8e8f6014b170f5900a2009b4b41fcd027"},
 ]
 
 [[package]]
 name = "types-aiobotocore-sqs"
-version = "2.5.2.post2"
-description = "Type annotations for aiobotocore.SQS 2.5.2 service generated with mypy-boto3-builder 7.17.2"
+version = "2.5.4"
+description = "Type annotations for aiobotocore.SQS 2.5.4 service generated with mypy-boto3-builder 7.17.2"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "types-aiobotocore-sqs-2.5.2.post2.tar.gz", hash = "sha256:bcd3fd4807aeff923e0c7aaccf201283b4b25107bb604095f9b339ff830d9a76"},
-    {file = "types_aiobotocore_sqs-2.5.2.post2-py3-none-any.whl", hash = "sha256:64c2caf7c2e8e692fcb93ceccc528eb5c41d0eee5f22e3e7af7a70cb9860328e"},
+    {file = "types-aiobotocore-sqs-2.5.4.tar.gz", hash = "sha256:15e56e2cbb9f0c5af5b232357fe31ad43df3a0fa67242d70ceb07ad04273480e"},
+    {file = "types_aiobotocore_sqs-2.5.4-py3-none-any.whl", hash = "sha256:8871724b9bc96cbf8ca5f605813268764275113ec728d7346e3a85d405a27090"},
 ]
 
 [[package]]
 name = "types-aiobotocore-ssm"
-version = "2.5.2.post2"
-description = "Type annotations for aiobotocore.SSM 2.5.2 service generated with mypy-boto3-builder 7.17.2"
+version = "2.5.4"
+description = "Type annotations for aiobotocore.SSM 2.5.4 service generated with mypy-boto3-builder 7.17.2"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "types-aiobotocore-ssm-2.5.2.post2.tar.gz", hash = "sha256:92426e76b0e029de0f3e943cf404ab45e57a34494a01b18d504225eca53a99ea"},
-    {file = "types_aiobotocore_ssm-2.5.2.post2-py3-none-any.whl", hash = "sha256:915ab19afb4ec769ee7ad131546656842f251e7f576f94c4f0dd4b5f75c40e54"},
+    {file = "types-aiobotocore-ssm-2.5.4.tar.gz", hash = "sha256:88c6ff3bbf63e3bd83d0fa6c9b0ea416150be1321234be4db2a02013ef64b8b8"},
+    {file = "types_aiobotocore_ssm-2.5.4-py3-none-any.whl", hash = "sha256:8eb1904d57c97be8c5f18f97337768b43fd5c4c117d455e5626ede3d99c6d768"},
 ]
 
 [[package]]
@@ -2491,26 +2381,6 @@ files = [
 dev = ["Cython (>=0.29.32,<0.30.0)", "Sphinx (>=4.1.2,<4.2.0)", "aiohttp", "flake8 (>=3.9.2,<3.10.0)", "mypy (>=0.800)", "psutil", "pyOpenSSL (>=22.0.0,<22.1.0)", "pycodestyle (>=2.7.0,<2.8.0)", "pytest (>=3.6.0)", "sphinx-rtd-theme (>=0.5.2,<0.6.0)", "sphinxcontrib-asyncio (>=0.3.0,<0.4.0)"]
 docs = ["Sphinx (>=4.1.2,<4.2.0)", "sphinx-rtd-theme (>=0.5.2,<0.6.0)", "sphinxcontrib-asyncio (>=0.3.0,<0.4.0)"]
 test = ["Cython (>=0.29.32,<0.30.0)", "aiohttp", "flake8 (>=3.9.2,<3.10.0)", "mypy (>=0.800)", "psutil", "pyOpenSSL (>=22.0.0,<22.1.0)", "pycodestyle (>=2.7.0,<2.8.0)"]
-
-[[package]]
-name = "virtualenv"
-version = "20.24.2"
-description = "Virtual Python Environment builder"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "virtualenv-20.24.2-py3-none-any.whl", hash = "sha256:43a3052be36080548bdee0b42919c88072037d50d56c28bd3f853cbe92b953ff"},
-    {file = "virtualenv-20.24.2.tar.gz", hash = "sha256:fd8a78f46f6b99a67b7ec5cf73f92357891a7b3a40fd97637c27f854aae3b9e0"},
-]
-
-[package.dependencies]
-distlib = ">=0.3.7,<1"
-filelock = ">=3.12.2,<4"
-platformdirs = ">=3.9.1,<4"
-
-[package.extras]
-docs = ["furo (>=2023.5.20)", "proselint (>=0.13)", "sphinx (>=7.0.1)", "sphinx-argparse (>=0.4)", "sphinxcontrib-towncrier (>=0.2.1a0)", "towncrier (>=23.6)"]
-test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7)", "packaging (>=23.1)", "pytest (>=7.4)", "pytest-env (>=0.8.2)", "pytest-freezer (>=0.4.8)", "pytest-mock (>=3.11.1)", "pytest-randomly (>=3.12)", "pytest-timeout (>=2.1)", "setuptools (>=68)", "time-machine (>=2.10)"]
 
 [[package]]
 name = "websocket-client"
@@ -2702,4 +2572,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "14148a6cf5c77f9da054cde114eb3195a9eda8fc8683498b1aa5678497d341f8"
+content-hash = "5de3462f9e7da66b2f9314a39e05aa4b4e8880211c3ddd6ff0de595748944eea"
