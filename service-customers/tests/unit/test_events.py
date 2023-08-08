@@ -23,7 +23,7 @@ def test_event_model() -> None:
     assert event.created_at == created_at
 
 
-def test_default_datetime() -> None:
+def test_created_at_set_to_current_datetime() -> None:
     event_id = uuid.uuid4()
     correlation_id = uuid.uuid4()
     customer_id = uuid.uuid4()
