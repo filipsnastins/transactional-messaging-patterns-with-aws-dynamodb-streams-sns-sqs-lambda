@@ -12,7 +12,6 @@ from service_layer.unit_of_work import AbstractUnitOfWork
 
 class FakeCustomerRepository(AbstractCustomerRepository):
     def __init__(self, customers: list[Customer]) -> None:
-        super().__init__()
         self._customers = customers
 
     async def create(self, customer: Customer) -> None:

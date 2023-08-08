@@ -15,6 +15,7 @@ def test_create_new_customer_model() -> None:
     assert customer.credit_reservations == {}
     assert customer.version == 0
     assert datetime.timedelta(seconds=1) > utcnow() - customer.created_at
+    assert customer.created_at.tzinfo == datetime.UTC
     assert customer.updated_at is None
 
 
