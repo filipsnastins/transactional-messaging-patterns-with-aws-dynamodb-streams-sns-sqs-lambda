@@ -4,7 +4,8 @@ from decimal import Decimal
 import pytest
 
 from customers.commands import CreateCustomerCommand
-from service_layer import use_cases, views
+from customers import use_cases
+from service_layer import views
 from service_layer.unit_of_work import DynamoDBUnitOfWork
 from utils.time import datetime_to_str
 
