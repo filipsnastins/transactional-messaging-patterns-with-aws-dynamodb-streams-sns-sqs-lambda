@@ -5,7 +5,7 @@ import pytest
 
 from adapters.customer_repository import CustomerNotFoundError
 from customers.commands import CreateCustomerCommand
-from customers.customer import OrderNotFoundError
+from customers.customer import CreditNotReservedForOrderError
 from customers.events import OrderCancelledExternalEvent, OrderCreatedExternalEvent
 from service_layer import use_cases
 from tests.fakes import FakeUnitOfWork
@@ -27,7 +27,7 @@ async def test_release_credit_for_non_existing_order() -> None:
     customer = await use_cases.create_customer(uow, cmd)
     order_cancelled_event = OrderCancelledExternalEvent(customer_id=customer.id, order_id=uuid.uuid4())
 
-    with pytest.raises(OrderNotFoundError, match=str(order_cancelled_event.order_id)):
+    with pytest.raises(CreditNotReservedForOrderError, match=str(order_cancelled_event.order_id)):
         await use_cases.release_credit(uow, order_cancelled_event)
 
 

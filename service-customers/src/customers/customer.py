@@ -10,7 +10,7 @@ class CustomerCreditLimitExceededError(Exception):
     pass
 
 
-class OrderNotFoundError(Exception):
+class CreditNotReservedForOrderError(Exception):
     pass
 
 
@@ -67,4 +67,4 @@ class Customer:
         try:
             self.credit_reservations.pop(order_id)
         except KeyError as e:
-            raise OrderNotFoundError(order_id) from e
+            raise CreditNotReservedForOrderError(order_id) from e
