@@ -1,5 +1,3 @@
-import os
-
 import structlog
 from tomodachi_outbox import outbox
 
