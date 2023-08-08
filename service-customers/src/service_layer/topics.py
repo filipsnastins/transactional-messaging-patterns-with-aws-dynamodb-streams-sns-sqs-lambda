@@ -6,7 +6,7 @@ from customers.events import (
     Event,
 )
 
-CUSTOMER_TOPICS_MAP: dict[type[Event], str] = {
+TOPICS_MAP: dict[type[Event], str] = {
     CustomerCreatedEvent: "customer--created",
     CustomerCreditReservedEvent: "customer--credit-reserved",
     CustomerCreditReservationFailedEvent: "customer--credit-reservation-failed",

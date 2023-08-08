@@ -1,6 +1,5 @@
-import datetime
-import os
 import uuid
+from typing import Any
 
 import tomodachi
 from aiohttp import web
@@ -8,6 +7,7 @@ from stockholm import Money
 from tomodachi.envelope.json_base import JsonBase
 
 from adapters import dynamodb, outbox, sns
+from adapters.settings import get_settings
 from customers.commands import CreateCustomerCommand
 from customers.events import OrderCreatedExternalEvent
 from service_layer import use_cases, views
@@ -19,19 +19,21 @@ from utils.time import str_to_datetime
 class TomodachiService(tomodachi.Service):
     name = "service-customers"
 
-    options = tomodachi.Options(
-        aws_endpoint_urls=tomodachi.Options.AWSEndpointURLs(
-            sns=os.environ.get("AWS_ENDPOINT_URL"),
-            sqs=os.environ.get("AWS_ENDPOINT_URL"),
-        ),
-        aws_sns_sqs=tomodachi.Options.AWSSNSSQS(
-            region_name=os.environ["AWS_REGION"],
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            topic_prefix=os.environ.get("AWS_SNS_TOPIC_PREFIX", ""),
-            queue_name_prefix=os.environ.get("AWS_SQS_QUEUE_NAME_PREFIX", ""),
-        ),
-    )
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        settings = get_settings()
+        self.options = tomodachi.Options(
+            aws_endpoint_urls=tomodachi.Options.AWSEndpointURLs(
+                sns=settings.aws_endpoint_url,
+                sqs=settings.aws_endpoint_url,
+            ),
+            aws_sns_sqs=tomodachi.Options.AWSSNSSQS(
+                region_name=settings.aws_region,
+                aws_access_key_id=settings.aws_access_key_id,
+                aws_secret_access_key=settings.aws_secret_access_key,
+                topic_prefix=settings.aws_sns_topic_prefix,
+                queue_name_prefix=settings.aws_sqs_queue_name_prefix,
+            ),
+        )
 
     async def _start_service(self) -> None:
         await sns.create_topics()

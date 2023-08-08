@@ -6,7 +6,7 @@ import structlog
 from adapters import clients, dynamodb
 from adapters.customer_repository import AbstractCustomerRepository, DynamoDBCustomerRepository
 from adapters.event_repository import AbstractEventRepository, DynamoDBEventRepository
-from service_layer.topics import CUSTOMER_TOPICS_MAP
+from service_layer.topics import TOPICS_MAP
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
@@ -36,10 +36,7 @@ class DynamoDBUnitOfWork(AbstractUnitOfWork):
     events: DynamoDBEventRepository
 
     def __init__(
-        self,
-        session: dynamodb.DynamoDBSession,
-        customers: DynamoDBCustomerRepository,
-        events: DynamoDBEventRepository,
+        self, session: dynamodb.DynamoDBSession, customers: DynamoDBCustomerRepository, events: DynamoDBEventRepository
     ) -> None:
         self.session = session
         self.customers = customers
@@ -49,7 +46,7 @@ class DynamoDBUnitOfWork(AbstractUnitOfWork):
     def create() -> "DynamoDBUnitOfWork":
         session = dynamodb.DynamoDBSession()
         customers = DynamoDBCustomerRepository(dynamodb.get_aggregate_table_name(), session)
-        events = DynamoDBEventRepository(dynamodb.get_outbox_table_name(), session, CUSTOMER_TOPICS_MAP)
+        events = DynamoDBEventRepository(dynamodb.get_outbox_table_name(), session, TOPICS_MAP)
         return DynamoDBUnitOfWork(session, customers, events)
 
     async def commit(self) -> None:
