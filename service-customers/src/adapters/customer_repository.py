@@ -1,8 +1,8 @@
 import uuid
-from decimal import Decimal
 from typing import Protocol
 
 import structlog
+from stockholm import Money
 
 from adapters import clients, dynamodb
 from customers.customer import Customer, CustomerAlreadyExistsError, CustomerNotFoundError, OptimisticLockError
@@ -36,10 +36,10 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
                         "PK": {"S": f"CUSTOMER#{customer.id}"},
                         "Id": {"S": str(customer.id)},
                         "Name": {"S": customer.name},
-                        "CreditLimit": {"N": str(customer.credit_limit)},
+                        "CreditLimit": {"N": str(Money(customer.credit_limit).to_sub_units())},
                         "CreditReservations": {
                             "M": {
-                                str(order_id): {"N": str(order_total)}
+                                str(order_id): {"N": str(Money(order_total).to_sub_units())}
                                 for order_id, order_total in customer.credit_reservations.items()
                             }
                         },
@@ -72,10 +72,10 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
                         "PK": {"S": f"CUSTOMER#{customer.id}"},
                         "Id": {"S": str(customer.id)},
                         "Name": {"S": customer.name},
-                        "CreditLimit": {"N": str(customer.credit_limit)},
+                        "CreditLimit": {"N": str(Money(customer.credit_limit).to_sub_units())},
                         "CreditReservations": {
                             "M": {
-                                str(order_id): {"N": str(order_total)}
+                                str(order_id): {"N": str(Money(order_total).to_sub_units())}
                                 for order_id, order_total in customer.credit_reservations.items()
                             }
                         },
@@ -104,9 +104,9 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
             return Customer(
                 id=uuid.UUID(item["Id"]["S"]),
                 name=item["Name"]["S"],
-                credit_limit=Decimal(item["CreditLimit"]["N"]),
+                credit_limit=Money.from_sub_units(item["CreditLimit"]["N"]).as_decimal(),
                 credit_reservations={
-                    uuid.UUID(order_id): Decimal(order_total["N"])
+                    uuid.UUID(order_id): Money.from_sub_units(order_total["N"]).as_decimal()
                     for order_id, order_total in item["CreditReservations"]["M"].items()
                 },
                 version=int(item["Version"]["N"]),
