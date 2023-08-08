@@ -12,10 +12,7 @@ from types_aiobotocore_sqs import SQSClient
 scenarios("../create_customer.feature")
 
 
-@given(
-    parsers.parse('customer with name "{name}" and credit limit "{credit_limit}"'),
-    target_fixture="customer",
-)
+@given(parsers.parse('customer with name "{name}" and credit limit "{credit_limit}"'), target_fixture="customer")
 def _(name: str, credit_limit: str) -> dict:
     return {
         "name": name,
@@ -91,16 +88,13 @@ def _(
         }
 
     async def _async() -> None:
-        await probe_until(_assert_get_customer)
-        await probe_until(_assert_customer_created)
+        await probe_until(_assert_get_customer, probe_interval=0.3, stop_after=8)
+        await probe_until(_assert_customer_created, probe_interval=0.3, stop_after=8)
 
     return event_loop.run_until_complete(_async())
 
 
-@when(
-    parsers.parse('customer with ID "{customer_id}" is queried'),
-    target_fixture="get_customer",
-)
+@when(parsers.parse('customer with ID "{customer_id}" is queried'), target_fixture="get_customer")
 def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, customer_id: str) -> httpx.Response:
     async def _async() -> httpx.Response:
         return await http_client.get(f"/customer/{customer_id}")
@@ -108,7 +102,7 @@ def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, customer_id
     return event_loop.run_until_complete(_async())
 
 
-@then("the customer not found")
+@then("the customer is not found")
 def _(get_customer: httpx.Response) -> None:
     customer_id = get_customer.url.path.split("/")[-1]
 

@@ -29,22 +29,3 @@ def _(
         await snssqs_client.publish(moto_sns_client, "order--cancelled", data, JsonBase)
 
     event_loop.run_until_complete(_async())
-
-
-@when("not existing order is cancelled", target_fixture="not_existing_customer_id")
-def _(event_loop: AbstractEventLoop, moto_sns_client: SNSClient, create_customer: httpx.Response) -> uuid.UUID:
-    async def _async() -> uuid.UUID:
-        customer_id = create_customer.json()["id"]
-        data = {
-            "event_id": str(uuid.uuid4()),
-            "correlation_id": str(uuid.uuid4()),
-            "order_id": str(uuid.uuid4()),
-            "customer_id": customer_id,
-            "created_at": datetime_to_str(utcnow()),
-        }
-
-        await snssqs_client.publish(moto_sns_client, "order--cancelled", data, JsonBase)
-
-        return customer_id
-
-    return event_loop.run_until_complete(_async())

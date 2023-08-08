@@ -50,7 +50,7 @@ def _(
         }
 
     async def _async() -> None:
-        await probe_until(_assert_customer_credit_reserved)
+        await probe_until(_assert_customer_credit_reserved, probe_interval=0.3, stop_after=8)
 
     return event_loop.run_until_complete(_async())
 
@@ -86,7 +86,7 @@ def _(
     create_customer: httpx.Response,
     available_credit: str,
 ) -> None:
-    async def _async() -> None:
+    async def _validate_customer_available_credit() -> None:
         get_customer_link = create_customer.json()["_links"]["self"]["href"]
 
         response = await http_client.get(get_customer_link)
@@ -94,6 +94,9 @@ def _(
 
         assert response.status_code == 200
         assert body["available_credit"] == int(Money(available_credit).to_sub_units())
+
+    async def _async() -> None:
+        await probe_until(_validate_customer_available_credit, probe_interval=0.3, stop_after=8)
 
     return event_loop.run_until_complete(_async())
 
@@ -115,6 +118,6 @@ def _(event_loop: AbstractEventLoop, moto_sqs_client: SQSClient, not_existing_cu
         }
 
     async def _async() -> None:
-        await probe_until(_assert_customer_credit_reserved)
+        await probe_until(_assert_customer_credit_reserved, probe_interval=0.3, stop_after=8)
 
     return event_loop.run_until_complete(_async())

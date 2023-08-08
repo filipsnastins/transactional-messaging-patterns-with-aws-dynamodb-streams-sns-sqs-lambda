@@ -70,14 +70,6 @@ class CustomerValidationFailedEvent(Event):
 
 
 @dataclass(kw_only=True)
-class CustomerCreditReleasedEvent(Event):
-    order_id: uuid.UUID
-
-    def to_dict(self) -> dict:
-        return super().to_dict() | {"order_id": str(self.order_id)}
-
-
-@dataclass(kw_only=True)
 class OrderCreatedExternalEvent(Event):
     order_id: uuid.UUID
     order_total: Decimal
