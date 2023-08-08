@@ -1,7 +1,8 @@
 import structlog
 
+from adapters.customer_repository import CustomerNotFoundError
 from customers.commands import CreateCustomerCommand
-from customers.customer import Customer, CustomerCreditLimitExceededError, CustomerNotFoundError
+from customers.customer import Customer, CustomerCreditLimitExceededError
 from customers.events import (
     CustomerCreatedEvent,
     CustomerCreditReservationFailedEvent,

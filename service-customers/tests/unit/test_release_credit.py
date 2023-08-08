@@ -3,8 +3,9 @@ from decimal import Decimal
 
 import pytest
 
+from adapters.customer_repository import CustomerNotFoundError
 from customers.commands import CreateCustomerCommand
-from customers.customer import CustomerNotFoundError, OrderNotFoundError
+from customers.customer import OrderNotFoundError
 from customers.events import OrderCancelledExternalEvent, OrderCreatedExternalEvent
 from service_layer import use_cases
 from tests.fakes import FakeUnitOfWork

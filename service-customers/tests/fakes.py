@@ -3,9 +3,9 @@ import uuid
 
 from tomodachi_outbox.message import Message
 
-from adapters.customer_repository import AbstractCustomerRepository
+from adapters.customer_repository import AbstractCustomerRepository, CustomerNotFoundError
 from adapters.event_repository import AbstractEventRepository
-from customers.customer import Customer, CustomerNotFoundError
+from customers.customer import Customer
 from customers.events import Event
 from service_layer.unit_of_work import AbstractUnitOfWork
 

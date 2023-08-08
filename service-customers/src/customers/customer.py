@@ -6,18 +6,6 @@ from decimal import Decimal
 from utils.time import utcnow
 
 
-class OptimisticLockError(Exception):
-    pass
-
-
-class CustomerNotFoundError(Exception):
-    pass
-
-
-class CustomerAlreadyExistsError(Exception):
-    pass
-
-
 class CustomerCreditLimitExceededError(Exception):
     pass
 
