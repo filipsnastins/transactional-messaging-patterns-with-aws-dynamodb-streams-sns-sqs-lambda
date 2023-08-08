@@ -3,9 +3,7 @@ import uuid
 from dataclasses import dataclass
 from decimal import Decimal
 
-from stockholm import Money
-
-from utils.time import datetime_to_str, utcnow
+from utils.time import utcnow
 
 
 class OptimisticLockError(Exception):
@@ -34,15 +32,15 @@ class Customer:
     name: str
     credit_limit: Decimal
     credit_reservations: dict[uuid.UUID, Decimal]
+    version: int
     created_at: datetime.datetime
     updated_at: datetime.datetime | None
-    version: int
 
     def __init__(
         self,
+        id: uuid.UUID,
         name: str,
         credit_limit: Decimal,
-        id: uuid.UUID,
         credit_reservations: dict[uuid.UUID, Decimal],
         version: int,
         created_at: datetime.datetime,
@@ -67,21 +65,6 @@ class Customer:
             created_at=utcnow(),
             updated_at=None,
         )
-
-    @staticmethod
-    def from_dict(data: dict) -> "Customer":
-        return Customer(**data)
-
-    def to_dict(self) -> dict:
-        return {
-            "id": str(self.id),
-            "name": self.name,
-            "credit_limit": int(Money(self.credit_limit).to_sub_units()),
-            "credit_reservations": self.credit_reservations,
-            "version": self.version,
-            "created_at": datetime_to_str(self.created_at),
-            "updated_at": datetime_to_str(self.updated_at) if self.updated_at else None,
-        }
 
     def available_credit(self) -> Decimal:
         return self.credit_limit - sum(self.credit_reservations.values())

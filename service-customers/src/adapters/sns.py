@@ -13,4 +13,4 @@ async def create_topics() -> None:
         await client.create_topic(Name="customer--validation-failed")
         await client.create_topic(Name="order--created")
 
-    logger.info("topics created")
+    logger.info("sns_topics_created")
