@@ -10,7 +10,8 @@ from adapters import dynamodb, outbox, sns
 from adapters.settings import get_settings
 from customers.commands import CreateCustomerCommand
 from customers.events import OrderCancelledExternalEvent, OrderCreatedExternalEvent
-from service_layer import use_cases, views
+from customers import use_cases
+from service_layer import views
 from service_layer.response import CreateCustomerResponse
 from service_layer.unit_of_work import DynamoDBUnitOfWork
 from utils.time import str_to_datetime
