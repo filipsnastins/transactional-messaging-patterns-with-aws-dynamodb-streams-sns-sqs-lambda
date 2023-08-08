@@ -1,11 +1,11 @@
 Feature: Create customer
 
-    Scenario: Create new customer with full available credit
+    Scenario: Create new customer with clean available credit
         Given customer with name "John Doe" and credit limit "249.99"
         When customer creation is requested
         Then the customer creation request is successful
-        And the customer is created with correct data and full available credit
+        And the customer is created with correct data and available credit of "249.99"
 
     Scenario: Customer not found
-        When customer with ID "12b38f68-2d61-4cb2-8661-773c40702815" is queried
+        When not existing customer is queried
         Then the customer is not found

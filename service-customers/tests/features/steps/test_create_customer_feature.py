@@ -1,3 +1,4 @@
+import uuid
 from asyncio import AbstractEventLoop
 from typing import Any
 
@@ -45,11 +46,12 @@ def _(create_customer: httpx.Response) -> None:
     }
 
 
-@then("the customer is created with correct data and full available credit")
+@then(parsers.parse('the customer is created with correct data and available credit of "{available_credit}"'))
 def _(
     event_loop: AbstractEventLoop,
     http_client: httpx.AsyncClient,
     moto_sqs_client: SQSClient,
+    available_credit: str,
     customer: dict,
     create_customer: httpx.Response,
 ) -> None:
@@ -66,7 +68,7 @@ def _(
             "id": customer_id,
             "name": customer["name"],
             "credit_limit": customer["credit_limit"],
-            "available_credit": customer["credit_limit"],
+            "available_credit": int(Money(available_credit).to_sub_units()),
             "version": 0,
             "created_at": body["created_at"],
             "updated_at": None,
@@ -94,9 +96,10 @@ def _(
     return event_loop.run_until_complete(_async())
 
 
-@when(parsers.parse('customer with ID "{customer_id}" is queried'), target_fixture="get_customer")
-def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, customer_id: str) -> httpx.Response:
+@when("not existing customer is queried", target_fixture="get_customer")
+def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient) -> httpx.Response:
     async def _async() -> httpx.Response:
+        customer_id = uuid.uuid4()
         return await http_client.get(f"/customer/{customer_id}")
 
     return event_loop.run_until_complete(_async())
