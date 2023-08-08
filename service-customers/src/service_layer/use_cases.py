@@ -51,6 +51,7 @@ async def reserve_credit(uow: AbstractUnitOfWork, event: OrderCreatedExternalEve
         await uow.commit()
         log.error("customer_not_found")
         return
+
     try:
         customer.reserve_credit(order_id=event.order_id, order_total=event.order_total)
         await uow.customers.update(customer)
@@ -76,10 +77,12 @@ async def reserve_credit(uow: AbstractUnitOfWork, event: OrderCreatedExternalEve
 
 
 async def release_credit(uow: AbstractUnitOfWork, event: OrderCancelledExternalEvent) -> None:
+    log = logger.bind(customer_id=event.customer_id, order_id=event.order_id)
     customer = await uow.customers.get(customer_id=event.customer_id)
     if not customer:
         raise CustomerNotFoundError(event.customer_id)
+
     customer.release_credit(order_id=event.order_id)
     await uow.customers.update(customer)
     await uow.commit()
-    logger.info("credit_released", customer_id=event.customer_id, order_id=event.order_id)
+    log.info("credit_released")

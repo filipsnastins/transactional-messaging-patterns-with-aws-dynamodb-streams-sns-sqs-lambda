@@ -15,11 +15,11 @@ class OptimisticLockError(Exception):
     pass
 
 
-class CustomerAlreadyExistsError(Exception):
+class CustomerNotFoundError(Exception):
     pass
 
 
-class CustomerNotFoundError(Exception):
+class CustomerAlreadyExistsError(Exception):
     pass
 
 
