@@ -49,7 +49,10 @@ class TomodachiService(tomodachi.Service):
     async def create_customer_handler(self, request: web.Request) -> web.Response:
         uow = DynamoDBUnitOfWork.create()
         data = await request.json()
-        cmd = CreateCustomerCommand.from_dict(data)
+        cmd = CreateCustomerCommand(
+            name=str(data["name"]),
+            credit_limit=Money.from_sub_units(int(data["credit_limit"])).as_decimal(),
+        )
         customer = await use_cases.create_customer(uow, cmd)
         response = CreateCustomerResponse.create(customer)
         return web.json_response(response.to_dict(), status=response.status_code)
