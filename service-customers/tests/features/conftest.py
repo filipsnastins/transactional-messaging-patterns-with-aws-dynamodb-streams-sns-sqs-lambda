@@ -79,6 +79,7 @@ def _(
     return event_loop.run_until_complete(_async())
 
 
+@given(parsers.parse('the customer available credit is "{available_credit}"'))
 @then(parsers.parse('the customer available credit is "{available_credit}"'))
 def _(
     event_loop: AbstractEventLoop,
