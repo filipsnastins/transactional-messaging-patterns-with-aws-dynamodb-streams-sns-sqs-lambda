@@ -5,7 +5,7 @@ import pytest
 
 from customers.commands import CreateCustomerCommand
 from customers.events import CustomerCreatedEvent
-from customers import use_cases
+from service_layer import use_cases
 from tests.fakes import FakeUnitOfWork
 
 

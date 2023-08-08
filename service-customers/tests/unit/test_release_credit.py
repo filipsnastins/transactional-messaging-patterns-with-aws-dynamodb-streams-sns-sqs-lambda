@@ -7,7 +7,7 @@ from adapters.customer_repository import CustomerNotFoundError
 from customers.commands import CreateCustomerCommand
 from customers.customer import CreditNotReservedForOrderError
 from customers.events import OrderCancelledExternalEvent, OrderCreatedExternalEvent
-from customers import use_cases
+from service_layer import use_cases
 from tests.fakes import FakeUnitOfWork
 
 

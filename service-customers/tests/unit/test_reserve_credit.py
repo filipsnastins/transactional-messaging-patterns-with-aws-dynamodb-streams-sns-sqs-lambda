@@ -11,7 +11,7 @@ from customers.events import (
     CustomerValidationFailedEvent,
     OrderCreatedExternalEvent,
 )
-from customers import use_cases
+from service_layer import use_cases
 from tests.fakes import FakeUnitOfWork
 
 
