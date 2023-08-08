@@ -9,7 +9,7 @@ from customers.events import (
     CustomerCreditReservedEvent,
     CustomerValidationErrors,
     CustomerValidationFailedEvent,
-    OrderCanceledExternalEvent,
+    OrderCancelledExternalEvent,
     OrderCreatedExternalEvent,
 )
 from service_layer.unit_of_work import AbstractUnitOfWork
@@ -75,7 +75,7 @@ async def reserve_credit(uow: AbstractUnitOfWork, event: OrderCreatedExternalEve
     await uow.commit()
 
 
-async def release_credit(uow: AbstractUnitOfWork, event: OrderCanceledExternalEvent) -> None:
+async def release_credit(uow: AbstractUnitOfWork, event: OrderCancelledExternalEvent) -> None:
     log = logger.bind(customer_id=event.customer_id, order_id=event.order_id)
     customer = await uow.customers.get(customer_id=event.customer_id)
     if not customer:

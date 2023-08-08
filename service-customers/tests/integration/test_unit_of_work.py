@@ -88,7 +88,7 @@ async def test_dynamodb_error_raised() -> None:
     with pytest.raises(ClientError) as exc_info:
         await uow.commit()
 
-    assert exc_info.value.response["Error"]["Code"] == "TransactionCanceledException"
+    assert exc_info.value.response["Error"]["Code"] == "TransactionCancelledException"
 
 
 @pytest.mark.asyncio()

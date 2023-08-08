@@ -13,6 +13,6 @@ Feature: Reserve customer credit for a new order
         Then the customer credit reservation fails
         And the customer available credit is "249.99"
 
-    Scenario: Reserve credit for non-existing customer
-        When order is created for non-existing customer
+    Scenario: Reserve credit for not existing customer
+        When order is created for not existing customer
         Then the customer validation fails - customer not found
