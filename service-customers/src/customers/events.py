@@ -90,7 +90,7 @@ class OrderCreatedExternalEvent(Event):
 
 
 @dataclass(kw_only=True)
-class OrderCanceledExternalEvent(Event):
+class OrderCancelledExternalEvent(Event):
     order_id: uuid.UUID
 
     def to_dict(self) -> dict:
