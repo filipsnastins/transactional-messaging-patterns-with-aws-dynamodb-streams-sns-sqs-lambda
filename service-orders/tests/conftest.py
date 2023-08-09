@@ -11,6 +11,8 @@ from tomodachi_testcontainers.utils import get_available_port
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
 
+from adapters import dynamodb
+
 
 @pytest.fixture(scope="session")
 def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
@@ -32,7 +34,8 @@ def _environment(monkeypatch: pytest.MonkeyPatch, moto_container: MotoContainer)
 
 @pytest_asyncio.fixture()
 async def _mock_dynamodb(_environment: None, _reset_moto_container_on_teardown: None) -> None:
-    pass
+    await dynamodb.create_aggregate_table()
+    await dynamodb.create_outbox_table()
 
 
 @pytest_asyncio.fixture()

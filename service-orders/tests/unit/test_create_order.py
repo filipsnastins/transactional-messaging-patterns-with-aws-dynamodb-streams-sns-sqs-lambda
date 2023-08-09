@@ -21,8 +21,8 @@ async def test_create_order() -> None:
     assert order == order_from_db
     assert isinstance(order.id, uuid.UUID)
     assert order.customer_id == cmd.customer_id
-    assert order.total_amount == cmd.total_amount
     assert order.state == OrderState.PENDING
+    assert order.total_amount == cmd.total_amount
     assert order.version == 0
     assert order.created_at
     assert order.updated_at is None
@@ -41,5 +41,6 @@ async def test_order_created_event_published() -> None:
     assert event.correlation_id == cmd.correlation_id
     assert event.order_id == order.id
     assert event.customer_id == cmd.customer_id
+    assert event.state == OrderState.PENDING
     assert event.total_amount == cmd.total_amount
     assert event.created_at == order.created_at
