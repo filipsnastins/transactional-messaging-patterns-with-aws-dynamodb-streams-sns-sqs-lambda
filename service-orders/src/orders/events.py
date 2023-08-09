@@ -3,6 +3,8 @@ import uuid
 from dataclasses import dataclass, field
 from decimal import Decimal
 
+from stockholm import Money
+
 from orders.order import OrderState
 from utils.time import datetime_to_str, utcnow
 
@@ -31,4 +33,4 @@ class OrderCreatedEvent(Event):
     total_amount: Decimal
 
     def to_dict(self) -> dict:
-        return super().to_dict() | {"total_amount": self.total_amount}
+        return super().to_dict() | {"total_amount": int(Money(self.total_amount).to_sub_units())}
