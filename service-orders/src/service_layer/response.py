@@ -17,12 +17,12 @@ class Response(Protocol):
         ...
 
 
-class ErrorResponse(Response, Protocol):
-    error: str
-
-
 class ErrorCodes(Enum):
     ORDER_NOT_FOUND = "ORDER_NOT_FOUND"
+
+
+class ErrorResponse(Response, Protocol):
+    error: ErrorCodes
 
 
 @dataclass
@@ -55,7 +55,7 @@ class CreateOrderResponse(Response):
 
     def to_dict(self) -> dict:
         return {
-            "id": self.id,
+            "id": str(self.id),
             "_links": asdict(self._links),
         }
 

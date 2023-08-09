@@ -15,6 +15,7 @@ class Event:
     correlation_id: uuid.UUID = field(default_factory=uuid.uuid4)
     order_id: uuid.UUID
     customer_id: uuid.UUID
+    state: OrderState
     created_at: datetime.datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> dict:
@@ -22,6 +23,7 @@ class Event:
             "event_id": str(self.event_id),
             "order_id": str(self.order_id),
             "customer_id": str(self.customer_id),
+            "state": self.state.value,
             "correlation_id": str(self.correlation_id),
             "created_at": datetime_to_str(self.created_at),
         }
