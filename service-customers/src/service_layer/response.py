@@ -2,6 +2,7 @@ import datetime
 import uuid
 from dataclasses import asdict, dataclass
 from decimal import Decimal
+from enum import Enum
 from typing import Protocol
 
 from stockholm import Money
@@ -16,8 +17,12 @@ class Response(Protocol):
         ...
 
 
+class ErrorCodes(Enum):
+    CUSTOMER_NOT_FOUND = "CUSTOMER_NOT_FOUND"
+
+
 class ErrorResponse(Response, Protocol):
-    error: str
+    error: ErrorCodes
 
 
 @dataclass
@@ -35,22 +40,22 @@ class SelfCustomerLink:
 
     @staticmethod
     def create(customer_id: uuid.UUID) -> "SelfCustomerLink":
-        return SelfCustomerLink(self=CustomerLink.create(customer_id=customer_id))
+        return SelfCustomerLink(self=CustomerLink.create(customer_id))
 
 
 @dataclass
 class CreateCustomerResponse(Response):
-    id: str
+    id: uuid.UUID
     _links: SelfCustomerLink
 
     @staticmethod
     def create(customer: Customer) -> "CreateCustomerResponse":
         _links = SelfCustomerLink.create(customer_id=customer.id)
-        return CreateCustomerResponse(id=str(customer.id), _links=_links)
+        return CreateCustomerResponse(id=customer.id, _links=_links)
 
     def to_dict(self) -> dict:
         return {
-            "id": self.id,
+            "id": str(self.id),
             "_links": asdict(self._links),
         }
 
@@ -61,7 +66,7 @@ class CreateCustomerResponse(Response):
 
 @dataclass
 class GetCustomerResponse(Response):
-    id: str
+    id: uuid.UUID
     name: str
     credit_limit: Decimal
     available_credit: Decimal
@@ -73,7 +78,7 @@ class GetCustomerResponse(Response):
     @staticmethod
     def create(customer: Customer) -> "GetCustomerResponse":
         return GetCustomerResponse(
-            id=str(customer.id),
+            id=customer.id,
             name=customer.name,
             credit_limit=customer.credit_limit,
             available_credit=customer.available_credit(),
@@ -85,7 +90,7 @@ class GetCustomerResponse(Response):
 
     def to_dict(self) -> dict:
         return {
-            "id": self.id,
+            "id": str(self.id),
             "name": self.name,
             "credit_limit": int(Money(self.credit_limit).to_sub_units()),
             "available_credit": int(Money(self.available_credit).to_sub_units()),
@@ -101,17 +106,17 @@ class GetCustomerResponse(Response):
 
 
 @dataclass
-class GetCustomerNotFoundResponse(ErrorResponse):
+class CustomerNotFoundResponse(ErrorResponse):
     _links: SelfCustomerLink
-    error: str = "CUSTOMER_NOT_FOUND"
+    error: ErrorCodes = ErrorCodes.CUSTOMER_NOT_FOUND
 
     @staticmethod
-    def create(customer_id: uuid.UUID) -> "GetCustomerNotFoundResponse":
-        return GetCustomerNotFoundResponse(_links=SelfCustomerLink.create(customer_id=customer_id))
+    def create(customer_id: uuid.UUID) -> "CustomerNotFoundResponse":
+        return CustomerNotFoundResponse(_links=SelfCustomerLink.create(customer_id))
 
     def to_dict(self) -> dict:
         return {
-            "error": self.error,
+            "error": self.error.value,
             "_links": asdict(self._links),
         }
 
