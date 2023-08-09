@@ -5,3 +5,7 @@ Feature: Create order
         When order creation is requested
         Then the order is created with state "PENDING"
         And the OrderCreated event is published
+
+    Scenario: Order not found
+        When not existing order is queried
+        Then the order is not found

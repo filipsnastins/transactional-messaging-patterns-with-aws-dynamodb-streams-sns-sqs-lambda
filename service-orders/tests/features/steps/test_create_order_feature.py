@@ -103,3 +103,25 @@ def _(
         await probe_until(_assert_customer_created, probe_interval=0.3, stop_after=8)
 
     return event_loop.run_until_complete(_async())
+
+
+@when("not existing order is queried", target_fixture="get_not_existing_order")
+def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient) -> httpx.Response:
+    async def _async() -> httpx.Response:
+        order_id = uuid.uuid4()
+        return await http_client.get(f"/order/{order_id}")
+
+    return event_loop.run_until_complete(_async())
+
+
+@then("the order is not found")
+def _(get_not_existing_order: httpx.Response) -> None:
+    order_id = get_not_existing_order.url.path.split("/")[-1]
+
+    assert get_not_existing_order.status_code == 404
+    assert get_not_existing_order.json() == {
+        "error": "ORDER_NOT_FOUND",
+        "_links": {
+            "self": {"href": f"/order/{order_id}"},
+        },
+    }

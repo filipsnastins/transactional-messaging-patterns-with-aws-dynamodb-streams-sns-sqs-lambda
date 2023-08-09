@@ -107,17 +107,15 @@ class GetOrderResponse(Response):
 
 @dataclass
 class OrderNotFoundResponse(ErrorResponse):
-    id: uuid.UUID
     _links: SelfOrderLink
     error: ErrorCodes = ErrorCodes.ORDER_NOT_FOUND
 
     @staticmethod
     def create(order_id: uuid.UUID) -> "OrderNotFoundResponse":
-        return OrderNotFoundResponse(id=order_id, _links=SelfOrderLink.create(order_id))
+        return OrderNotFoundResponse(_links=SelfOrderLink.create(order_id))
 
     def to_dict(self) -> dict:
         return {
-            "id": str(self.id),
             "error": self.error.value,
             "_links": asdict(self._links),
         }
