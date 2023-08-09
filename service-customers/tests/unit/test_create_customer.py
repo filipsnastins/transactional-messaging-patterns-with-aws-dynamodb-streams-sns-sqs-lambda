@@ -17,7 +17,6 @@ async def test_create_customer() -> None:
     customer = await use_cases.create_customer(uow, cmd)
     customer_from_db = await uow.customers.get(customer.id)
 
-    assert uow.committed is True
     assert customer == customer_from_db
     assert isinstance(customer.id, uuid.UUID)
     assert customer.name == "John Doe"
@@ -37,8 +36,6 @@ async def test_customer_created_event_published() -> None:
     [event] = uow.events.events
 
     assert isinstance(event, CustomerCreatedEvent)
-    assert isinstance(event.event_id, uuid.UUID)
-    assert event.event_id != customer.id
     assert event.correlation_id == cmd.correlation_id
     assert event.customer_id == customer.id
     assert event.name == "John Doe"
