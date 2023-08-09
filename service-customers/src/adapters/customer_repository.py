@@ -46,7 +46,7 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
                     "TableName": self.table_name,
                     "Item": {
                         "PK": {"S": f"CUSTOMER#{customer.id}"},
-                        "Id": {"S": str(customer.id)},
+                        "CustomerId": {"S": str(customer.id)},
                         "Name": {"S": customer.name},
                         "CreditLimit": {"N": str(Money(customer.credit_limit).to_sub_units())},
                         "CreditReservations": {
@@ -82,7 +82,7 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
                     "TableName": self.table_name,
                     "Item": {
                         "PK": {"S": f"CUSTOMER#{customer.id}"},
-                        "Id": {"S": str(customer.id)},
+                        "CustomerId": {"S": str(customer.id)},
                         "Name": {"S": customer.name},
                         "CreditLimit": {"N": str(Money(customer.credit_limit).to_sub_units())},
                         "CreditReservations": {
@@ -105,16 +105,13 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
 
     async def get(self, customer_id: uuid.UUID) -> Customer | None:
         async with clients.get_dynamodb_client() as client:
-            response = await client.get_item(
-                TableName=self.table_name,
-                Key={"PK": {"S": f"CUSTOMER#{customer_id}"}},
-            )
+            response = await client.get_item(TableName=self.table_name, Key={"PK": {"S": f"CUSTOMER#{customer_id}"}})
             item = response.get("Item")
             if not item:
                 logger.debug("dynamodb_customer_repository__customer_not_found", customer_id=customer_id)
                 return None
             return Customer(
-                id=uuid.UUID(item["Id"]["S"]),
+                id=uuid.UUID(item["CustomerId"]["S"]),
                 name=item["Name"]["S"],
                 credit_limit=Money.from_sub_units(item["CreditLimit"]["N"]).as_decimal(),
                 credit_reservations={
