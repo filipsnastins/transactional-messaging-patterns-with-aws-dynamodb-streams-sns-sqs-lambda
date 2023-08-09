@@ -1,6 +1,7 @@
 import datetime
 import uuid
 from dataclasses import dataclass, field
+from decimal import Decimal
 
 from utils.time import datetime_to_str, utcnow
 
@@ -21,3 +22,11 @@ class Event:
             "correlation_id": str(self.correlation_id),
             "created_at": datetime_to_str(self.created_at),
         }
+
+
+@dataclass(kw_only=True)
+class OrderCreatedEvent(Event):
+    total_amount: Decimal
+
+    def to_dict(self) -> dict:
+        return super().to_dict() | {"total_amount": self.total_amount}
