@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from adapters.customer_repository import CustomerNotFoundError, OptimisticLockError
+from adapters.customer_repository import CustomerAlreadyExistsError, CustomerNotFoundError, OptimisticLockError
 from customers.customer import Customer
 from service_layer.unit_of_work import DynamoDBUnitOfWork
 
@@ -31,6 +31,18 @@ async def test_create_customer() -> None:
 
     customer_from_db = await uow.customers.get(customer.id)
     assert customer_from_db == customer
+
+
+@pytest.mark.asyncio()
+async def test_customer_already_exists() -> None:
+    uow = DynamoDBUnitOfWork.create()
+    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
+    await uow.customers.create(customer)
+    await uow.commit()
+
+    await uow.customers.create(customer)
+    with pytest.raises(CustomerAlreadyExistsError, match=str(customer.id)):
+        await uow.commit()
 
 
 @pytest.mark.asyncio()
