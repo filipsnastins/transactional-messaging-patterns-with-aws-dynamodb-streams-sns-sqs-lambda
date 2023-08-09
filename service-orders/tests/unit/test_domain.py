@@ -16,6 +16,7 @@ def test_create_new_order_model() -> None:
     assert order.total_amount == Decimal("200.00")
     assert order.state == OrderState.PENDING
     assert datetime.timedelta(seconds=1) > utcnow() - order.created_at
+    assert order.version == 0
     assert order.created_at.tzinfo == datetime.UTC
     assert order.updated_at is None
 
@@ -29,6 +30,7 @@ def test_init_customer_model() -> None:
         customer_id=customer_id,
         total_amount=Decimal("200.00"),
         state=OrderState.PENDING,
+        version=0,
         created_at=datetime.datetime(2021, 1, 1, 12, 0, 0).replace(tzinfo=datetime.UTC),
         updated_at=datetime.datetime(2022, 1, 1, 12, 0, 0).replace(tzinfo=datetime.UTC),
     )
@@ -37,6 +39,7 @@ def test_init_customer_model() -> None:
     assert order.customer_id == customer_id
     assert order.total_amount == Decimal("200.00")
     assert order.state == OrderState.PENDING
+    assert order.version == 0
     assert order.created_at == datetime.datetime(2021, 1, 1, 12, 0, 0).replace(tzinfo=datetime.UTC)
     assert order.updated_at == datetime.datetime(2022, 1, 1, 12, 0, 0).replace(tzinfo=datetime.UTC)
 
@@ -50,6 +53,7 @@ def test_order_model_comparison() -> None:
         customer_id=customer_id,
         total_amount=Decimal("200.00"),
         state=OrderState.PENDING,
+        version=0,
         created_at=datetime.datetime(2021, 1, 1, 12, 0, 0).replace(tzinfo=datetime.UTC),
         updated_at=datetime.datetime(2022, 1, 1, 12, 0, 0).replace(tzinfo=datetime.UTC),
     )
@@ -59,6 +63,7 @@ def test_order_model_comparison() -> None:
         customer_id=customer_id,
         total_amount=Decimal("200.00"),
         state=OrderState.PENDING,
+        version=0,
         created_at=datetime.datetime(2021, 1, 1, 12, 0, 0).replace(tzinfo=datetime.UTC),
         updated_at=datetime.datetime(2022, 1, 1, 12, 0, 0).replace(tzinfo=datetime.UTC),
     )
