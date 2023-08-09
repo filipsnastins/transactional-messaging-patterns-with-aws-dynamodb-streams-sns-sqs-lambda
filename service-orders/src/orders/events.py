@@ -3,6 +3,7 @@ import uuid
 from dataclasses import dataclass, field
 from decimal import Decimal
 
+from orders.order import OrderState
 from utils.time import datetime_to_str, utcnow
 
 
@@ -26,6 +27,7 @@ class Event:
 
 @dataclass(kw_only=True)
 class OrderCreatedEvent(Event):
+    state: OrderState = OrderState.PENDING
     total_amount: Decimal
 
     def to_dict(self) -> dict:

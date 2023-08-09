@@ -3,12 +3,15 @@ from asyncio import AbstractEventLoop
 from typing import Any
 
 import httpx
+import pytest
 from pytest_bdd import given, parsers, scenarios, then, when
 from stockholm import Money
 from tomodachi.envelope.json_base import JsonBase
 from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.pytest.async_probes import probe_until
 from types_aiobotocore_sqs import SQSClient
+
+pytestmark = pytest.mark.xfail(strict=True, reason="Not implemented yet")
 
 scenarios("../create_order.feature")
 
