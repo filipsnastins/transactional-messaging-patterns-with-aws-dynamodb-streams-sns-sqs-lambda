@@ -5,14 +5,14 @@ description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.11"
 botocore = "^1.29.161"
 pydantic = "^2.1.1"
 pydantic-settings = "^2.0.2"
+python = "^3.11"
 stockholm = "^0.5.5"
 structlog = "^23.1.0"
 tomodachi = "^0.25.0"
-tomodachi-outbox = { path = "../library-tomodachi-outbox" }
+tomodachi-outbox = {path = "../library-tomodachi-outbox"}
 types-aiobotocore = { extras = ["dynamodb", "sns"], version = "^2.5.2" }
 uvloop = "^0.17.0"
 
