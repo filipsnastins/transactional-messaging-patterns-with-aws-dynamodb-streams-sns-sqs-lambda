@@ -3,15 +3,12 @@ from asyncio import AbstractEventLoop
 from typing import Any
 
 import httpx
-import pytest
 from pytest_bdd import given, parsers, scenarios, then, when
 from stockholm import Money
 from tomodachi.envelope.json_base import JsonBase
 from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.pytest.async_probes import probe_until
 from types_aiobotocore_sqs import SQSClient
-
-pytestmark = pytest.mark.xfail(strict=True, reason="Not implemented yet")
 
 scenarios("../create_order.feature")
 
@@ -68,8 +65,11 @@ def _(
         assert body == {
             "id": order_id,
             "customer_id": order_data["customer_id"],
-            "total_amount": order_data["total_amount"],
             "state": state,
+            "total_amount": order_data["total_amount"],
+            "version": 0,
+            "created_at": body["created_at"],
+            "updated_at": None,
             "_links": {
                 "self": {"href": f"/order/{order_id}"},
             },
@@ -79,10 +79,12 @@ def _(
 
 
 @then("the OrderCreated event is published")
-def _(event_loop: AbstractEventLoop, moto_sqs_client: SQSClient, order: dict, create_order: httpx.Response) -> None:
+def _(
+    event_loop: AbstractEventLoop, moto_sqs_client: SQSClient, order_data: dict, create_order: httpx.Response
+) -> None:
     order_id = create_order.json()["id"]
-    customer_id = order["customer_id"]
-    total_amount = order["total_amount"]
+    customer_id = order_data["customer_id"]
+    total_amount = order_data["total_amount"]
 
     async def _assert_customer_created() -> None:
         [message] = await snssqs_client.receive(moto_sqs_client, "order--created", JsonBase, dict[str, Any])
@@ -92,6 +94,7 @@ def _(event_loop: AbstractEventLoop, moto_sqs_client: SQSClient, order: dict, cr
             "correlation_id": message["correlation_id"],
             "order_id": order_id,
             "customer_id": customer_id,
+            "state": "PENDING",
             "total_amount": total_amount,
             "created_at": message["created_at"],
         }

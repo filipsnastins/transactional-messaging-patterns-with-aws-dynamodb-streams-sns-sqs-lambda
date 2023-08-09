@@ -1,3 +1,5 @@
-from orders.events import Event
+from orders.events import Event, OrderCreatedEvent
 
-TOPICS_MAP: dict[type[Event], str] = {}
+TOPICS_MAP: dict[type[Event], str] = {
+    OrderCreatedEvent: "order--created",
+}

@@ -6,6 +6,7 @@ import httpx
 import pytest
 import pytest_asyncio
 from docker.models.images import Image as DockerImage
+from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.containers import MotoContainer, TomodachiContainer
 from tomodachi_testcontainers.utils import get_available_port
 from types_aiobotocore_sns import SNSClient
@@ -40,7 +41,12 @@ async def _mock_dynamodb(_environment: None, _reset_moto_container_on_teardown: 
 
 @pytest_asyncio.fixture()
 async def _create_topics_and_queues(moto_sns_client: SNSClient, moto_sqs_client: SQSClient) -> None:
-    pass
+    await snssqs_client.subscribe_to(
+        moto_sns_client,
+        moto_sqs_client,
+        topic="order--created",
+        queue="order--created",
+    )
 
 
 @pytest.fixture()
