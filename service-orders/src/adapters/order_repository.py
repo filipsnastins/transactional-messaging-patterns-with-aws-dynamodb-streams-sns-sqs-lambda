@@ -6,12 +6,20 @@ from stockholm import Money
 
 from adapters import clients, dynamodb
 from orders.order import Order, OrderState
-from utils.time import datetime_to_str, str_to_datetime
+from utils.time import datetime_to_str, str_to_datetime, utcnow
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
+class OptimisticLockError(Exception):
+    pass
+
+
 class OrderAlreadyExistsError(Exception):
+    pass
+
+
+class OrderNotFoundError(Exception):
     pass
 
 
@@ -20,6 +28,9 @@ class AbstractOrderRepository(Protocol):
         ...
 
     async def get(self, order_id: uuid.UUID) -> Order | None:
+        ...
+
+    async def update(self, order: Order) -> None:
         ...
 
 
@@ -65,3 +76,35 @@ class DynamoDBOrderRepository(AbstractOrderRepository):
                 created_at=str_to_datetime(item["CreatedAt"]["S"]),
                 updated_at=str_to_datetime(item["UpdatedAt"]["S"]) if item.get("UpdatedAt") else None,
             )
+
+    async def update(self, order: Order) -> None:
+        self.session.add(
+            {
+                "ConditionCheck": {
+                    "TableName": self.table_name,
+                    "Key": {"PK": {"S": f"ORDER#{order.id}"}},
+                    "ConditionExpression": "attribute_exists(PK)",
+                }
+            },
+            raise_on_condition_check_failure=OrderNotFoundError(order.id),
+        )
+        self.session.add(
+            {
+                "Put": {
+                    "TableName": self.table_name,
+                    "Item": {
+                        "PK": {"S": f"ORDER#{order.id}"},
+                        "OrderId": {"S": str(order.id)},
+                        "CustomerId": {"S": str(order.customer_id)},
+                        "State": {"S": order.state.value},
+                        "TotalAmount": {"N": str(Money(order.total_amount).to_sub_units())},
+                        "Version": {"N": str(order.version + 1)},
+                        "CreatedAt": {"S": datetime_to_str(order.created_at)},
+                        "UpdatedAt": {"S": datetime_to_str(utcnow())},
+                    },
+                    "ConditionExpression": "Version = :version",
+                    "ExpressionAttributeValues": {":version": {"N": str(order.version)}},
+                },
+            },
+            raise_on_condition_check_failure=OptimisticLockError(),
+        )

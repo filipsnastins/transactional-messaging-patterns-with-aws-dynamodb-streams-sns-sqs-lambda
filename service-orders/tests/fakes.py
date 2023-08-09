@@ -20,6 +20,9 @@ class FakeOrderRepository(AbstractOrderRepository):
     async def get(self, order_id: uuid.UUID) -> Order | None:
         return next((copy.deepcopy(v) for v in self._orders if v.id == order_id), None)
 
+    async def update(self, order: Order) -> None:
+        raise NotImplementedError
+
 
 class FakeEventRepository(AbstractEventRepository):
     def __init__(self, events: list[Event]) -> None:
