@@ -5,4 +5,4 @@ Feature: Create order
         When order creation is requested
         Then the order creation request succeeded
         And the order state is "PENDING"
-        And the OrderCreated event is sent
+        And the OrderCreated event is published
