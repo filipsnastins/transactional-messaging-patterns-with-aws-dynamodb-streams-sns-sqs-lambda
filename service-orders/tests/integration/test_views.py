@@ -19,7 +19,6 @@ async def test_get_not_existing_order() -> None:
     response = await views.get_order(uow, order_id=order_id)
 
     assert response.to_dict() == {
-        "id": str(order_id),
         "error": "ORDER_NOT_FOUND",
         "_links": {
             "self": {"href": f"/order/{order_id}"},
