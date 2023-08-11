@@ -15,26 +15,6 @@ from utils.time import datetime_to_str, utcnow
 scenarios("../order_credit_check.feature")
 
 
-@when("CustomerCreditReserved event is received")
-def _(
-    event_loop: AbstractEventLoop, moto_sns_client: SNSClient, customer_id: uuid.UUID, create_order: httpx.Response
-) -> None:
-    order_id = create_order.json()["id"]
-
-    async def _async() -> None:
-        data = {
-            "event_id": str(uuid.uuid4()),
-            "correlation_id": str(uuid.uuid4()),
-            "order_id": order_id,
-            "customer_id": str(customer_id),
-            "created_at": datetime_to_str(utcnow()),
-        }
-
-        await snssqs_client.publish(moto_sns_client, "customer--credit-reserved", data, JsonBase)
-
-    event_loop.run_until_complete(_async())
-
-
 @when("CustomerCreditReservationFailed event is received")
 def _(
     event_loop: AbstractEventLoop, moto_sns_client: SNSClient, customer_id: uuid.UUID, create_order: httpx.Response

@@ -12,6 +12,7 @@ Feature: Cancel order
         And the OrderCancelled event is published
 
     Scenario: Pending order cancellation is not allowed
+        Given the order state is "PENDING"
         When order cancellation is requested
-        Then the order cancellation request failed - pending order cannot be cancelled
+        Then the order cancellation request failed - "CANNOT_CANCEL_PENDING_ORDER"
         And the order state is "PENDING"
