@@ -23,3 +23,23 @@ awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--custo
   - [Clean Architectures in Python: A practical approach to better software design.](https://leanpub.com/clean-architectures-in-python) Book by Leonardo Giordani.
 - Articles:
   - ...
+
+## Sample requests
+
+- Create customer
+
+```bash
+curl -X POST --header "Content-Type: application/json" -d '{
+  "name": "Jane Doe",
+  "credit_limit": 12399
+}' http://localhost:9701/customers
+```
+
+- Create order
+
+```bash
+curl -X POST --header "Content-Type: application/json" -d '{
+  "customer_id": "ab3812c6-fb5a-4c7b-becf-8fa117b6d09b",
+  "order_total": 100
+}' http://localhost:9702/orders
+```
