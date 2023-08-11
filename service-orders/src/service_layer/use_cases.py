@@ -25,5 +25,15 @@ async def create_order(uow: AbstractUnitOfWork, cmd: CreateOrderCommand) -> Orde
     return order
 
 
-async def approve_order(uow: AbstractUnitOfWork, cmd: ApproveOrderCommand) -> Order:
-    raise OrderNotFoundError(cmd.order_id)
+async def approve_order(uow: AbstractUnitOfWork, cmd: ApproveOrderCommand) -> None:
+    log = logger.bind(order_id=cmd.order_id)
+    order = await uow.orders.get(order_id=cmd.order_id)
+    if not order:
+        log.error("order_not_found")
+        raise OrderNotFoundError(cmd.order_id)
+
+    order.note_credit_reserved()
+
+    await uow.orders.update(order)
+    await uow.commit()
+    log.error("order_approved", customer_id=order.customer_id)

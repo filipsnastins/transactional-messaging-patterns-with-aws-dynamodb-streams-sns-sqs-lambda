@@ -51,3 +51,6 @@ class Order:
             created_at=datetime.datetime.now(tz=datetime.timezone.utc),
             updated_at=None,
         )
+
+    def note_credit_reserved(self) -> None:
+        self.state = OrderState.APPROVED

@@ -4,7 +4,7 @@ import uuid
 from tomodachi_outbox.message import Message
 
 from adapters.event_repository import AbstractEventRepository
-from adapters.order_repository import AbstractOrderRepository
+from adapters.order_repository import AbstractOrderRepository, OrderNotFoundError
 from orders.events import Event
 from orders.order import Order
 from service_layer.unit_of_work import AbstractUnitOfWork
@@ -21,7 +21,11 @@ class FakeOrderRepository(AbstractOrderRepository):
         return next((copy.deepcopy(v) for v in self._orders if v.id == order_id), None)
 
     async def update(self, order: Order) -> None:
-        raise NotImplementedError
+        indices = [i for i, x in enumerate(self._orders) if x.id == order.id]
+        if len(indices) == 0:
+            raise OrderNotFoundError(order.id)
+        assert len(indices) == 1
+        self._orders[indices[0]] = copy.deepcopy(order)
 
 
 class FakeEventRepository(AbstractEventRepository):
