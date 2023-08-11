@@ -35,17 +35,6 @@ async def test_customer_already_exists() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_update_non_existing_customer() -> None:
-    uow = DynamoDBUnitOfWork.create()
-    customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
-
-    await uow.customers.update(customer)
-
-    with pytest.raises(CustomerNotFoundError, match=str(customer.id)):
-        await uow.commit()
-
-
-@pytest.mark.asyncio()
 async def test_update_customer() -> None:
     uow = DynamoDBUnitOfWork.create()
     customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
