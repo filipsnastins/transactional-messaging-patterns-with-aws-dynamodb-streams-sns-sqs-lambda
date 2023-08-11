@@ -2,9 +2,10 @@ import uuid
 from typing import Protocol
 
 import structlog
+from stockholm import Money
+
 from adapters import clients, dynamodb
 from customers.customer import Customer
-from stockholm import Money
 from utils.time import datetime_to_str, str_to_datetime, utcnow
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
@@ -47,14 +48,10 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
                         "PK": {"S": f"CUSTOMER#{customer.id}"},
                         "CustomerId": {"S": str(customer.id)},
                         "Name": {"S": customer.name},
-                        "CreditLimit": {
-                            "N": str(Money(customer.credit_limit).to_sub_units())
-                        },
+                        "CreditLimit": {"N": str(Money(customer.credit_limit).to_sub_units())},
                         "CreditReservations": {
                             "M": {
-                                str(order_id): {
-                                    "N": str(Money(order_total).to_sub_units())
-                                }
+                                str(order_id): {"N": str(Money(order_total).to_sub_units())}
                                 for order_id, order_total in customer.credit_reservations.items()
                             }
                         },
@@ -77,14 +74,10 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
                         "PK": {"S": f"CUSTOMER#{customer.id}"},
                         "CustomerId": {"S": str(customer.id)},
                         "Name": {"S": customer.name},
-                        "CreditLimit": {
-                            "N": str(Money(customer.credit_limit).to_sub_units())
-                        },
+                        "CreditLimit": {"N": str(Money(customer.credit_limit).to_sub_units())},
                         "CreditReservations": {
                             "M": {
-                                str(order_id): {
-                                    "N": str(Money(order_total).to_sub_units())
-                                }
+                                str(order_id): {"N": str(Money(order_total).to_sub_units())}
                                 for order_id, order_total in customer.credit_reservations.items()
                             }
                         },
@@ -93,9 +86,7 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
                         "UpdatedAt": {"S": datetime_to_str(utcnow())},
                     },
                     "ConditionExpression": "Version = :version",
-                    "ExpressionAttributeValues": {
-                        ":version": {"N": str(customer.version)}
-                    },
+                    "ExpressionAttributeValues": {":version": {"N": str(customer.version)}},
                 }
             },
             raise_on_condition_check_failure=OptimisticLockError(),
@@ -104,9 +95,7 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
 
     async def get(self, customer_id: uuid.UUID) -> Customer | None:
         async with clients.get_dynamodb_client() as client:
-            response = await client.get_item(
-                TableName=self.table_name, Key={"PK": {"S": f"CUSTOMER#{customer_id}"}}
-            )
+            response = await client.get_item(TableName=self.table_name, Key={"PK": {"S": f"CUSTOMER#{customer_id}"}})
             item = response.get("Item")
             if not item:
                 logger.debug(
@@ -117,18 +106,12 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
             return Customer(
                 id=uuid.UUID(item["CustomerId"]["S"]),
                 name=item["Name"]["S"],
-                credit_limit=Money.from_sub_units(
-                    item["CreditLimit"]["N"]
-                ).as_decimal(),
+                credit_limit=Money.from_sub_units(item["CreditLimit"]["N"]).as_decimal(),
                 credit_reservations={
-                    uuid.UUID(order_id): Money.from_sub_units(
-                        order_total["N"]
-                    ).as_decimal()
+                    uuid.UUID(order_id): Money.from_sub_units(order_total["N"]).as_decimal()
                     for order_id, order_total in item["CreditReservations"]["M"].items()
                 },
                 version=int(item["Version"]["N"]),
                 created_at=str_to_datetime(item["CreatedAt"]["S"]),
-                updated_at=str_to_datetime(item["UpdatedAt"]["S"])
-                if item.get("UpdatedAt")
-                else None,
+                updated_at=str_to_datetime(item["UpdatedAt"]["S"]) if item.get("UpdatedAt") else None,
             )

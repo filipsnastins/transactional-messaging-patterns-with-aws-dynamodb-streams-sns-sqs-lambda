@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from adapters.customer_repository import CustomerAlreadyExistsError, CustomerNotFoundError, OptimisticLockError
+from adapters.customer_repository import CustomerAlreadyExistsError, OptimisticLockError
 from customers.customer import Customer
 from service_layer.unit_of_work import DynamoDBUnitOfWork
 
