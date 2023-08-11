@@ -6,5 +6,5 @@ Feature: Release customer credit when an order is cancelled
     Scenario: Release credit when order is cancelled
         Given order created with total amount of "149.99"
         And the customer available credit is "100.00"
-        When order is cancelled
+        When OrderCancelled event is received
         Then the customer available credit is "249.99"

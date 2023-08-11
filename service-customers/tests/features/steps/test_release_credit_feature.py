@@ -12,7 +12,7 @@ from utils.time import datetime_to_str, utcnow
 scenarios("../release_credit.feature")
 
 
-@when("order is cancelled")
+@when("OrderCancelled event is received")
 def _(
     event_loop: AbstractEventLoop, moto_sns_client: SNSClient, create_customer: httpx.Response, order_id: uuid.UUID
 ) -> None:
