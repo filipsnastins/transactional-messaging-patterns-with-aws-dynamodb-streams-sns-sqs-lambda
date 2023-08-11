@@ -72,6 +72,7 @@ class TomodachiService(tomodachi.Service):
         uow = DynamoDBUnitOfWork.create()
         event = OrderCreatedExternalEvent(
             event_id=uuid.UUID(data["event_id"]),
+            correlation_id=uuid.UUID(data["correlation_id"]),
             order_id=uuid.UUID(data["order_id"]),
             customer_id=uuid.UUID(data["customer_id"]),
             order_total=Money.from_sub_units(int(data["order_total"])).as_decimal(),
@@ -88,6 +89,7 @@ class TomodachiService(tomodachi.Service):
         uow = DynamoDBUnitOfWork.create()
         event = OrderCancelledExternalEvent(
             event_id=uuid.UUID(data["event_id"]),
+            correlation_id=uuid.UUID(data["correlation_id"]),
             order_id=uuid.UUID(data["order_id"]),
             customer_id=uuid.UUID(data["customer_id"]),
             created_at=str_to_datetime(data["created_at"]),
