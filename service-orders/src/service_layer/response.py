@@ -26,31 +26,41 @@ class ErrorResponse(Response, Protocol):
 
 
 @dataclass
-class OrderLink:
+class GetOrderLink:
     href: str
 
     @staticmethod
-    def create(order_id: uuid.UUID) -> "OrderLink":
-        return OrderLink(href=f"/order/{order_id}")
+    def create(order_id: uuid.UUID) -> "GetOrderLink":
+        return GetOrderLink(href=f"/order/{order_id}")
 
 
 @dataclass
-class SelfOrderLink:
-    self: OrderLink
+class CancelOrderLink:
+    href: str
 
     @staticmethod
-    def create(order_id: uuid.UUID) -> "SelfOrderLink":
-        return SelfOrderLink(self=OrderLink.create(order_id))
+    def create(order_id: uuid.UUID) -> "CancelOrderLink":
+        return CancelOrderLink(href=f"/order/{order_id}/cancel")
+
+
+@dataclass
+class OrderLinks:
+    self: GetOrderLink
+    cancel: CancelOrderLink
+
+    @staticmethod
+    def create(order_id: uuid.UUID) -> "OrderLinks":
+        return OrderLinks(self=GetOrderLink.create(order_id), cancel=CancelOrderLink.create(order_id))
 
 
 @dataclass
 class CreateOrderResponse(Response):
     id: uuid.UUID
-    _links: SelfOrderLink
+    _links: OrderLinks
 
     @staticmethod
     def create(order: Order) -> "CreateOrderResponse":
-        _links = SelfOrderLink.create(order_id=order.id)
+        _links = OrderLinks.create(order_id=order.id)
         return CreateOrderResponse(id=order.id, _links=_links)
 
     def to_dict(self) -> dict:
@@ -73,7 +83,7 @@ class GetOrderResponse(Response):
     version: int
     created_at: datetime.datetime
     updated_at: datetime.datetime | None
-    _links: SelfOrderLink
+    _links: OrderLinks
 
     @staticmethod
     def create(order: Order) -> "GetOrderResponse":
@@ -85,7 +95,7 @@ class GetOrderResponse(Response):
             version=order.version,
             created_at=order.created_at,
             updated_at=order.updated_at,
-            _links=SelfOrderLink.create(order_id=order.id),
+            _links=OrderLinks.create(order_id=order.id),
         )
 
     def to_dict(self) -> dict:
@@ -107,12 +117,12 @@ class GetOrderResponse(Response):
 
 @dataclass
 class OrderNotFoundResponse(ErrorResponse):
-    _links: SelfOrderLink
+    _links: OrderLinks
     error: ErrorCodes = ErrorCodes.ORDER_NOT_FOUND
 
     @staticmethod
     def create(order_id: uuid.UUID) -> "OrderNotFoundResponse":
-        return OrderNotFoundResponse(_links=SelfOrderLink.create(order_id))
+        return OrderNotFoundResponse(_links=OrderLinks.create(order_id))
 
     def to_dict(self) -> dict:
         return {

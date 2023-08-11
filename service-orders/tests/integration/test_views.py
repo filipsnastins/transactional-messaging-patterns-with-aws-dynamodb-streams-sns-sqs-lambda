@@ -22,6 +22,7 @@ async def test_get_not_existing_order() -> None:
         "error": "ORDER_NOT_FOUND",
         "_links": {
             "self": {"href": f"/order/{order_id}"},
+            "cancel": {"href": f"/order/{order_id}/cancel"},
         },
     }
 
@@ -44,5 +45,6 @@ async def test_get_order() -> None:
         "updated_at": None,
         "_links": {
             "self": {"href": f"/order/{order.id}"},
+            "cancel": {"href": f"/order/{order.id}/cancel"},
         },
     }

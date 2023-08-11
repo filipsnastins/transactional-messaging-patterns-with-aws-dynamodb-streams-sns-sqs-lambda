@@ -42,6 +42,7 @@ def _(create_order: httpx.Response) -> None:
         "id": body["id"],
         "_links": {
             "self": {"href": f"/order/{body['id']}"},
+            "cancel": {"href": f"/order/{body['id']}/cancel"},
         },
     }
 
@@ -69,6 +70,7 @@ def _(
             "updated_at": None,
             "_links": {
                 "self": {"href": f"/order/{order_id}"},
+                "cancel": {"href": f"/order/{body['id']}/cancel"},
             },
         }
 
@@ -120,5 +122,6 @@ def _(get_not_existing_order: httpx.Response) -> None:
         "error": "ORDER_NOT_FOUND",
         "_links": {
             "self": {"href": f"/order/{order_id}"},
+            "cancel": {"href": f"/order/{order_id}/cancel"},
         },
     }
