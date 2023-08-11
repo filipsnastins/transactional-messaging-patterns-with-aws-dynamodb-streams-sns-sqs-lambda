@@ -22,7 +22,7 @@ async def test_approve_not_existing_order() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_pending_order_approved() -> None:
+async def test_approve_pending_order() -> None:
     uow = FakeUnitOfWork()
     cmd = CreateOrderCommand(customer_id=uuid.uuid4(), order_total=Decimal("200.00"))
     order = await use_cases.create_order(uow, cmd)
