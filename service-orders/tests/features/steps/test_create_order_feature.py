@@ -13,11 +13,11 @@ from types_aiobotocore_sqs import SQSClient
 scenarios("../create_order.feature")
 
 
-@given(parsers.parse('an order data with total amount of "{total_amount}"'), target_fixture="order_data")
-def _(total_amount: str) -> dict:
+@given(parsers.parse('an order data with total amount of "{order_total}"'), target_fixture="order_data")
+def _(order_total: str) -> dict:
     return {
         "customer_id": str(uuid.uuid4()),
-        "total_amount": int(Money(total_amount).to_sub_units()),
+        "order_total": int(Money(order_total).to_sub_units()),
     }
 
 
@@ -26,7 +26,7 @@ def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, order_data:
     async def _async() -> httpx.Response:
         data = {
             "customer_id": order_data["customer_id"],
-            "total_amount": order_data["total_amount"],
+            "order_total": order_data["order_total"],
         }
 
         response = await http_client.post("/orders", json=data)
@@ -66,7 +66,7 @@ def _(
             "id": order_id,
             "customer_id": order_data["customer_id"],
             "state": state,
-            "total_amount": order_data["total_amount"],
+            "order_total": order_data["order_total"],
             "version": 0,
             "created_at": body["created_at"],
             "updated_at": None,
@@ -84,7 +84,7 @@ def _(
 ) -> None:
     order_id = create_order.json()["id"]
     customer_id = order_data["customer_id"]
-    total_amount = order_data["total_amount"]
+    order_total = order_data["order_total"]
 
     async def _assert_customer_created() -> None:
         [message] = await snssqs_client.receive(moto_sqs_client, "order--created", JsonBase, dict[str, Any])
@@ -95,7 +95,7 @@ def _(
             "order_id": order_id,
             "customer_id": customer_id,
             "state": "PENDING",
-            "total_amount": total_amount,
+            "order_total": order_total,
             "created_at": message["created_at"],
         }
 

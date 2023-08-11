@@ -69,7 +69,7 @@ class GetOrderResponse(Response):
     id: uuid.UUID
     customer_id: uuid.UUID
     state: OrderState
-    total_amount: Decimal
+    order_total: Decimal
     version: int
     created_at: datetime.datetime
     updated_at: datetime.datetime | None
@@ -81,7 +81,7 @@ class GetOrderResponse(Response):
             id=order.id,
             customer_id=order.customer_id,
             state=order.state,
-            total_amount=order.total_amount,
+            order_total=order.order_total,
             version=order.version,
             created_at=order.created_at,
             updated_at=order.updated_at,
@@ -93,7 +93,7 @@ class GetOrderResponse(Response):
             "id": str(self.id),
             "customer_id": str(self.customer_id),
             "state": self.state.value,
-            "total_amount": int(Money(self.total_amount).to_sub_units()),
+            "order_total": int(Money(self.order_total).to_sub_units()),
             "version": self.version,
             "created_at": datetime_to_str(self.created_at),
             "updated_at": datetime_to_str(self.updated_at) if self.updated_at else None,
