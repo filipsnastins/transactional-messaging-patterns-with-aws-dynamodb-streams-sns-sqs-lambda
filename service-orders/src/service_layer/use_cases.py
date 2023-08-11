@@ -1,8 +1,8 @@
 import structlog
 
 from adapters.order_repository import OrderNotFoundError
-from orders.commands import ApproveOrderCommand, CreateOrderCommand
-from orders.events import OrderApprovedEvent, OrderCreatedEvent
+from orders.commands import ApproveOrderCommand, CreateOrderCommand, RejectOrderCommand
+from orders.events import OrderApprovedEvent, OrderCreatedEvent, OrderRejectedEvent
 from orders.order import Order
 from service_layer.unit_of_work import AbstractUnitOfWork
 
@@ -46,3 +46,24 @@ async def approve_order(uow: AbstractUnitOfWork, cmd: ApproveOrderCommand) -> No
     await uow.events.publish([event])
     await uow.commit()
     log.error("order_approved", customer_id=order.customer_id)
+
+
+async def reject_order(uow: AbstractUnitOfWork, cmd: RejectOrderCommand) -> None:
+    log = logger.bind(order_id=cmd.order_id)
+    order = await uow.orders.get(order_id=cmd.order_id)
+    if not order:
+        log.error("order_not_found")
+        raise OrderNotFoundError(cmd.order_id)
+
+    order.note_credit_rejected()
+    event = OrderRejectedEvent(
+        correlation_id=cmd.correlation_id,
+        order_id=order.id,
+        customer_id=order.customer_id,
+        state=order.state,
+    )
+
+    await uow.orders.update(order)
+    await uow.events.publish([event])
+    await uow.commit()
+    log.error("order_rejected", customer_id=order.customer_id)

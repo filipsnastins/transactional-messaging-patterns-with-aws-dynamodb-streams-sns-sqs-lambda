@@ -17,3 +17,8 @@ class CreateOrderCommand(Command):
 @dataclass(kw_only=True)
 class ApproveOrderCommand(Command):
     order_id: uuid.UUID
+
+
+@dataclass(kw_only=True)
+class RejectOrderCommand(Command):
+    order_id: uuid.UUID

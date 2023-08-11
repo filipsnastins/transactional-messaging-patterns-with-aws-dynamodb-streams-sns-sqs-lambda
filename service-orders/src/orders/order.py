@@ -61,3 +61,6 @@ class Order:
             self.state = OrderState.APPROVED
         else:
             raise NotPendingOrderCannotBeApprovedError(self.id)
+
+    def note_credit_rejected(self) -> None:
+        self.state = OrderState.REJECTED

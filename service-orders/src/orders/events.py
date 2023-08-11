@@ -40,3 +40,8 @@ class OrderCreatedEvent(Event):
 @dataclass(kw_only=True)
 class OrderApprovedEvent(Event):
     pass
+
+
+@dataclass(kw_only=True)
+class OrderRejectedEvent(Event):
+    pass
