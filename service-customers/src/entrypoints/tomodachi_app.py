@@ -8,12 +8,10 @@ from tomodachi.envelope.json_base import JsonBase
 
 from adapters import dynamodb, outbox, sns
 from adapters.settings import get_settings
-from customers.commands import CreateCustomerCommand
-from customers.events import OrderCancelledExternalEvent, OrderCreatedExternalEvent
+from customers.commands import CreateCustomerCommand, ReleaseCreditCommand, ReserveCreditCommand
 from service_layer import use_cases, views
 from service_layer.response import CreateCustomerResponse
 from service_layer.unit_of_work import DynamoDBUnitOfWork
-from utils.time import str_to_datetime
 
 
 class TomodachiService(tomodachi.Service):
@@ -70,13 +68,11 @@ class TomodachiService(tomodachi.Service):
     )
     async def order_created_handler(self, data: dict) -> None:
         uow = DynamoDBUnitOfWork.create()
-        event = OrderCreatedExternalEvent(
-            event_id=uuid.UUID(data["event_id"]),
+        event = ReserveCreditCommand(
             correlation_id=uuid.UUID(data["correlation_id"]),
             order_id=uuid.UUID(data["order_id"]),
             customer_id=uuid.UUID(data["customer_id"]),
             order_total=Money.from_sub_units(int(data["order_total"])).as_decimal(),
-            created_at=str_to_datetime(data["created_at"]),
         )
         await use_cases.reserve_credit(uow, event)
 
@@ -87,11 +83,9 @@ class TomodachiService(tomodachi.Service):
     )
     async def order_cancelled_handler(self, data: dict) -> None:
         uow = DynamoDBUnitOfWork.create()
-        event = OrderCancelledExternalEvent(
-            event_id=uuid.UUID(data["event_id"]),
+        event = ReleaseCreditCommand(
             correlation_id=uuid.UUID(data["correlation_id"]),
             order_id=uuid.UUID(data["order_id"]),
             customer_id=uuid.UUID(data["customer_id"]),
-            created_at=str_to_datetime(data["created_at"]),
         )
         await use_cases.release_credit(uow, event)

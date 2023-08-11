@@ -67,23 +67,3 @@ class CustomerValidationFailedEvent(Event):
             "order_id": str(self.order_id),
             "error": self.error.value,
         }
-
-
-@dataclass(kw_only=True)
-class OrderCreatedExternalEvent(Event):
-    order_id: uuid.UUID
-    order_total: Decimal
-
-    def to_dict(self) -> dict:
-        return super().to_dict() | {
-            "order_id": str(self.order_id),
-            "order_total": int(Money(self.order_total).to_sub_units()),
-        }
-
-
-@dataclass(kw_only=True)
-class OrderCancelledExternalEvent(Event):
-    order_id: uuid.UUID
-
-    def to_dict(self) -> dict:
-        return super().to_dict() | {"order_id": str(self.order_id)}
