@@ -29,29 +29,26 @@ def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, order_data:
             "order_total": order_data["order_total"],
         }
 
-        response = await http_client.post("/orders", json=data)
-
-        assert response.status_code == 200
-        body = response.json()
-        assert body == {
-            "id": body["id"],
-            "_links": {
-                "self": {"href": f"/order/{body['id']}"},
-            },
-        }
-
-        return response
+        return await http_client.post("/orders", json=data)
 
     return event_loop.run_until_complete(_async())
 
 
-@then(parsers.parse('the order is created with state "{state}"'))
+@then("the order creation request succeeded")
+def _(create_order: httpx.Response) -> None:
+    assert create_order.status_code == 200
+    body = create_order.json()
+    assert body == {
+        "id": body["id"],
+        "_links": {
+            "self": {"href": f"/order/{body['id']}"},
+        },
+    }
+
+
+@then("the order is created")
 def _(
-    event_loop: AbstractEventLoop,
-    http_client: httpx.AsyncClient,
-    order_data: dict,
-    create_order: httpx.Response,
-    state: str,
+    event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, order_data: dict, create_order: httpx.Response
 ) -> None:
     body = create_order.json()
     order_id = body["id"]
@@ -65,7 +62,7 @@ def _(
         assert body == {
             "id": order_id,
             "customer_id": order_data["customer_id"],
-            "state": state,
+            "state": body["state"],
             "order_total": order_data["order_total"],
             "version": 0,
             "created_at": body["created_at"],
@@ -86,7 +83,7 @@ def _(
     customer_id = order_data["customer_id"]
     order_total = order_data["order_total"]
 
-    async def _assert_customer_created() -> None:
+    async def _assert_order_created_event_published() -> None:
         [message] = await snssqs_client.receive(moto_sqs_client, "order--created", JsonBase, dict[str, Any])
 
         assert message == {
@@ -100,7 +97,7 @@ def _(
         }
 
     async def _async() -> None:
-        await probe_until(_assert_customer_created, probe_interval=0.3, stop_after=8)
+        await probe_until(_assert_order_created_event_published, probe_interval=0.3, stop_after=8)
 
     return event_loop.run_until_complete(_async())
 

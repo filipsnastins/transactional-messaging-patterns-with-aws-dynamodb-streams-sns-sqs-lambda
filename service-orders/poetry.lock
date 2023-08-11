@@ -2175,13 +2175,13 @@ url = "../library-tomodachi-outbox"
 
 [[package]]
 name = "tomodachi-testcontainers"
-version = "0.3.2"
+version = "0.4.1"
 description = "Collection of Testcontainers, pytest fixtures and test clients for end-to-end/integration testing for Python Tomodachi framework. A great starting point to learn more about Testcontainers and necessity of integration testing."
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "tomodachi_testcontainers-0.3.2-py3-none-any.whl", hash = "sha256:3c5f8a876fc9a75077e558d28b81162460799277a0076663a4041910b7947fa1"},
-    {file = "tomodachi_testcontainers-0.3.2.tar.gz", hash = "sha256:e87eb887619ef609677199d79458c2988c14e41d57a6c114f3d2f0adfb021a75"},
+    {file = "tomodachi_testcontainers-0.4.1-py3-none-any.whl", hash = "sha256:7729b84aae2e3a350b030cbd21ba445a917f553dee24dc156782ee1cc8d9f6e1"},
+    {file = "tomodachi_testcontainers-0.4.1.tar.gz", hash = "sha256:f9f0043892b4416df8bfaa8b1a5d9ba16b11c75498a8e13a14976267a9845ab7"},
 ]
 
 [package.dependencies]
@@ -2951,4 +2951,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "1f3493f717deed641e19dfbbbdf6ee7427035457fe99cfc30ab8b2b28133c8e3"
+content-hash = "be6e9f630eb2398bcbef03eee2b65fc85c47c55cb2ee26f3689b6923fc4f15c2"
