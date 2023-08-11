@@ -5,6 +5,10 @@ from decimal import Decimal
 from enum import Enum
 
 
+class NotPendingOrderCannotBeApprovedError(Exception):
+    pass
+
+
 class OrderState(Enum):
     PENDING = "PENDING"
     APPROVED = "APPROVED"
@@ -53,4 +57,7 @@ class Order:
         )
 
     def note_credit_reserved(self) -> None:
-        self.state = OrderState.APPROVED
+        if self.state == OrderState.PENDING:
+            self.state = OrderState.APPROVED
+        else:
+            raise NotPendingOrderCannotBeApprovedError(self.id)
