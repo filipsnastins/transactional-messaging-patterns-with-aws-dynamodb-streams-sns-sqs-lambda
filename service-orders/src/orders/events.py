@@ -32,7 +32,7 @@ class Event:
 @dataclass(kw_only=True)
 class OrderCreatedEvent(Event):
     state: OrderState = OrderState.PENDING
-    total_amount: Decimal
+    order_total: Decimal
 
     def to_dict(self) -> dict:
-        return super().to_dict() | {"total_amount": int(Money(self.total_amount).to_sub_units())}
+        return super().to_dict() | {"order_total": int(Money(self.order_total).to_sub_units())}

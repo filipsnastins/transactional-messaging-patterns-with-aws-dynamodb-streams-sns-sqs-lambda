@@ -30,7 +30,7 @@ class TomodachiService(tomodachi.Service):
         data = await request.json()
         cmd = CreateOrderCommand(
             customer_id=uuid.UUID(data["customer_id"]),
-            total_amount=Money.from_sub_units(int(data["total_amount"])).as_decimal(),
+            order_total=Money.from_sub_units(int(data["order_total"])).as_decimal(),
         )
         customer = await use_cases.create_order(uow, cmd)
         response = CreateOrderResponse.create(customer)

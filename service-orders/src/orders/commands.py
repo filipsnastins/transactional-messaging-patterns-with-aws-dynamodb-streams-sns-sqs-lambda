@@ -11,4 +11,4 @@ class Command:
 @dataclass(kw_only=True)
 class CreateOrderCommand(Command):
     customer_id: uuid.UUID
-    total_amount: Decimal
+    order_total: Decimal

@@ -9,12 +9,12 @@ logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
 async def create_order(uow: AbstractUnitOfWork, cmd: CreateOrderCommand) -> Order:
-    order = Order.create(customer_id=cmd.customer_id, total_amount=cmd.total_amount)
+    order = Order.create(customer_id=cmd.customer_id, order_total=cmd.order_total)
     event = OrderCreatedEvent(
         correlation_id=cmd.correlation_id,
         order_id=order.id,
         customer_id=order.customer_id,
-        total_amount=order.total_amount,
+        order_total=order.order_total,
         created_at=order.created_at,
     )
     await uow.orders.create(order)

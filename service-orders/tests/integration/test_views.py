@@ -29,7 +29,7 @@ async def test_get_not_existing_order() -> None:
 @pytest.mark.asyncio()
 async def test_get_order() -> None:
     uow = DynamoDBUnitOfWork.create()
-    cmd = CreateOrderCommand(customer_id=uuid.uuid4(), total_amount=Decimal("123.99"))
+    cmd = CreateOrderCommand(customer_id=uuid.uuid4(), order_total=Decimal("123.99"))
     order = await use_cases.create_order(uow, cmd)
 
     response = await views.get_order(uow, order_id=order.id)
@@ -38,7 +38,7 @@ async def test_get_order() -> None:
         "id": str(order.id),
         "customer_id": str(cmd.customer_id),
         "state": "PENDING",
-        "total_amount": 12399,
+        "order_total": 12399,
         "version": 0,
         "created_at": datetime_to_str(order.created_at),
         "updated_at": None,

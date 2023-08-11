@@ -17,7 +17,7 @@ class Order:
     id: uuid.UUID
     customer_id: uuid.UUID
     state: OrderState
-    total_amount: Decimal
+    order_total: Decimal
     version: int
     created_at: datetime.datetime
     updated_at: datetime.datetime | None
@@ -27,7 +27,7 @@ class Order:
         id: uuid.UUID,
         customer_id: uuid.UUID,
         state: OrderState,
-        total_amount: Decimal,
+        order_total: Decimal,
         version: int,
         created_at: datetime.datetime,
         updated_at: datetime.datetime | None,
@@ -35,18 +35,18 @@ class Order:
         self.id = id
         self.customer_id = customer_id
         self.state = state
-        self.total_amount = total_amount
+        self.order_total = order_total
         self.version = version
         self.created_at = created_at
         self.updated_at = updated_at
 
     @staticmethod
-    def create(customer_id: uuid.UUID, total_amount: Decimal) -> "Order":
+    def create(customer_id: uuid.UUID, order_total: Decimal) -> "Order":
         return Order(
             id=uuid.uuid4(),
             customer_id=customer_id,
             state=OrderState.PENDING,
-            total_amount=total_amount,
+            order_total=order_total,
             version=0,
             created_at=datetime.datetime.now(tz=datetime.timezone.utc),
             updated_at=None,
