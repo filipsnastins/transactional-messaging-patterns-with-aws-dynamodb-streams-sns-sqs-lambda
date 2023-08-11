@@ -3,6 +3,7 @@ from asyncio import AbstractEventLoop
 from typing import Any
 
 import httpx
+import pytest
 from pytest_bdd import scenarios, then, when
 from tomodachi.envelope.json_base import JsonBase
 from tomodachi_testcontainers.clients import snssqs_client
@@ -11,6 +12,8 @@ from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
 
 from utils.time import datetime_to_str, utcnow
+
+pytestmark = pytest.mark.xfail(strict=True, reason="Not implemented yet")
 
 scenarios("../order_credit_check.feature")
 

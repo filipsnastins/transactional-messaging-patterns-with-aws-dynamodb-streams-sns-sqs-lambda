@@ -38,6 +38,9 @@ class FakeEventRepository(AbstractEventRepository):
     async def get(self, event_id: uuid.UUID) -> Message | None:
         pass
 
+    def clear(self) -> None:
+        self.events.clear()
+
 
 class FakeUnitOfWork(AbstractUnitOfWork):
     orders: FakeOrderRepository
