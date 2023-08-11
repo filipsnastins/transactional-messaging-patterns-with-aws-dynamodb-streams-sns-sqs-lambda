@@ -12,3 +12,16 @@ class Command:
 class CreateCustomerCommand(Command):
     name: str
     credit_limit: Decimal
+
+
+@dataclass(kw_only=True)
+class ReserveCreditCommand(Command):
+    order_id: uuid.UUID
+    customer_id: uuid.UUID
+    order_total: Decimal
+
+
+@dataclass(kw_only=True)
+class ReleaseCreditCommand(Command):
+    order_id: uuid.UUID
+    customer_id: uuid.UUID

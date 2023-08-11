@@ -1,7 +1,7 @@
 import structlog
 
 from adapters.customer_repository import CustomerNotFoundError
-from customers.commands import CreateCustomerCommand
+from customers.commands import CreateCustomerCommand, ReleaseCreditCommand, ReserveCreditCommand
 from customers.customer import Customer, CustomerCreditLimitExceededError
 from customers.events import (
     CustomerCreatedEvent,
@@ -9,8 +9,6 @@ from customers.events import (
     CustomerCreditReservedEvent,
     CustomerValidationErrors,
     CustomerValidationFailedEvent,
-    OrderCancelledExternalEvent,
-    OrderCreatedExternalEvent,
 )
 from service_layer.unit_of_work import AbstractUnitOfWork
 
@@ -34,16 +32,16 @@ async def create_customer(uow: AbstractUnitOfWork, cmd: CreateCustomerCommand) -
         return customer
 
 
-async def reserve_credit(uow: AbstractUnitOfWork, event: OrderCreatedExternalEvent) -> None:
-    log = logger.bind(customer_id=event.customer_id, order_id=event.order_id, order_total=event.order_total)
-    customer = await uow.customers.get(customer_id=event.customer_id)
+async def reserve_credit(uow: AbstractUnitOfWork, cmd: ReserveCreditCommand) -> None:
+    log = logger.bind(customer_id=cmd.customer_id, order_id=cmd.order_id, order_total=cmd.order_total)
+    customer = await uow.customers.get(customer_id=cmd.customer_id)
     if not customer:
         await uow.events.publish(
             [
                 CustomerValidationFailedEvent(
-                    correlation_id=event.correlation_id,
-                    customer_id=event.customer_id,
-                    order_id=event.order_id,
+                    correlation_id=cmd.correlation_id,
+                    customer_id=cmd.customer_id,
+                    order_id=cmd.order_id,
                     error=CustomerValidationErrors.CUSTOMER_NOT_FOUND,
                 )
             ]
@@ -53,12 +51,12 @@ async def reserve_credit(uow: AbstractUnitOfWork, event: OrderCreatedExternalEve
         return
 
     try:
-        customer.reserve_credit(order_id=event.order_id, order_total=event.order_total)
+        customer.reserve_credit(order_id=cmd.order_id, order_total=cmd.order_total)
         await uow.customers.update(customer)
         await uow.events.publish(
             [
                 CustomerCreditReservedEvent(
-                    correlation_id=event.correlation_id, customer_id=event.customer_id, order_id=event.order_id
+                    correlation_id=cmd.correlation_id, customer_id=cmd.customer_id, order_id=cmd.order_id
                 )
             ]
         )
@@ -68,7 +66,7 @@ async def reserve_credit(uow: AbstractUnitOfWork, event: OrderCreatedExternalEve
         await uow.events.publish(
             [
                 CustomerCreditReservationFailedEvent(
-                    correlation_id=event.correlation_id, customer_id=event.customer_id, order_id=event.order_id
+                    correlation_id=cmd.correlation_id, customer_id=cmd.customer_id, order_id=cmd.order_id
                 )
             ]
         )
@@ -76,13 +74,13 @@ async def reserve_credit(uow: AbstractUnitOfWork, event: OrderCreatedExternalEve
         log.info("credit_limit_exceeded")
 
 
-async def release_credit(uow: AbstractUnitOfWork, event: OrderCancelledExternalEvent) -> None:
-    log = logger.bind(customer_id=event.customer_id, order_id=event.order_id)
-    customer = await uow.customers.get(customer_id=event.customer_id)
+async def release_credit(uow: AbstractUnitOfWork, cmd: ReleaseCreditCommand) -> None:
+    log = logger.bind(customer_id=cmd.customer_id, order_id=cmd.order_id)
+    customer = await uow.customers.get(customer_id=cmd.customer_id)
     if not customer:
-        raise CustomerNotFoundError(event.customer_id)
+        raise CustomerNotFoundError(cmd.customer_id)
 
-    customer.release_credit(order_id=event.order_id)
+    customer.release_credit(order_id=cmd.order_id)
     await uow.customers.update(customer)
     await uow.commit()
     log.info("credit_released")

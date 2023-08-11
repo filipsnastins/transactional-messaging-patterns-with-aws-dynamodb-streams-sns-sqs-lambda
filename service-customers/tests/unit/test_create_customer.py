@@ -33,8 +33,8 @@ async def test_customer_created_event_published() -> None:
     cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
 
     customer = await use_cases.create_customer(uow, cmd)
-    [event] = uow.events.events
 
+    [event] = uow.events.events
     assert isinstance(event, CustomerCreatedEvent)
     assert event.correlation_id == cmd.correlation_id
     assert event.customer_id == customer.id
