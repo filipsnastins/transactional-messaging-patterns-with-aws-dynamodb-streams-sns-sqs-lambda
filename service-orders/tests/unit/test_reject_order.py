@@ -40,8 +40,8 @@ async def test_order_rejected_event_published() -> None:
     create_order_cmd = CreateOrderCommand(customer_id=uuid.uuid4(), order_total=Decimal("200.00"))
     order = await use_cases.create_order(uow, create_order_cmd)
     uow.events.clear()
-
     reject_order_cmd = RejectOrderCommand(order_id=order.id)
+
     await use_cases.reject_order(uow, reject_order_cmd)
 
     [event] = uow.events.events

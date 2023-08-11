@@ -9,6 +9,10 @@ class NotPendingOrderCannotBeApprovedError(Exception):
     pass
 
 
+class PendingOrderCannotBeCancelledError(Exception):
+    pass
+
+
 class OrderState(Enum):
     PENDING = "PENDING"
     APPROVED = "APPROVED"
@@ -66,4 +70,9 @@ class Order:
         self.state = OrderState.REJECTED
 
     def cancel(self) -> None:
-        self.state = OrderState.CANCELLED
+        if self.state == OrderState.APPROVED:
+            self.state = OrderState.CANCELLED
+        elif self.state == OrderState.PENDING:
+            raise PendingOrderCannotBeCancelledError(self.id)
+        else:
+            raise RuntimeError(f"Can't cancel order in state: {self.state}")
