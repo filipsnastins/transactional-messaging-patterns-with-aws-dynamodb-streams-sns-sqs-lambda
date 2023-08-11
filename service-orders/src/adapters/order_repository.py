@@ -2,9 +2,10 @@ import uuid
 from typing import Protocol
 
 import structlog
+from stockholm import Money
+
 from adapters import clients, dynamodb
 from orders.order import Order, OrderState
-from stockholm import Money
 from utils.time import datetime_to_str, str_to_datetime, utcnow
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
@@ -48,9 +49,7 @@ class DynamoDBOrderRepository(AbstractOrderRepository):
                         "OrderId": {"S": str(order.id)},
                         "CustomerId": {"S": str(order.customer_id)},
                         "State": {"S": order.state.value},
-                        "TotalAmount": {
-                            "N": str(Money(order.order_total).to_sub_units())
-                        },
+                        "TotalAmount": {"N": str(Money(order.order_total).to_sub_units())},
                         "Version": {"N": str(order.version)},
                         "CreatedAt": {"S": datetime_to_str(order.created_at)},
                     },
@@ -63,14 +62,10 @@ class DynamoDBOrderRepository(AbstractOrderRepository):
 
     async def get(self, order_id: uuid.UUID) -> Order | None:
         async with clients.get_dynamodb_client() as client:
-            response = await client.get_item(
-                TableName=self.table_name, Key={"PK": {"S": f"ORDER#{order_id}"}}
-            )
+            response = await client.get_item(TableName=self.table_name, Key={"PK": {"S": f"ORDER#{order_id}"}})
             item = response.get("Item")
             if not item:
-                logger.debug(
-                    "dynamodb_order_repository__order_not_found", order_id=order_id
-                )
+                logger.debug("dynamodb_order_repository__order_not_found", order_id=order_id)
                 return None
             return Order(
                 id=uuid.UUID(item["OrderId"]["S"]),
@@ -79,9 +74,7 @@ class DynamoDBOrderRepository(AbstractOrderRepository):
                 order_total=Money.from_sub_units(item["TotalAmount"]["N"]).as_decimal(),
                 version=int(item["Version"]["N"]),
                 created_at=str_to_datetime(item["CreatedAt"]["S"]),
-                updated_at=str_to_datetime(item["UpdatedAt"]["S"])
-                if item.get("UpdatedAt")
-                else None,
+                updated_at=str_to_datetime(item["UpdatedAt"]["S"]) if item.get("UpdatedAt") else None,
             )
 
     async def update(self, order: Order) -> None:
@@ -94,17 +87,13 @@ class DynamoDBOrderRepository(AbstractOrderRepository):
                         "OrderId": {"S": str(order.id)},
                         "CustomerId": {"S": str(order.customer_id)},
                         "State": {"S": order.state.value},
-                        "TotalAmount": {
-                            "N": str(Money(order.order_total).to_sub_units())
-                        },
+                        "TotalAmount": {"N": str(Money(order.order_total).to_sub_units())},
                         "Version": {"N": str(order.version + 1)},
                         "CreatedAt": {"S": datetime_to_str(order.created_at)},
                         "UpdatedAt": {"S": datetime_to_str(utcnow())},
                     },
                     "ConditionExpression": "Version = :version",
-                    "ExpressionAttributeValues": {
-                        ":version": {"N": str(order.version)}
-                    },
+                    "ExpressionAttributeValues": {":version": {"N": str(order.version)}},
                 },
             },
             raise_on_condition_check_failure=OptimisticLockError(),

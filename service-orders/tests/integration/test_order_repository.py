@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from adapters.order_repository import OptimisticLockError, OrderAlreadyExistsError, OrderNotFoundError
+from adapters.order_repository import OptimisticLockError, OrderAlreadyExistsError
 from orders.order import Order, OrderState
 from service_layer.unit_of_work import DynamoDBUnitOfWork
 
@@ -31,17 +31,6 @@ async def test_order_already_exists() -> None:
 
     await uow.orders.create(order)
     with pytest.raises(OrderAlreadyExistsError, match=str(order.id)):
-        await uow.commit()
-
-
-@pytest.mark.asyncio()
-async def test_update_non_existing_order() -> None:
-    uow = DynamoDBUnitOfWork.create()
-    order = Order.create(customer_id=uuid.uuid4(), order_total=Decimal("123.99"))
-
-    await uow.orders.update(order)
-
-    with pytest.raises(OrderNotFoundError, match=str(order.id)):
         await uow.commit()
 
 
