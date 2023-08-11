@@ -7,7 +7,7 @@ from tomodachi.envelope.json_base import JsonBase
 
 from adapters import dynamodb, outbox, sns
 from adapters.settings import get_settings
-from orders.commands import ApproveOrderCommand, CreateOrderCommand
+from orders.commands import ApproveOrderCommand, CreateOrderCommand, RejectOrderCommand
 from service_layer import use_cases, views
 from service_layer.response import CreateOrderResponse
 from service_layer.unit_of_work import DynamoDBUnitOfWork
@@ -67,7 +67,17 @@ class TomodachiService(tomodachi.Service):
     )
     async def customer_credit_reserved_handler(self, data: dict) -> None:
         uow = DynamoDBUnitOfWork.create()
-        event = ApproveOrderCommand(
+        cmd = ApproveOrderCommand(
             correlation_id=uuid.UUID(data["correlation_id"]), order_id=uuid.UUID(data["order_id"])
         )
-        await use_cases.approve_order(uow, event)
+        await use_cases.approve_order(uow, cmd)
+
+    @tomodachi.aws_sns_sqs(
+        "customer--credit-reservation-failed",
+        queue="order--customer-credit-reservation-failed",
+        message_envelope=JsonBase,
+    )
+    async def customer_credit_reservation_failed_handler(self, data: dict) -> None:
+        uow = DynamoDBUnitOfWork.create()
+        cmd = RejectOrderCommand(correlation_id=uuid.UUID(data["correlation_id"]), order_id=uuid.UUID(data["order_id"]))
+        await use_cases.reject_order(uow, cmd)
