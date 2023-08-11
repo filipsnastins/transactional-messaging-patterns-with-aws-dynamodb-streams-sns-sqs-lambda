@@ -40,8 +40,8 @@ async def test_order_approved_event_published() -> None:
     create_order_cmd = CreateOrderCommand(customer_id=uuid.uuid4(), order_total=Decimal("200.00"))
     order = await use_cases.create_order(uow, create_order_cmd)
     uow.events.clear()
-
     approve_order_cmd = ApproveOrderCommand(order_id=order.id)
+
     await use_cases.approve_order(uow, approve_order_cmd)
 
     [event] = uow.events.events

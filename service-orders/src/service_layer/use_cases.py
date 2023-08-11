@@ -2,7 +2,7 @@ import structlog
 
 from adapters.order_repository import OrderNotFoundError
 from orders.commands import ApproveOrderCommand, CancelOrderCommand, CreateOrderCommand, RejectOrderCommand
-from orders.events import OrderApprovedEvent, OrderCreatedEvent, OrderRejectedEvent
+from orders.events import OrderApprovedEvent, OrderCancelledEvent, OrderCreatedEvent, OrderRejectedEvent
 from orders.order import Order
 from service_layer.unit_of_work import AbstractUnitOfWork
 
@@ -77,7 +77,14 @@ async def cancel_order(uow: AbstractUnitOfWork, cmd: CancelOrderCommand) -> None
         raise OrderNotFoundError(cmd.order_id)
 
     order.cancel()
+    event = OrderCancelledEvent(
+        correlation_id=cmd.correlation_id,
+        order_id=order.id,
+        customer_id=order.customer_id,
+        state=order.state,
+    )
 
     await uow.orders.update(order)
+    await uow.events.publish([event])
     await uow.commit()
     log.info("order_cancelled", customer_id=order.customer_id)
