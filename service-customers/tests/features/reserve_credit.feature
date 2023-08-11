@@ -1,18 +1,18 @@
 Feature: Reserve customer credit for a new order
 
     Background:
-        Given customer exists with credit limit "249.99"
+        Given customer exists with credit limit of "249.99"
 
     Scenario: Reserve credit for a new order
-        When order created with total "149.99"
-        Then the customer credit is reserved
+        When order created with total amount of "149.99"
+        Then CustomerCreditReserved event is published
         And the customer available credit is "100.00"
 
     Scenario: Credit limit exceeded
-        When order created with total "300.00"
-        Then the customer credit reservation fails
+        When order created with total amount of "300.00"
+        Then the CustomerCreditReservationFailed event is published
         And the customer available credit is "249.99"
 
     Scenario: Reserve credit for not existing customer
         When order is created for not existing customer
-        Then the customer validation fails - customer not found
+        Then the CustomerValidationFailed event is published - "CUSTOMER_NOT_FOUND"

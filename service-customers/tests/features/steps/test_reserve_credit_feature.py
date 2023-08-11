@@ -15,7 +15,7 @@ from utils.time import datetime_to_str, utcnow
 scenarios("../reserve_credit.feature")
 
 
-@then("the customer credit reservation fails")
+@then("the CustomerCreditReservationFailed event is published")
 def _(
     event_loop: AbstractEventLoop, moto_sqs_client: SQSClient, create_customer: httpx.Response, order_id: uuid.UUID
 ) -> None:
