@@ -31,8 +31,12 @@ class Event:
 
 @dataclass(kw_only=True)
 class OrderCreatedEvent(Event):
-    state: OrderState = OrderState.PENDING
     order_total: Decimal
 
     def to_dict(self) -> dict:
         return super().to_dict() | {"order_total": int(Money(self.order_total).to_sub_units())}
+
+
+@dataclass(kw_only=True)
+class OrderApprovedEvent(Event):
+    pass

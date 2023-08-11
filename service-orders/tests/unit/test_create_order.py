@@ -34,8 +34,8 @@ async def test_order_created_event_published() -> None:
     cmd = CreateOrderCommand(customer_id=uuid.uuid4(), order_total=Decimal("200.00"))
 
     order = await use_cases.create_order(uow, cmd)
-    [event] = uow.events.events
 
+    [event] = uow.events.events
     assert isinstance(event, OrderCreatedEvent)
     assert event.event_id
     assert event.correlation_id == cmd.correlation_id
