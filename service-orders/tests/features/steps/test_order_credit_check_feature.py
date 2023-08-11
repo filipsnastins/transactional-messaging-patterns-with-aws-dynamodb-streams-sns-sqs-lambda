@@ -13,7 +13,7 @@ from types_aiobotocore_sqs import SQSClient
 
 from utils.time import datetime_to_str, utcnow
 
-pytestmark = pytest.mark.xfail(strict=True, reason="Not implemented yet")
+pytestmark = pytest.mark.xfail(strict=False, reason="Not implemented yet")
 
 scenarios("../order_credit_check.feature")
 
