@@ -1,6 +1,7 @@
 import structlog
 
-from orders.commands import CreateOrderCommand
+from adapters.order_repository import OrderNotFoundError
+from orders.commands import ApproveOrderCommand, CreateOrderCommand
 from orders.events import OrderCreatedEvent
 from orders.order import Order
 from service_layer.unit_of_work import AbstractUnitOfWork
@@ -22,3 +23,7 @@ async def create_order(uow: AbstractUnitOfWork, cmd: CreateOrderCommand) -> Orde
     await uow.commit()
     logger.info("order_created", order_id=order.id, customer_id=order.customer_id)
     return order
+
+
+async def approve_order(uow: AbstractUnitOfWork, cmd: ApproveOrderCommand) -> Order:
+    raise OrderNotFoundError(cmd.order_id)
