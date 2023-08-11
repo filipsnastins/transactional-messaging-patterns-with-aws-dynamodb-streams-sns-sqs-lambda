@@ -1,7 +1,7 @@
 Feature: Order credit check
 
     Background:
-        Given an order exists in "PENDING" state
+        Given an order is created with total amount of "100.99"
 
     Scenario: Credit check passed for a new order
         When CustomerCreditReserved event is received
