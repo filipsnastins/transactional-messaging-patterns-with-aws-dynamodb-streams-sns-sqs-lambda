@@ -64,3 +64,6 @@ class Order:
 
     def note_credit_rejected(self) -> None:
         self.state = OrderState.REJECTED
+
+    def cancel(self) -> None:
+        self.state = OrderState.CANCELLED
