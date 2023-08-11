@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: ./service-customers/Dockerfile
+      target: development
     ports:
       - 9701:9700
     volumes:
@@ -21,6 +22,7 @@ services:
     build:
       context: .
       dockerfile: ./service-orders/Dockerfile
+      target: development
     ports:
       - 9702:9700
     volumes:
