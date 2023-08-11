@@ -3,9 +3,11 @@ import uuid
 import tomodachi
 from aiohttp import web
 from stockholm import Money
+from tomodachi.envelope.json_base import JsonBase
 
 from adapters import dynamodb, outbox, sns
-from orders.commands import CreateOrderCommand
+from adapters.settings import get_settings
+from orders.commands import ApproveOrderCommand, CreateOrderCommand
 from service_layer import use_cases, views
 from service_layer.response import CreateOrderResponse
 from service_layer.unit_of_work import DynamoDBUnitOfWork
@@ -13,6 +15,22 @@ from service_layer.unit_of_work import DynamoDBUnitOfWork
 
 class TomodachiService(tomodachi.Service):
     name = "service-orders"
+
+    def __init__(self) -> None:
+        settings = get_settings()
+        self.options = tomodachi.Options(
+            aws_endpoint_urls=tomodachi.Options.AWSEndpointURLs(
+                sns=settings.aws_endpoint_url,
+                sqs=settings.aws_endpoint_url,
+            ),
+            aws_sns_sqs=tomodachi.Options.AWSSNSSQS(
+                region_name=settings.aws_region,
+                aws_access_key_id=settings.aws_access_key_id,
+                aws_secret_access_key=settings.aws_secret_access_key,
+                topic_prefix=settings.aws_sns_topic_prefix,
+                queue_name_prefix=settings.aws_sqs_queue_name_prefix,
+            ),
+        )
 
     async def _start_service(self) -> None:
         await sns.create_topics()
@@ -37,7 +55,19 @@ class TomodachiService(tomodachi.Service):
         return web.json_response(response.to_dict(), status=response.status_code)
 
     @tomodachi.http("GET", r"/order/(?P<order_id>[^/]+?)/?")
-    async def get_customer_handler(self, request: web.Request, order_id: str) -> web.Response:
+    async def get_order_handler(self, request: web.Request, order_id: str) -> web.Response:
         uow = DynamoDBUnitOfWork.create()
         response = await views.get_order(uow, order_id=uuid.UUID(order_id))
         return web.json_response(response.to_dict(), status=response.status_code)
+
+    @tomodachi.aws_sns_sqs(
+        "customer--credit-reserved",
+        queue="order--customer-credit-reserved",
+        message_envelope=JsonBase,
+    )
+    async def customer_credit_reserved_handler(self, data: dict) -> None:
+        uow = DynamoDBUnitOfWork.create()
+        event = ApproveOrderCommand(
+            correlation_id=uuid.UUID(data["correlation_id"]), order_id=uuid.UUID(data["order_id"])
+        )
+        await use_cases.approve_order(uow, event)

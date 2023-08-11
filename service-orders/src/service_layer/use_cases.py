@@ -19,6 +19,7 @@ async def create_order(uow: AbstractUnitOfWork, cmd: CreateOrderCommand) -> Orde
         order_total=order.order_total,
         created_at=order.created_at,
     )
+
     await uow.orders.create(order)
     await uow.events.publish([event])
     await uow.commit()
