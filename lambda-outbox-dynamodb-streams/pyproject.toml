@@ -137,8 +137,4 @@ exclude = [
 line-length = 120
 
 [tool.pytest.ini_options]
-minversion = "7.0"
-junit_family = "xunit2"
-testpaths = ["tests"]
-norecursedirs = [".venv", "__pycache__", ".git"]
-log_cli_level = "INFO"
+log_level = "INFO"

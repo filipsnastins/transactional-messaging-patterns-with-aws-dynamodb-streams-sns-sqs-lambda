@@ -31,7 +31,7 @@ awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--custo
 ```bash
 curl -X POST --header "Content-Type: application/json" -d '{
   "name": "Jane Doe",
-  "credit_limit": 12399
+  "credit_limit": 250
 }' http://localhost:9701/customers
 ```
 
@@ -39,7 +39,7 @@ curl -X POST --header "Content-Type: application/json" -d '{
 
 ```bash
 curl -X POST --header "Content-Type: application/json" -d '{
-  "customer_id": "ab3812c6-fb5a-4c7b-becf-8fa117b6d09b",
+  "customer_id": "4237be4a-dfd6-40e2-91fb-da10ac388da7",
   "order_total": 100
 }' http://localhost:9702/orders
 ```
