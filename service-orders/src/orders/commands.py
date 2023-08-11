@@ -12,3 +12,8 @@ class Command:
 class CreateOrderCommand(Command):
     customer_id: uuid.UUID
     order_total: Decimal
+
+
+@dataclass(kw_only=True)
+class ApproveOrderCommand(Command):
+    order_id: uuid.UUID
