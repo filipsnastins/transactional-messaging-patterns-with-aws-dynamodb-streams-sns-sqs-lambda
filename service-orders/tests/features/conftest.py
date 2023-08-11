@@ -1,8 +1,31 @@
+import uuid
 from asyncio import AbstractEventLoop
 
 import httpx
-from pytest_bdd import parsers, then
+import pytest
+from pytest_bdd import given, parsers, then
+from stockholm import Money
 from tomodachi_testcontainers.pytest.async_probes import probe_until
+
+
+@pytest.fixture()
+def customer_id() -> uuid.UUID:
+    return uuid.uuid4()
+
+
+@given(parsers.parse('an order is created with total amount of "{order_total}"'), target_fixture="create_order")
+def _(
+    event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, customer_id: uuid.UUID, order_total: str
+) -> httpx.Response:
+    async def _async() -> httpx.Response:
+        data = {
+            "customer_id": str(customer_id),
+            "order_total": int(Money(order_total).to_sub_units()),
+        }
+
+        return await http_client.post("/orders", json=data)
+
+    return event_loop.run_until_complete(_async())
 
 
 @then(parsers.parse('the order state is "{state}"'))
