@@ -12,7 +12,7 @@ from types_aiobotocore_sqs import SQSClient
 
 from utils.time import datetime_to_str, utcnow
 
-scenarios("../../features/order_credit_check.feature")
+scenarios("../../features/order_validation.feature")
 
 
 @when("CustomerCreditReservationFailed event is received")
@@ -30,33 +30,9 @@ def _(
             "created_at": datetime_to_str(utcnow()),
         }
 
-        await snssqs_client.publish(moto_sns_client, "customer--credit-reservation-failed", data, JsonBase)
+        await snssqs_client.publish(moto_sns_client, "customer--validation-failed", data, JsonBase)
 
     event_loop.run_until_complete(_async())
-
-
-@then("the OrderApproved event is published")
-def _(
-    event_loop: AbstractEventLoop, moto_sqs_client: SQSClient, customer_id: uuid.UUID, create_order: httpx.Response
-) -> None:
-    order_id = create_order.json()["id"]
-
-    async def _assert_customer_credit_reserved() -> None:
-        [message] = await snssqs_client.receive(moto_sqs_client, "order--approved", JsonBase, dict[str, Any])
-
-        assert message == {
-            "event_id": message["event_id"],
-            "correlation_id": message["correlation_id"],
-            "order_id": order_id,
-            "customer_id": str(customer_id),
-            "state": "APPROVED",
-            "created_at": message["created_at"],
-        }
-
-    async def _async() -> None:
-        await probe_until(_assert_customer_credit_reserved, probe_interval=0.3, stop_after=8)
-
-    return event_loop.run_until_complete(_async())
 
 
 @then("the OrderRejected event is published")
@@ -74,7 +50,6 @@ def _(
             "order_id": order_id,
             "customer_id": str(customer_id),
             "state": "REJECTED",
-            "error": "INSUFFICIENT_CREDIT",
             "created_at": message["created_at"],
         }
 
