@@ -59,6 +59,12 @@ async def _create_topics_and_queues(moto_sns_client: SNSClient, moto_sqs_client:
         topic="order--rejected",
         queue="order--rejected",
     )
+    await snssqs_client.subscribe_to(
+        moto_sns_client,
+        moto_sqs_client,
+        topic="order--cancelled",
+        queue="order--cancelled",
+    )
 
 
 @pytest.fixture()

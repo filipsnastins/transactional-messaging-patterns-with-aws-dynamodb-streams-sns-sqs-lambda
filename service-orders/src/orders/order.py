@@ -70,9 +70,10 @@ class Order:
         self.state = OrderState.REJECTED
 
     def cancel(self) -> None:
-        if self.state == OrderState.APPROVED:
-            self.state = OrderState.CANCELLED
-        elif self.state == OrderState.PENDING:
-            raise PendingOrderCannotBeCancelledError(self.id)
-        else:
-            raise RuntimeError(f"Can't cancel order in state: {self.state}")
+        match self.state:
+            case OrderState.APPROVED:
+                self.state = OrderState.CANCELLED
+            case OrderState.PENDING:
+                raise PendingOrderCannotBeCancelledError(self.id)
+            case _:
+                raise RuntimeError(f"Can't cancel order in state: {self.state}")
