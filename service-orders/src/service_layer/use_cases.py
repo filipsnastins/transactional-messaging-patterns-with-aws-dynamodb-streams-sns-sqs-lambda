@@ -3,7 +3,12 @@ import structlog
 from adapters.order_repository import OrderNotFoundError
 from orders.commands import ApproveOrderCommand, CancelOrderCommand, CreateOrderCommand, RejectOrderCommand
 from orders.events import OrderApprovedEvent, OrderCancelledEvent, OrderCreatedEvent, OrderRejectedEvent
-from orders.order import Order
+from orders.order import Order, PendingOrderCannotBeCancelledError
+from service_layer.response import (
+    OrderCancelledResponse,
+    OrderNotFoundErrorResponse,
+    PendingOrderCannotBeCancelledErrorResponse,
+)
 from service_layer.unit_of_work import AbstractUnitOfWork
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
@@ -69,22 +74,29 @@ async def reject_order(uow: AbstractUnitOfWork, cmd: RejectOrderCommand) -> None
     log.info("order_rejected", customer_id=order.customer_id)
 
 
-async def cancel_order(uow: AbstractUnitOfWork, cmd: CancelOrderCommand) -> None:
+async def cancel_order(
+    uow: AbstractUnitOfWork, cmd: CancelOrderCommand
+) -> OrderCancelledResponse | OrderNotFoundErrorResponse | PendingOrderCannotBeCancelledErrorResponse:
     log = logger.bind(order_id=cmd.order_id)
     order = await uow.orders.get(order_id=cmd.order_id)
     if not order:
         log.error("order_not_found")
-        raise OrderNotFoundError(cmd.order_id)
+        return OrderNotFoundErrorResponse.create(cmd.order_id)
 
-    order.cancel()
+    try:
+        order.cancel()
+    except PendingOrderCannotBeCancelledError:
+        log.error("pending_order_cannot_be_cancelled", customer_id=order.customer_id)
+        return PendingOrderCannotBeCancelledErrorResponse.create(cmd.order_id)
+
     event = OrderCancelledEvent(
         correlation_id=cmd.correlation_id,
         order_id=order.id,
         customer_id=order.customer_id,
         state=order.state,
     )
-
     await uow.orders.update(order)
     await uow.events.publish([event])
     await uow.commit()
     log.info("order_cancelled", customer_id=order.customer_id)
+    return OrderCancelledResponse.create(order)

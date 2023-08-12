@@ -19,6 +19,7 @@ class Response(Protocol):
 
 class ErrorCodes(Enum):
     ORDER_NOT_FOUND = "ORDER_NOT_FOUND"
+    PENDING_ORDER_CANNOT_BE_CANCELLED = "PENDING_ORDER_CANNOT_BE_CANCELLED"
 
 
 class ErrorResponse(Response, Protocol):
@@ -116,13 +117,33 @@ class GetOrderResponse(Response):
 
 
 @dataclass
-class OrderNotFoundResponse(ErrorResponse):
+class OrderCancelledResponse(Response):
+    id: uuid.UUID
+    _links: OrderLinks
+
+    @staticmethod
+    def create(order: Order) -> "OrderCancelledResponse":
+        return OrderCancelledResponse(id=order.id, _links=OrderLinks.create(order_id=order.id))
+
+    def to_dict(self) -> dict:
+        return {
+            "id": str(self.id),
+            "_links": asdict(self._links),
+        }
+
+    @property
+    def status_code(self) -> int:
+        return 200
+
+
+@dataclass
+class OrderNotFoundErrorResponse(ErrorResponse):
     _links: OrderLinks
     error: ErrorCodes = ErrorCodes.ORDER_NOT_FOUND
 
     @staticmethod
-    def create(order_id: uuid.UUID) -> "OrderNotFoundResponse":
-        return OrderNotFoundResponse(_links=OrderLinks.create(order_id))
+    def create(order_id: uuid.UUID) -> "OrderNotFoundErrorResponse":
+        return OrderNotFoundErrorResponse(_links=OrderLinks.create(order_id))
 
     def to_dict(self) -> dict:
         return {
@@ -133,3 +154,23 @@ class OrderNotFoundResponse(ErrorResponse):
     @property
     def status_code(self) -> int:
         return 404
+
+
+@dataclass
+class PendingOrderCannotBeCancelledErrorResponse(ErrorResponse):
+    _links: OrderLinks
+    error: ErrorCodes = ErrorCodes.PENDING_ORDER_CANNOT_BE_CANCELLED
+
+    @staticmethod
+    def create(order_id: uuid.UUID) -> "PendingOrderCannotBeCancelledErrorResponse":
+        return PendingOrderCannotBeCancelledErrorResponse(_links=OrderLinks.create(order_id))
+
+    def to_dict(self) -> dict:
+        return {
+            "error": self.error.value,
+            "_links": asdict(self._links),
+        }
+
+    @property
+    def status_code(self) -> int:
+        return 400

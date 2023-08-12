@@ -7,7 +7,7 @@ from tomodachi.envelope.json_base import JsonBase
 
 from adapters import dynamodb, outbox, sns
 from adapters.settings import get_settings
-from orders.commands import ApproveOrderCommand, CreateOrderCommand, RejectOrderCommand
+from orders.commands import ApproveOrderCommand, CancelOrderCommand, CreateOrderCommand, RejectOrderCommand
 from service_layer import use_cases, views
 from service_layer.response import CreateOrderResponse
 from service_layer.unit_of_work import DynamoDBUnitOfWork
@@ -58,6 +58,13 @@ class TomodachiService(tomodachi.Service):
     async def get_order_handler(self, request: web.Request, order_id: str) -> web.Response:
         uow = DynamoDBUnitOfWork.create()
         response = await views.get_order(uow, order_id=uuid.UUID(order_id))
+        return web.json_response(response.to_dict(), status=response.status_code)
+
+    @tomodachi.http("POST", r"/order/(?P<order_id>[^/]+?)/cancel?")
+    async def cancel_order_handler(self, request: web.Request, order_id: str) -> web.Response:
+        uow = DynamoDBUnitOfWork.create()
+        cmd = CancelOrderCommand(order_id=uuid.UUID(order_id))
+        response = await use_cases.cancel_order(uow, cmd)
         return web.json_response(response.to_dict(), status=response.status_code)
 
     @tomodachi.aws_sns_sqs(

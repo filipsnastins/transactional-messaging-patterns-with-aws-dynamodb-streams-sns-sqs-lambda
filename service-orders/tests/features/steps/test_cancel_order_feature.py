@@ -23,14 +23,15 @@ def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, create_orde
 
 
 @then("the order cancellation request succeeded")
-def _(cancel_order: httpx.Response) -> None:
+def _(create_order: httpx.Response, cancel_order: httpx.Response) -> None:
+    order_id = create_order.json()["id"]
+
     assert cancel_order.status_code == 200
-    body = cancel_order.json()
-    assert body == {
-        "id": body["id"],
+    assert cancel_order.json() == {
+        "id": order_id,
         "_links": {
-            "self": {"href": f"/order/{body['id']}"},
-            "cancel": {"href": f"/order/{body['id']}/cancel"},
+            "self": {"href": f"/order/{order_id}"},
+            "cancel": {"href": f"/order/{order_id}/cancel"},
         },
     }
 
@@ -60,26 +61,28 @@ def _(
 
 
 @then("the order cancellation request succeeded")
-def _(cancel_order: httpx.Response) -> None:
+def _(create_order: httpx.Response, cancel_order: httpx.Response) -> None:
+    order_id = create_order.json()["id"]
+
     assert cancel_order.status_code == 200
-    body = cancel_order.json()
-    assert body == {
-        "id": body["id"],
+    assert cancel_order.json() == {
+        "id": order_id,
         "_links": {
-            "self": {"href": f"/order/{body['id']}"},
-            "cancel": {"href": f"/order/{body['id']}/cancel"},
+            "self": {"href": f"/order/{order_id}"},
+            "cancel": {"href": f"/order/{order_id}/cancel"},
         },
     }
 
 
-@then(parsers.parse("the order cancellation request failed {error}"))
-def _(cancel_order: httpx.Response, error: str) -> None:
+@then(parsers.parse('the order cancellation request failed - "{error}"'))
+def _(create_order: httpx.Response, cancel_order: httpx.Response, error: str) -> None:
+    order_id = create_order.json()["id"]
+
     assert cancel_order.status_code == 400
-    body = cancel_order.json()
-    assert body == {
+    assert cancel_order.json() == {
         "error": error,
         "_links": {
-            "self": {"href": f"/order/{body['id']}"},
-            "cancel": {"href": f"/order/{body['id']}/cancel"},
+            "self": {"href": f"/order/{order_id}"},
+            "cancel": {"href": f"/order/{order_id}/cancel"},
         },
     }
