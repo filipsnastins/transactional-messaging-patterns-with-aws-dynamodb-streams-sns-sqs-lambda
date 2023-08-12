@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 import structlog
 
@@ -9,21 +10,23 @@ from tomodachi_outbox.utils.time import datetime_to_str, str_to_datetime
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
-TopicsMap = dict[type[Message], str]
-
 
 class DynamoDBOutboxRepository(OutboxRepository):
     def __init__(
-        self, client_factory: DynamoDBClientFactory, session: DynamoDBSession, table_name: str, topics: TopicsMap
+        self,
+        table_name: str,
+        session: DynamoDBSession,
+        client_factory: DynamoDBClientFactory,
+        topic_map: dict[type[Any], str],
     ) -> None:
-        self.get_client = client_factory
-        self.session = session
         self.table_name = table_name
-        self.topics = topics
+        self.session = session
+        self.get_client = client_factory
+        self.topics_map = topic_map
 
     async def publish(self, messages: list[Message]) -> None:
         for message in messages:
-            topic = self.topics[type(message)]
+            topic = self.topics_map[type(message)]
             self.session.add(
                 {
                     "Put": {

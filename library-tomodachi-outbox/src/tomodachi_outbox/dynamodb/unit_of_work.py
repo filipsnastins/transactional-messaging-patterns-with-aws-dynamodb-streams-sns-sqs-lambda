@@ -2,12 +2,12 @@ import structlog
 
 from tomodachi_outbox.dynamodb.client import DynamoDBClientFactory
 from tomodachi_outbox.dynamodb.session import DynamoDBSession
-from tomodachi_outbox.unit_of_work import UnitOfWork
+from tomodachi_outbox.unit_of_work import AbstractUnitOfWork
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
-class BaseDynamoDBUnitOfWork(UnitOfWork):
+class BaseDynamoDBUnitOfWork(AbstractUnitOfWork):
     session: DynamoDBSession
 
     def __init__(self, client_factory: DynamoDBClientFactory, session: DynamoDBSession) -> None:
