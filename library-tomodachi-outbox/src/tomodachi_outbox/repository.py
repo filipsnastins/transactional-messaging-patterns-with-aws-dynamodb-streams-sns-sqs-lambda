@@ -9,10 +9,21 @@ class MessageAlreadyPublishedError(Exception):
 
 
 class Message(Protocol):
-    message_id: uuid.UUID
-    correlation_id: uuid.UUID
-    aggregate_id: uuid.UUID
-    created_at: datetime.datetime
+    @property
+    def message_id(self) -> uuid.UUID:
+        ...
+
+    @property
+    def aggregate_id(self) -> uuid.UUID:
+        ...
+
+    @property
+    def correlation_id(self) -> uuid.UUID:
+        ...
+
+    @property
+    def created_at(self) -> datetime.datetime:
+        ...
 
     def serialize(self) -> str:
         ...
