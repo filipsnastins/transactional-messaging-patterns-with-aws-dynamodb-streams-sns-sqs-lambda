@@ -1,4 +1,5 @@
 import datetime
+import json
 import uuid
 from dataclasses import dataclass, field
 from decimal import Decimal
@@ -18,6 +19,14 @@ class Event:
     state: OrderState
     created_at: datetime.datetime = field(default_factory=utcnow)
 
+    @property
+    def message_id(self) -> uuid.UUID:
+        return self.event_id
+
+    @property
+    def aggregate_id(self) -> uuid.UUID:
+        return self.order_id
+
     def to_dict(self) -> dict:
         return {
             "event_id": str(self.event_id),
@@ -27,6 +36,9 @@ class Event:
             "correlation_id": str(self.correlation_id),
             "created_at": datetime_to_str(self.created_at),
         }
+
+    def serialize(self) -> str:
+        return json.dumps(self.to_dict())
 
 
 @dataclass(kw_only=True)

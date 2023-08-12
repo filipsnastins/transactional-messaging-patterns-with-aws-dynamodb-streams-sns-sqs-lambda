@@ -3,8 +3,8 @@ from typing import Protocol
 
 import structlog
 from stockholm import Money
+from tomodachi_outbox.dynamodb import DynamoDBClientFactory, DynamoDBSession
 
-from adapters import clients, dynamodb
 from orders.order import Order, OrderState
 from utils.time import datetime_to_str, str_to_datetime, utcnow
 
@@ -23,7 +23,7 @@ class OrderNotFoundError(Exception):
     pass
 
 
-class AbstractOrderRepository(Protocol):
+class OrderRepository(Protocol):
     async def create(self, order: Order) -> None:
         ...
 
@@ -34,10 +34,11 @@ class AbstractOrderRepository(Protocol):
         ...
 
 
-class DynamoDBOrderRepository(AbstractOrderRepository):
-    def __init__(self, table_name: str, session: dynamodb.DynamoDBSession) -> None:
+class DynamoDBOrderRepository(OrderRepository):
+    def __init__(self, table_name: str, session: DynamoDBSession, client_factory: DynamoDBClientFactory) -> None:
         self.table_name = table_name
         self.session = session
+        self.get_client = client_factory
 
     async def create(self, order: Order) -> None:
         self.session.add(
@@ -61,7 +62,7 @@ class DynamoDBOrderRepository(AbstractOrderRepository):
         logger.info("dynamodb_order_repository__create", order_id=order.id)
 
     async def get(self, order_id: uuid.UUID) -> Order | None:
-        async with clients.get_dynamodb_client() as client:
+        async with self.get_client() as client:
             response = await client.get_item(TableName=self.table_name, Key={"PK": {"S": f"ORDER#{order_id}"}})
             item = response.get("Item")
             if not item:

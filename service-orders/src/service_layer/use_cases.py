@@ -5,12 +5,12 @@ from orders.commands import ApproveOrderCommand, CancelOrderCommand, CreateOrder
 from orders.events import OrderApprovedEvent, OrderCancelledEvent, OrderCreatedEvent, OrderRejectedEvent
 from orders.order import Order, PendingOrderCannotBeCancelledError
 from service_layer.response import FailureResponse, OrderCancelledResponse, OrderCreatedResponse, ResponseTypes
-from service_layer.unit_of_work import AbstractUnitOfWork
+from service_layer.unit_of_work import UnitOfWork
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
-async def create_order(uow: AbstractUnitOfWork, cmd: CreateOrderCommand) -> OrderCreatedResponse | FailureResponse:
+async def create_order(uow: UnitOfWork, cmd: CreateOrderCommand) -> OrderCreatedResponse | FailureResponse:
     order = Order.create(customer_id=cmd.customer_id, order_total=cmd.order_total)
     event = OrderCreatedEvent(
         correlation_id=cmd.correlation_id,
@@ -34,7 +34,7 @@ async def create_order(uow: AbstractUnitOfWork, cmd: CreateOrderCommand) -> Orde
     return OrderCreatedResponse.create(order)
 
 
-async def approve_order(uow: AbstractUnitOfWork, cmd: ApproveOrderCommand) -> None:
+async def approve_order(uow: UnitOfWork, cmd: ApproveOrderCommand) -> None:
     log = logger.bind(order_id=cmd.order_id)
     order = await uow.orders.get(order_id=cmd.order_id)
     if not order:
@@ -55,7 +55,7 @@ async def approve_order(uow: AbstractUnitOfWork, cmd: ApproveOrderCommand) -> No
     log.info("order_approved", customer_id=order.customer_id)
 
 
-async def reject_order(uow: AbstractUnitOfWork, cmd: RejectOrderCommand) -> None:
+async def reject_order(uow: UnitOfWork, cmd: RejectOrderCommand) -> None:
     log = logger.bind(order_id=cmd.order_id)
     order = await uow.orders.get(order_id=cmd.order_id)
     if not order:
@@ -76,7 +76,7 @@ async def reject_order(uow: AbstractUnitOfWork, cmd: RejectOrderCommand) -> None
     log.info("order_rejected", customer_id=order.customer_id)
 
 
-async def cancel_order(uow: AbstractUnitOfWork, cmd: CancelOrderCommand) -> OrderCancelledResponse | FailureResponse:
+async def cancel_order(uow: UnitOfWork, cmd: CancelOrderCommand) -> OrderCancelledResponse | FailureResponse:
     log = logger.bind(order_id=cmd.order_id)
     order = await uow.orders.get(order_id=cmd.order_id)
     if not order:

@@ -2,7 +2,7 @@ import pytest
 import pytest_asyncio
 from tomodachi_testcontainers.containers import MotoContainer
 
-from adapters import dynamodb
+from adapters import dynamodb, outbox
 from service_layer.unit_of_work import DynamoDBUnitOfWork
 
 
@@ -21,7 +21,7 @@ def _environment(monkeypatch: pytest.MonkeyPatch, moto_container: MotoContainer)
 @pytest_asyncio.fixture()
 async def _mock_dynamodb(_environment: None, _reset_moto_container_on_teardown: None) -> None:
     await dynamodb.create_aggregate_table()
-    await dynamodb.create_outbox_table()
+    await outbox.create_outbox_table()
 
 
 @pytest.fixture()
