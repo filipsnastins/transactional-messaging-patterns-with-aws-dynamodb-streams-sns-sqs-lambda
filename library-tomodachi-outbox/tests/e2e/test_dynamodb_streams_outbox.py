@@ -1,4 +1,3 @@
-import datetime
 import json
 import uuid
 from typing import Any
@@ -15,16 +14,14 @@ from types_aiobotocore_lambda import LambdaClient
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
 
-from tomodachi_outbox.message import Message
+from tomodachi_outbox import PublishedMessage
+from tomodachi_outbox.dynamodb import create_outbox_table
 from tomodachi_outbox.outbox import create_dynamodb_streams_outbox
+from tomodachi_outbox.utils.time import utcnow
 
-pytestmark = pytest.mark.usefixtures(
-    "_create_topics_and_queues",
-    "_create_table",
-    "_reset_moto_container_on_teardown",
-)
+pytestmark = pytest.mark.usefixtures("_create_topics_and_queues", "_create_table", "_reset_moto_container_on_teardown")
 
-TEST_TABLE_NAME = "outbox"
+TEST_OUTBOX_TABLE_NAME = "outbox"
 
 
 @pytest_asyncio.fixture()
@@ -39,13 +36,7 @@ async def _create_topics_and_queues(moto_sns_client: SNSClient, moto_sqs_client:
 
 @pytest_asyncio.fixture()
 async def _create_table(moto_dynamodb_client: DynamoDBClient) -> None:
-    await moto_dynamodb_client.create_table(
-        TableName=TEST_TABLE_NAME,
-        KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
-        AttributeDefinitions=[{"AttributeName": "PK", "AttributeType": "S"}],
-        BillingMode="PAY_PER_REQUEST",
-        StreamSpecification={"StreamEnabled": True, "StreamViewType": "NEW_AND_OLD_IMAGES"},
-    )
+    await create_outbox_table(TEST_OUTBOX_TABLE_NAME, moto_dynamodb_client)
 
 
 @pytest.mark.asyncio()
@@ -57,13 +48,15 @@ async def test_create_dynamodb_streams_outbox(
     moto_sqs_client: SQSClient,
 ) -> None:
     aws_config = moto_container.get_aws_client_config()
-    message = Message(
+    message = PublishedMessage(
         message_id=uuid.uuid4(),
         aggregate_id=uuid.uuid4(),
         correlation_id=uuid.uuid4(),
         topic="test-topic",
         message=json.dumps({"message": "test-message"}),
-        created_at=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc),
+        created_at=utcnow(),
+        is_dispatched=False,
+        dispatched_at=None,
     )
 
     await create_dynamodb_streams_outbox(
@@ -73,13 +66,13 @@ async def test_create_dynamodb_streams_outbox(
         environment_variables={
             "AWS_REGION": aws_config["region_name"],
             "AWS_ENDPOINT_URL": moto_container.get_internal_url(),
-            "DYNAMODB_OUTBOX_TABLE_NAME": TEST_TABLE_NAME,
+            "DYNAMODB_OUTBOX_TABLE_NAME": TEST_OUTBOX_TABLE_NAME,
         },
-        dynamodb_table_name=TEST_TABLE_NAME,
+        dynamodb_table_name=TEST_OUTBOX_TABLE_NAME,
     )
 
     await moto_dynamodb_client.put_item(
-        TableName=TEST_TABLE_NAME,
+        TableName=TEST_OUTBOX_TABLE_NAME,
         Item={
             "PK": {"S": f"MESSAGE#{message.message_id}"},
             "MessageId": {"S": str(message.message_id)},
