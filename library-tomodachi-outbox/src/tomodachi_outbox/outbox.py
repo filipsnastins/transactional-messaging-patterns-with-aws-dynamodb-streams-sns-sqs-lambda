@@ -9,10 +9,6 @@ from tomodachi_outbox.aws.resources import (
     create_lambda_function,
 )
 
-__all__ = [
-    "create_dynamodb_streams_outbox",
-]
-
 
 async def create_dynamodb_streams_outbox(
     lambda_client: LambdaClient,
