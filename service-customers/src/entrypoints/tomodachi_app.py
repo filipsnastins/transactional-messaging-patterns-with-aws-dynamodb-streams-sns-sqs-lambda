@@ -1,5 +1,4 @@
 import uuid
-from typing import Any
 
 import tomodachi
 from aiohttp import web
@@ -17,7 +16,7 @@ from service_layer.unit_of_work import DynamoDBUnitOfWork
 class TomodachiService(tomodachi.Service):
     name = "service-customers"
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self) -> None:
         settings = get_settings()
         self.options = tomodachi.Options(
             aws_endpoint_urls=tomodachi.Options.AWSEndpointURLs(

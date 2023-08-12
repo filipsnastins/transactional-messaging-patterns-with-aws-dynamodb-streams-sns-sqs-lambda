@@ -84,10 +84,10 @@ async def test_customer_credit_limit_reserved_event_published() -> None:
     uow = FakeUnitOfWork()
     create_customer_cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
     customer = await use_cases.create_customer(uow, create_customer_cmd)
+    uow.events.clear()
     reserve_credit_cmd = ReserveCreditCommand(
         customer_id=customer.id, order_id=uuid.uuid4(), order_total=Decimal("100.00")
     )
-    uow.events.clear()
 
     await use_cases.reserve_credit(uow, reserve_credit_cmd)
 
@@ -103,10 +103,10 @@ async def test_insufficient_credit() -> None:
     uow = FakeUnitOfWork()
     create_customer_cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
     customer = await use_cases.create_customer(uow, create_customer_cmd)
+    uow.events.clear()
     reserve_credit_cmd = ReserveCreditCommand(
         customer_id=customer.id, order_id=uuid.uuid4(), order_total=Decimal("300.00")
     )
-    uow.events.clear()
 
     await use_cases.reserve_credit(uow, reserve_credit_cmd)
 

@@ -15,9 +15,9 @@ async def test_create_customer() -> None:
     cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
 
     customer = await use_cases.create_customer(uow, cmd)
-    customer_from_db = await uow.customers.get(customer.id)
 
-    assert customer == customer_from_db
+    customer_from_db = await uow.customers.get(customer.id)
+    assert customer_from_db == customer
     assert isinstance(customer.id, uuid.UUID)
     assert customer.name == "John Doe"
     assert customer.credit_limit == Decimal("200.00")
