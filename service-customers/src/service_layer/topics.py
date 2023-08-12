@@ -8,7 +8,7 @@ from customers.events import (
 
 TOPICS_MAP: dict[type[Event], str] = {
     CustomerCreatedEvent: "customer--created",
-    CustomerCreditReservedEvent: "customer--credit-reserved",
     CustomerCreditReservationFailedEvent: "customer--credit-reservation-failed",
+    CustomerCreditReservedEvent: "customer--credit-reserved",
     CustomerValidationFailedEvent: "customer--validation-failed",
 }

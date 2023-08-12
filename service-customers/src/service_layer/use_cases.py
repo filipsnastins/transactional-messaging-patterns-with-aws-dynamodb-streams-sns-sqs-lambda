@@ -11,12 +11,12 @@ from customers.events import (
     CustomerValidationFailedEvent,
 )
 from service_layer.response import CustomerCreatedResponse
-from service_layer.unit_of_work import AbstractUnitOfWork
+from service_layer.unit_of_work import UnitOfWork
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
-async def create_customer(uow: AbstractUnitOfWork, cmd: CreateCustomerCommand) -> CustomerCreatedResponse:
+async def create_customer(uow: UnitOfWork, cmd: CreateCustomerCommand) -> CustomerCreatedResponse:
     async with uow:
         customer = Customer.create(name=cmd.name, credit_limit=cmd.credit_limit)
         event = CustomerCreatedEvent(
@@ -33,7 +33,7 @@ async def create_customer(uow: AbstractUnitOfWork, cmd: CreateCustomerCommand) -
         return CustomerCreatedResponse.create(customer)
 
 
-async def reserve_credit(uow: AbstractUnitOfWork, cmd: ReserveCreditCommand) -> None:
+async def reserve_credit(uow: UnitOfWork, cmd: ReserveCreditCommand) -> None:
     log = logger.bind(customer_id=cmd.customer_id, order_id=cmd.order_id, order_total=cmd.order_total)
     customer = await uow.customers.get(customer_id=cmd.customer_id)
     if not customer:
@@ -75,7 +75,7 @@ async def reserve_credit(uow: AbstractUnitOfWork, cmd: ReserveCreditCommand) -> 
         log.info("credit_limit_exceeded")
 
 
-async def release_credit(uow: AbstractUnitOfWork, cmd: ReleaseCreditCommand) -> None:
+async def release_credit(uow: UnitOfWork, cmd: ReleaseCreditCommand) -> None:
     log = logger.bind(customer_id=cmd.customer_id, order_id=cmd.order_id)
     customer = await uow.customers.get(customer_id=cmd.customer_id)
     if not customer:

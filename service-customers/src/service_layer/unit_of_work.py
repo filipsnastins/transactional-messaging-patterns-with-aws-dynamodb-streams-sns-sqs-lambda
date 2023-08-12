@@ -1,77 +1,50 @@
-import abc
-from typing import Any
-
 import structlog
+from tomodachi_outbox import AbstractUnitOfWork, OutboxRepository
+from tomodachi_outbox.dynamodb import (
+    BaseDynamoDBUnitOfWork,
+    DynamoDBClientFactory,
+    DynamoDBOutboxRepository,
+    DynamoDBSession,
+)
+from types_aiobotocore_dynamodb import DynamoDBClient
 
-from adapters import clients, dynamodb
-from adapters.customer_repository import AbstractCustomerRepository, DynamoDBCustomerRepository
-from adapters.event_repository import AbstractEventRepository, DynamoDBEventRepository
+from adapters import clients, dynamodb, outbox
+from adapters.customer_repository import CustomerRepository, DynamoDBCustomerRepository
 from service_layer.topics import TOPICS_MAP
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
-class AbstractUnitOfWork(abc.ABC):
-    customers: AbstractCustomerRepository
-    events: AbstractEventRepository
-
-    async def __aenter__(self) -> "AbstractUnitOfWork":
-        return self
-
-    async def __aexit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
-        await self.rollback()
-
-    @abc.abstractmethod
-    async def commit(self) -> None:
-        pass
-
-    @abc.abstractmethod
-    async def rollback(self) -> None:
-        pass
+class UnitOfWork(AbstractUnitOfWork):
+    customers: CustomerRepository
+    events: OutboxRepository
 
 
-class DynamoDBUnitOfWork(AbstractUnitOfWork):
-    session: dynamodb.DynamoDBSession
+class DynamoDBUnitOfWork(UnitOfWork, BaseDynamoDBUnitOfWork):
+    session: DynamoDBSession
     customers: DynamoDBCustomerRepository
-    events: DynamoDBEventRepository
+    events: DynamoDBOutboxRepository
 
     def __init__(
-        self, session: dynamodb.DynamoDBSession, customers: DynamoDBCustomerRepository, events: DynamoDBEventRepository
+        self,
+        client_factory: DynamoDBClientFactory,
+        session: DynamoDBSession,
+        customers: DynamoDBCustomerRepository,
+        events: DynamoDBOutboxRepository,
     ) -> None:
-        self.session = session
+        super().__init__(client_factory, session)
         self.customers = customers
         self.events = events
 
     @staticmethod
     def create() -> "DynamoDBUnitOfWork":
-        session = dynamodb.DynamoDBSession()
-        customers = DynamoDBCustomerRepository(dynamodb.get_aggregate_table_name(), session)
-        events = DynamoDBEventRepository(dynamodb.get_outbox_table_name(), session, TOPICS_MAP)
-        return DynamoDBUnitOfWork(session, customers, events)
+        def client_factory() -> DynamoDBClient:
+            return clients.get_dynamodb_client()
 
-    async def commit(self) -> None:
-        items = self.session.get()
-        if not items:
-            logger.debug("dynamodb_unit_of_work__nothing_to_commit")
-            return
-        async with clients.get_dynamodb_client() as client:
-            try:
-                transact_items = [item["transact_item"] for item in items]
-                await client.transact_write_items(TransactItems=transact_items)
-                logger.debug("dynamodb_unit_of_work__committed", item_count=len(items))
-            except client.exceptions.TransactionCanceledException as e:
-                cancellation_codes = [reason["Code"] for reason in e.response["CancellationReasons"]]
-                raise_on_condition_failures = [item["raise_on_condition_check_failure"] for item in items]
-                zipped = zip(cancellation_codes, raise_on_condition_failures)
-                for cancellation_code, raise_on_condition_failure in zipped:
-                    if cancellation_code == "None":
-                        continue
-                    if cancellation_code == "ConditionalCheckFailed" and raise_on_condition_failure is not None:
-                        raise raise_on_condition_failure from e
-                raise
-            finally:
-                await self.rollback()
+        aggregate_table_name = dynamodb.get_aggregate_table_name()
+        outbox_table_name = outbox.get_outbox_table_name()
 
-    async def rollback(self) -> None:
-        self.session.clear()
-        logger.debug("dynamodb_unit_of_work__rollbacked")
+        session = DynamoDBSession()
+        orders = DynamoDBCustomerRepository(aggregate_table_name, session, client_factory)
+        events = DynamoDBOutboxRepository(outbox_table_name, session, client_factory, TOPICS_MAP)
+        return DynamoDBUnitOfWork(client_factory, session, orders, events)

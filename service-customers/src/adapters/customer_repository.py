@@ -3,8 +3,8 @@ from typing import Protocol
 
 import structlog
 from stockholm import Money
+from tomodachi_outbox.dynamodb import DynamoDBClientFactory, DynamoDBSession
 
-from adapters import clients, dynamodb
 from customers.customer import Customer
 from utils.time import datetime_to_str, str_to_datetime, utcnow
 
@@ -23,7 +23,7 @@ class CustomerAlreadyExistsError(Exception):
     pass
 
 
-class AbstractCustomerRepository(Protocol):
+class CustomerRepository(Protocol):
     async def create(self, customer: Customer) -> None:
         ...
 
@@ -34,10 +34,11 @@ class AbstractCustomerRepository(Protocol):
         ...
 
 
-class DynamoDBCustomerRepository(AbstractCustomerRepository):
-    def __init__(self, table_name: str, session: dynamodb.DynamoDBSession) -> None:
+class DynamoDBCustomerRepository(CustomerRepository):
+    def __init__(self, table_name: str, session: DynamoDBSession, client_factory: DynamoDBClientFactory) -> None:
         self.table_name = table_name
         self.session = session
+        self.get_client = client_factory
 
     async def create(self, customer: Customer) -> None:
         self.session.add(
@@ -94,7 +95,7 @@ class DynamoDBCustomerRepository(AbstractCustomerRepository):
         logger.info("dynamodb_customer_repository__update", customer_id=customer.id)
 
     async def get(self, customer_id: uuid.UUID) -> Customer | None:
-        async with clients.get_dynamodb_client() as client:
+        async with self.get_client() as client:
             response = await client.get_item(TableName=self.table_name, Key={"PK": {"S": f"CUSTOMER#{customer_id}"}})
             item = response.get("Item")
             if not item:

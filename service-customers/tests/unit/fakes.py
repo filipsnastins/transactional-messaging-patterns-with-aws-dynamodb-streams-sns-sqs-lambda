@@ -1,16 +1,15 @@
 import copy
 import uuid
 
-from tomodachi_outbox.message import Message
+from tomodachi_outbox import OutboxRepository, PublishedMessage
 
-from adapters.customer_repository import AbstractCustomerRepository, CustomerNotFoundError
-from adapters.event_repository import AbstractEventRepository
+from adapters.customer_repository import CustomerNotFoundError, CustomerRepository
 from customers.customer import Customer
 from customers.events import Event
-from service_layer.unit_of_work import AbstractUnitOfWork
+from service_layer.unit_of_work import UnitOfWork
 
 
-class FakeCustomerRepository(AbstractCustomerRepository):
+class FakeCustomerRepository(CustomerRepository):
     def __init__(self, customers: list[Customer]) -> None:
         self._customers = customers
 
@@ -28,27 +27,33 @@ class FakeCustomerRepository(AbstractCustomerRepository):
         return next((copy.deepcopy(v) for v in self._customers if v.id == customer_id), None)
 
 
-class FakeEventRepository(AbstractEventRepository):
+class FakeOutboxRepository(OutboxRepository):
     def __init__(self, events: list[Event]) -> None:
         self.events = events
 
-    async def publish(self, events: list[Event]) -> None:
-        self.events.extend(copy.deepcopy(events))
+    async def publish(self, messages: list[Event]) -> None:
+        self.events.extend(copy.deepcopy(messages))
 
-    async def get(self, event_id: uuid.UUID) -> Message | None:
-        pass
+    async def get(self, message_id: uuid.UUID) -> PublishedMessage | None:
+        raise NotImplementedError
+
+    async def mark_dispatched(self, message_id: uuid.UUID) -> None:
+        raise NotImplementedError
+
+    async def get_not_dispatched_messages(self) -> list[PublishedMessage]:
+        raise NotImplementedError
 
     def clear(self) -> None:
         self.events.clear()
 
 
-class FakeUnitOfWork(AbstractUnitOfWork):
+class FakeUnitOfWork(UnitOfWork):
     customers: FakeCustomerRepository
-    events: FakeEventRepository
+    events: FakeOutboxRepository
 
     def __init__(self) -> None:
         self.customers = FakeCustomerRepository([])
-        self.events = FakeEventRepository([])
+        self.events = FakeOutboxRepository([])
         self.committed = False
 
     async def commit(self) -> None:
