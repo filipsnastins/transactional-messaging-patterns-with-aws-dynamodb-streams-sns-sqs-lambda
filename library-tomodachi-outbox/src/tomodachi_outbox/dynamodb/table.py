@@ -14,6 +14,10 @@ async def create_outbox_table(table_name: str, client: DynamoDBClient) -> None:
                     "AttributeType": "S",
                 },
                 {
+                    "AttributeName": "CorrelationId",
+                    "AttributeType": "S",
+                },
+                {
                     "AttributeName": "AggregateId",
                     "AttributeType": "S",
                 },
@@ -29,6 +33,13 @@ async def create_outbox_table(table_name: str, client: DynamoDBClient) -> None:
                 },
             ],
             GlobalSecondaryIndexes=[
+                {
+                    "IndexName": "CorrelationIdIndex",
+                    "KeySchema": [
+                        {"AttributeName": "CorrelationId", "KeyType": "HASH"},
+                    ],
+                    "Projection": {"ProjectionType": "ALL"},
+                },
                 {
                     "IndexName": "AggregateIdIndex",
                     "KeySchema": [

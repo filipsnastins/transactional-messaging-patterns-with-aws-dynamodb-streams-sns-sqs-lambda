@@ -15,7 +15,7 @@ from utils.time import datetime_to_str, utcnow
 scenarios("../../features/order_validation.feature")
 
 
-@when("CustomerCreditReservationFailed event is received")
+@when("CustomerValidationFailed event is received")
 def _(
     event_loop: AbstractEventLoop, moto_sns_client: SNSClient, customer_id: uuid.UUID, create_order: httpx.Response
 ) -> None:

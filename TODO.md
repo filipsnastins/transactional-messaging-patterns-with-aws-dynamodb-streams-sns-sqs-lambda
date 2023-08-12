@@ -2,12 +2,15 @@
 
 ## Customers
 
-- [x] Domain logic
-- [x] Use cases
-- [ ] Don't inherit from Protocols
-- [ ] Hypermedia links should include full URL with protocol and host
+...
 
 ## Orders
+
+...
+
+## service-order-history
+
+- [ ] Feature specs
 
 ## Inbox
 
@@ -16,18 +19,27 @@
 
 ## Outbox
 
-- [x] DynamoDB Streams on event store table (outbox)
-- [x] Separate DynamoDB tables for aggregate store and event store (outbox)
-- [ ] Move generic UOW and Repository code to a library
-- [ ] Configurable aggregate ID on the outbox table (customer_id, order_id) with GSI
-- [ ] Correlation ID with GSI
+- [ ] **Tests**
+
+## Unit of Work
+
+- [ ] Separate library? Decouple from `library-tomodachi-outbox`?
+
+## Lambda
+
+- [ ] Production-ready outbox Lambda
+- [ ] Marks messages as dispatched
+  - Mind infinite loop
 
 ## Tests
 
-- [x] Configure CI pipeline with GitHub Actions for testing service-customers and service-order independently
-- [x] End-to-end tests for service-customers
+- [ ] End-to-end tests
 
 ## Deploy
 
-- [x] Deploy service-customers to ECS
-- [x] Deploy service-orders to ECS
+- [ ] Production-ready Terraform modules for deployment to ECS
+  - Deploy container
+  - Deploy outbox Lambda
+  - Create DynamoDB table
+  - Create topics and queues (SNS SQS)
+- [ ] Test Terraform modules with Terratest
