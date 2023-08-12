@@ -98,27 +98,3 @@ def _(
         await probe_until(_validate_customer_available_credit, probe_interval=0.3, stop_after=8)
 
     return event_loop.run_until_complete(_async())
-
-
-@then(parsers.parse('the CustomerValidationFailed event is published - "{error}"'))
-def _(
-    event_loop: AbstractEventLoop, moto_sqs_client: SQSClient, not_existing_customer_id: uuid.UUID, error: str
-) -> None:
-    async def _assert_customer_credit_reserved() -> None:
-        [message] = await snssqs_client.receive(
-            moto_sqs_client, "customer--validation-failed", JsonBase, dict[str, Any]
-        )
-
-        assert message == {
-            "event_id": message["event_id"],
-            "correlation_id": message["correlation_id"],
-            "order_id": message["order_id"],
-            "customer_id": str(not_existing_customer_id),
-            "error": error,
-            "created_at": message["created_at"],
-        }
-
-    async def _async() -> None:
-        await probe_until(_assert_customer_credit_reserved, probe_interval=0.3, stop_after=8)
-
-    return event_loop.run_until_complete(_async())

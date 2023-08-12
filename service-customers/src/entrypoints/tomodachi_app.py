@@ -9,8 +9,14 @@ from adapters import dynamodb, outbox, sns
 from adapters.settings import get_settings
 from customers.commands import CreateCustomerCommand, ReleaseCreditCommand, ReserveCreditCommand
 from service_layer import use_cases, views
-from service_layer.response import CustomerCreatedResponse
+from service_layer.response import ResponseTypes
 from service_layer.unit_of_work import DynamoDBUnitOfWork
+
+STATUS_CODES: dict[ResponseTypes, int] = {
+    ResponseTypes.SUCCESS: 200,
+    ResponseTypes.CUSTOMER_NOT_FOUND_ERROR: 404,
+    ResponseTypes.SYSTEM_ERROR: 500,
+}
 
 
 class TomodachiService(tomodachi.Service):
@@ -42,6 +48,10 @@ class TomodachiService(tomodachi.Service):
     async def healthcheck(self, request: web.Request) -> web.Response:
         return web.json_response({"status": "ok"}, status=200)
 
+    @tomodachi.http_error(status_code=500)
+    async def error_500(self, request: web.Request) -> web.Response:
+        return web.json_response({"error": ResponseTypes.SYSTEM_ERROR.value}, status=500)
+
     @tomodachi.http("POST", r"/customers")
     async def create_customer_handler(self, request: web.Request) -> web.Response:
         uow = DynamoDBUnitOfWork.create()
@@ -50,21 +60,16 @@ class TomodachiService(tomodachi.Service):
             name=str(data["name"]),
             credit_limit=Money.from_sub_units(int(data["credit_limit"])).as_decimal(),
         )
-        customer = await use_cases.create_customer(uow, cmd)
-        response = CustomerCreatedResponse.create(customer)
-        return web.json_response(response.to_dict(), status=response.status_code)
+        response = await use_cases.create_customer(uow, cmd)
+        return web.json_response(response.to_dict(), status=STATUS_CODES[response.type])
 
     @tomodachi.http("GET", r"/customer/(?P<customer_id>[^/]+?)/?")
     async def get_customer_handler(self, request: web.Request, customer_id: str) -> web.Response:
         uow = DynamoDBUnitOfWork.create()
         response = await views.get_customer(uow, customer_id=uuid.UUID(customer_id))
-        return web.json_response(response.to_dict(), status=response.status_code)
+        return web.json_response(response.to_dict(), status=STATUS_CODES[response.type])
 
-    @tomodachi.aws_sns_sqs(
-        "order--created",
-        queue="customer--order-created",
-        message_envelope=JsonBase,
-    )
+    @tomodachi.aws_sns_sqs("order--created", queue="customer--order-created", message_envelope=JsonBase)
     async def order_created_handler(self, data: dict) -> None:
         uow = DynamoDBUnitOfWork.create()
         event = ReserveCreditCommand(
@@ -75,11 +80,7 @@ class TomodachiService(tomodachi.Service):
         )
         await use_cases.reserve_credit(uow, event)
 
-    @tomodachi.aws_sns_sqs(
-        "order--cancelled",
-        queue="customer--order-cancelled",
-        message_envelope=JsonBase,
-    )
+    @tomodachi.aws_sns_sqs("order--cancelled", queue="customer--order-cancelled", message_envelope=JsonBase)
     async def order_cancelled_handler(self, data: dict) -> None:
         uow = DynamoDBUnitOfWork.create()
         event = ReleaseCreditCommand(

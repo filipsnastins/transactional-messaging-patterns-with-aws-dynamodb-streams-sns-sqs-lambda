@@ -15,4 +15,4 @@ Feature: Reserve customer credit for a new order
 
     Scenario: Reserve credit for not existing customer
         When order is created for not existing customer
-        Then the CustomerValidationFailed event is published - "CUSTOMER_NOT_FOUND"
+        Then the CustomerValidationFailed event is published - customer not found error

@@ -57,3 +57,25 @@ def _(event_loop: AbstractEventLoop, moto_sns_client: SNSClient) -> uuid.UUID:
         return customer_id
 
     return event_loop.run_until_complete(_async())
+
+
+@then("the CustomerValidationFailed event is published - customer not found error")
+def _(event_loop: AbstractEventLoop, moto_sqs_client: SQSClient, not_existing_customer_id: uuid.UUID) -> None:
+    async def _assert_customer_credit_reserved() -> None:
+        [message] = await snssqs_client.receive(
+            moto_sqs_client, "customer--validation-failed", JsonBase, dict[str, Any]
+        )
+
+        assert message == {
+            "event_id": message["event_id"],
+            "correlation_id": message["correlation_id"],
+            "order_id": message["order_id"],
+            "customer_id": str(not_existing_customer_id),
+            "error": "CUSTOMER_NOT_FOUND_ERROR",
+            "created_at": message["created_at"],
+        }
+
+    async def _async() -> None:
+        await probe_until(_assert_customer_credit_reserved, probe_interval=0.3, stop_after=8)
+
+    return event_loop.run_until_complete(_async())
