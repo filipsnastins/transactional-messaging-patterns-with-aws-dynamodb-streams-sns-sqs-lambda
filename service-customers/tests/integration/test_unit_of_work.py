@@ -30,8 +30,7 @@ class FailingDynamoDBCustomerRepository(DynamoDBCustomerRepository):
 
 
 @pytest.mark.asyncio()
-async def test_session_not_committed_by_default() -> None:
-    uow = DynamoDBUnitOfWork.create()
+async def test_session_not_committed_by_default(uow: DynamoDBUnitOfWork) -> None:
     customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
 
     await uow.customers.create(customer)
@@ -41,8 +40,7 @@ async def test_session_not_committed_by_default() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_session_rollbacked() -> None:
-    uow = DynamoDBUnitOfWork.create()
+async def test_session_rollbacked(uow: DynamoDBUnitOfWork) -> None:
     customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
 
     await uow.customers.create(customer)
@@ -54,8 +52,7 @@ async def test_session_rollbacked() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_commit_is_idempotent() -> None:
-    uow = DynamoDBUnitOfWork.create()
+async def test_commit_is_idempotent(uow: DynamoDBUnitOfWork) -> None:
     customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
 
     await uow.customers.create(customer)
@@ -67,8 +64,7 @@ async def test_commit_is_idempotent() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_domain_error_raised() -> None:
-    uow = DynamoDBUnitOfWork.create()
+async def test_domain_error_raised(uow: DynamoDBUnitOfWork) -> None:
     customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
     await uow.customers.create(customer)
     await uow.commit()
@@ -79,8 +75,7 @@ async def test_domain_error_raised() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_dynamodb_error_raised() -> None:
-    uow = DynamoDBUnitOfWork.create()
+async def test_dynamodb_error_raised(uow: DynamoDBUnitOfWork) -> None:
     uow.customers = FailingDynamoDBCustomerRepository(dynamodb.get_aggregate_table_name(), uow.customers.session)
     customer = Customer.create(name="John Doe", credit_limit=Decimal("200.00"))
 
@@ -92,8 +87,7 @@ async def test_dynamodb_error_raised() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_events_published() -> None:
-    uow = DynamoDBUnitOfWork.create()
+async def test_events_published(uow: DynamoDBUnitOfWork) -> None:
     events: list[Event] = [
         CustomerCreatedEvent(
             event_id=uuid.uuid4(),
@@ -134,8 +128,7 @@ async def test_events_published() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_cannot_publish_event_with_the_same_event_id() -> None:
-    uow = DynamoDBUnitOfWork.create()
+async def test_cannot_publish_event_with_the_same_event_id(uow: DynamoDBUnitOfWork) -> None:
     event_id = uuid.uuid4()
     event_1 = CustomerCreatedEvent(
         event_id=event_id,

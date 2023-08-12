@@ -9,7 +9,7 @@ from types_aiobotocore_sns import SNSClient
 
 from utils.time import datetime_to_str, utcnow
 
-scenarios("../release_credit.feature")
+scenarios("../../features/release_credit.feature")
 
 
 @when("OrderCancelled event is received")

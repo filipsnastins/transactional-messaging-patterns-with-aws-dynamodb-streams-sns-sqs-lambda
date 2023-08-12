@@ -1,6 +1,4 @@
-import asyncio
-import contextlib
-from typing import AsyncGenerator, Generator, Iterator, cast
+from typing import AsyncGenerator, Generator, cast
 
 import httpx
 import pytest
@@ -11,32 +9,6 @@ from tomodachi_testcontainers.containers import MotoContainer, TomodachiContaine
 from tomodachi_testcontainers.utils import get_available_port
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
-
-from adapters import dynamodb
-
-
-@pytest.fixture(scope="session")
-def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
-    with contextlib.closing(asyncio.new_event_loop()) as loop:
-        yield loop
-
-
-@pytest.fixture()
-def _environment(monkeypatch: pytest.MonkeyPatch, moto_container: MotoContainer) -> None:
-    aws_config = moto_container.get_aws_client_config()
-    monkeypatch.setenv("ENVIRONMENT", "autotest")
-    monkeypatch.setenv("AWS_REGION", aws_config["region_name"])
-    monkeypatch.setenv("AWS_ACCESS_KEY_ID", aws_config["aws_access_key_id"])
-    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", aws_config["aws_secret_access_key"])
-    monkeypatch.setenv("AWS_ENDPOINT_URL", aws_config["endpoint_url"])
-    monkeypatch.setenv("DYNAMODB_AGGREGATE_TABLE_NAME", "customers")
-    monkeypatch.setenv("DYNAMODB_OUTBOX_TABLE_NAME", "customers-outbox")
-
-
-@pytest_asyncio.fixture()
-async def _mock_dynamodb(_environment: None, _reset_moto_container_on_teardown: None) -> None:
-    await dynamodb.create_aggregate_table()
-    await dynamodb.create_outbox_table()
 
 
 @pytest_asyncio.fixture()
@@ -101,8 +73,6 @@ def tomodachi_container(
 
 
 @pytest_asyncio.fixture()
-async def http_client(
-    tomodachi_container: TomodachiContainer,
-) -> AsyncGenerator[httpx.AsyncClient, None]:
+async def http_client(tomodachi_container: TomodachiContainer) -> AsyncGenerator[httpx.AsyncClient, None]:
     async with httpx.AsyncClient(base_url=tomodachi_container.get_external_url()) as client:
         yield client

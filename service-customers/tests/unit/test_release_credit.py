@@ -7,12 +7,11 @@ from adapters.customer_repository import CustomerNotFoundError
 from customers.commands import CreateCustomerCommand, ReleaseCreditCommand, ReserveCreditCommand
 from customers.customer import CreditNotReservedForOrderError
 from service_layer import use_cases
-from tests.fakes import FakeUnitOfWork
+from tests.unit.fakes import FakeUnitOfWork
 
 
 @pytest.mark.asyncio()
-async def test_release_credit_for_non_existing_customer() -> None:
-    uow = FakeUnitOfWork()
+async def test_release_credit_for_non_existing_customer(uow: FakeUnitOfWork) -> None:
     release_credit_cmd = ReleaseCreditCommand(customer_id=uuid.uuid4(), order_id=uuid.uuid4())
 
     with pytest.raises(CustomerNotFoundError, match=str(release_credit_cmd.customer_id)):
@@ -20,8 +19,7 @@ async def test_release_credit_for_non_existing_customer() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_release_credit_for_non_existing_order() -> None:
-    uow = FakeUnitOfWork()
+async def test_release_credit_for_non_existing_order(uow: FakeUnitOfWork) -> None:
     create_customer_cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
     customer = await use_cases.create_customer(uow, create_customer_cmd)
     release_credit_cmd = ReleaseCreditCommand(customer_id=customer.id, order_id=uuid.uuid4())
@@ -31,8 +29,7 @@ async def test_release_credit_for_non_existing_order() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_release_credit() -> None:
-    uow = FakeUnitOfWork()
+async def test_release_credit(uow: FakeUnitOfWork) -> None:
     create_customer_cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
     customer = await use_cases.create_customer(uow, create_customer_cmd)
     reserve_credit_cmd = ReserveCreditCommand(

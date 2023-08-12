@@ -12,8 +12,7 @@ pytestmark = pytest.mark.usefixtures("_mock_dynamodb")
 
 
 @pytest.mark.asyncio()
-async def test_get_not_existing_customer() -> None:
-    uow = DynamoDBUnitOfWork.create()
+async def test_get_not_existing_customer(uow: DynamoDBUnitOfWork) -> None:
     customer_id = uuid.uuid4()
 
     response = await views.get_customer(uow, customer_id=customer_id)
@@ -27,8 +26,7 @@ async def test_get_not_existing_customer() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_get_customer() -> None:
-    uow = DynamoDBUnitOfWork.create()
+async def test_get_customer(uow: DynamoDBUnitOfWork) -> None:
     cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("249.99"))
     customer = await use_cases.create_customer(uow, cmd)
 

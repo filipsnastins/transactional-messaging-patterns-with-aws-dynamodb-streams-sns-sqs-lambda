@@ -6,12 +6,11 @@ import pytest
 from customers.commands import CreateCustomerCommand
 from customers.events import CustomerCreatedEvent
 from service_layer import use_cases
-from tests.fakes import FakeUnitOfWork
+from tests.unit.fakes import FakeUnitOfWork
 
 
 @pytest.mark.asyncio()
-async def test_create_customer() -> None:
-    uow = FakeUnitOfWork()
+async def test_create_customer(uow: FakeUnitOfWork) -> None:
     cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
 
     customer = await use_cases.create_customer(uow, cmd)
@@ -28,8 +27,7 @@ async def test_create_customer() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_customer_created_event_published() -> None:
-    uow = FakeUnitOfWork()
+async def test_customer_created_event_published(uow: FakeUnitOfWork) -> None:
     cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
 
     customer = await use_cases.create_customer(uow, cmd)
@@ -44,8 +42,7 @@ async def test_customer_created_event_published() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_new_customer_has_full_available_credit() -> None:
-    uow = FakeUnitOfWork()
+async def test_new_customer_has_full_available_credit(uow: FakeUnitOfWork) -> None:
     cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
     customer = await use_cases.create_customer(uow, cmd)
 
