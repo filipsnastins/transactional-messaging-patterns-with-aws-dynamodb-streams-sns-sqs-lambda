@@ -12,9 +12,9 @@ python = "^3.11"
 stockholm = "^0.5.5"
 structlog = "^23.1.0"
 tomodachi = "^0.25.0"
-tomodachi-outbox = { path = "../library-tomodachi-outbox" }
 types-aiobotocore = { extras = ["dynamodb", "sns"], version = "^2.5.2" }
 uvloop = "^0.17.0"
+tomodachi-outbox = {path = "../library-tomodachi-outbox"}
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "^2.2.0"
