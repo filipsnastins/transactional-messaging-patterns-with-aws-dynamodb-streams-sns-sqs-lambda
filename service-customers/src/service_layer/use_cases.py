@@ -43,7 +43,7 @@ async def reserve_credit(uow: AbstractUnitOfWork, cmd: ReserveCreditCommand) -> 
                     correlation_id=cmd.correlation_id,
                     customer_id=cmd.customer_id,
                     order_id=cmd.order_id,
-                    error=CustomerValidationErrors.CUSTOMER_NOT_FOUND,
+                    error=CustomerValidationErrors.CUSTOMER_NOT_FOUND_ERROR,
                 )
             ]
         )

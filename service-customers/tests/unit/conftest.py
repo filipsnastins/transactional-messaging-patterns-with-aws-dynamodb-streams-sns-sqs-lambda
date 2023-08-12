@@ -19,6 +19,7 @@ def uow() -> FakeUnitOfWork:
 async def customer(uow: FakeUnitOfWork) -> Customer:
     cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
     response = await use_cases.create_customer(uow, cmd)
+    uow.events.clear()
     assert isinstance(response, CustomerCreatedResponse)
     assert response.type == ResponseTypes.SUCCESS
     customer = await uow.customers.get(response.id)

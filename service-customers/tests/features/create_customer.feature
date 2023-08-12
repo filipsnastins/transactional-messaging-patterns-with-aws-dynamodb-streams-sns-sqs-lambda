@@ -10,4 +10,4 @@ Feature: Create customer
 
     Scenario: Customer not found
         When not existing customer is queried
-        Then the customer is not found
+        Then the customer not found error returned

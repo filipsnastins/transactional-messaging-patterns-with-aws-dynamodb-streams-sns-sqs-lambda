@@ -10,7 +10,7 @@ from utils.time import datetime_to_str, utcnow
 
 
 class CustomerValidationErrors(Enum):
-    CUSTOMER_NOT_FOUND = "CUSTOMER_NOT_FOUND"
+    CUSTOMER_NOT_FOUND_ERROR = "CUSTOMER_NOT_FOUND_ERROR"
 
 
 @dataclass(kw_only=True)

@@ -107,13 +107,13 @@ def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient) -> httpx.Re
     return event_loop.run_until_complete(_async())
 
 
-@then("the customer is not found")
+@then("the customer not found error returned")
 def _(get_not_existing_customer: httpx.Response) -> None:
     customer_id = get_not_existing_customer.url.path.split("/")[-1]
 
     assert get_not_existing_customer.status_code == 404
     assert get_not_existing_customer.json() == {
-        "error": "CUSTOMER_NOT_FOUND",
+        "error": "CUSTOMER_NOT_FOUND_ERROR",
         "_links": {
             "self": {"href": f"/customer/{customer_id}"},
         },
