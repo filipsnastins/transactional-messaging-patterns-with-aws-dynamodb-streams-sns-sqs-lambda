@@ -10,4 +10,4 @@ Feature: Create order
 
     Scenario: Order not found
         When not existing order is queried
-        Then the order is not found
+        Then the order not found error returned

@@ -1,41 +1,31 @@
 import uuid
-from decimal import Decimal
 
 import pytest
 
-from orders.commands import ApproveOrderCommand, CancelOrderCommand, CreateOrderCommand
+from orders.commands import ApproveOrderCommand, CancelOrderCommand
 from orders.events import OrderCancelledEvent
-from orders.order import OrderState
+from orders.order import Order, OrderState
 from service_layer import use_cases
-from service_layer.response import (
-    OrderCancelledResponse,
-    OrderNotFoundErrorResponse,
-    PendingOrderCannotBeCancelledErrorResponse,
-)
-from tests.fakes import FakeUnitOfWork
+from service_layer.response import FailureResponse, OrderCancelledResponse, ResponseTypes
+from tests.unit.fakes import FakeUnitOfWork
 
 
 @pytest.mark.asyncio()
-async def test_cancel_not_existing_order() -> None:
-    uow = FakeUnitOfWork()
+async def test_cancel_not_existing_order(uow: FakeUnitOfWork) -> None:
     order_id = uuid.uuid4()
     cmd = CancelOrderCommand(order_id=order_id)
 
     response = await use_cases.cancel_order(uow, cmd)
 
-    assert isinstance(response, OrderNotFoundErrorResponse)
+    assert isinstance(response, FailureResponse)
+    assert response.type == ResponseTypes.ORDER_NOT_FOUND_ERROR
 
 
 @pytest.mark.asyncio()
-async def test_cancel_approved_order() -> None:
-    uow = FakeUnitOfWork()
-    create_order_cmd = CreateOrderCommand(customer_id=uuid.uuid4(), order_total=Decimal("200.00"))
-    order = await use_cases.create_order(uow, create_order_cmd)
-    approve_order_cmd = ApproveOrderCommand(order_id=order.id)
-    await use_cases.approve_order(uow, approve_order_cmd)
+async def test_cancel_approved_order(uow: FakeUnitOfWork, order: Order) -> None:
+    await use_cases.approve_order(uow, ApproveOrderCommand(order_id=order.id))
 
-    cancel_order_cmd = CancelOrderCommand(order_id=order.id)
-    response = await use_cases.cancel_order(uow, cancel_order_cmd)
+    response = await use_cases.cancel_order(uow, CancelOrderCommand(order_id=order.id))
 
     assert isinstance(response, OrderCancelledResponse)
     order_from_db = await uow.orders.get(order_id=order.id)
@@ -44,34 +34,27 @@ async def test_cancel_approved_order() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_order_cancelled_event_published() -> None:
-    uow = FakeUnitOfWork()
-    create_order_cmd = CreateOrderCommand(customer_id=uuid.uuid4(), order_total=Decimal("200.00"))
-    order = await use_cases.create_order(uow, create_order_cmd)
-    approve_order_cmd = ApproveOrderCommand(order_id=order.id)
-    await use_cases.approve_order(uow, approve_order_cmd)
+async def test_order_cancelled_event_published(uow: FakeUnitOfWork, order: Order) -> None:
+    await use_cases.approve_order(uow, ApproveOrderCommand(order_id=order.id))
     uow.events.clear()
-    cancel_order_cmd = CancelOrderCommand(order_id=order.id)
+    cmd = CancelOrderCommand(order_id=order.id)
 
-    await use_cases.cancel_order(uow, cancel_order_cmd)
+    await use_cases.cancel_order(uow, cmd)
 
     [event] = uow.events.events
     assert isinstance(event, OrderCancelledEvent)
-    assert event.correlation_id == cancel_order_cmd.correlation_id
+    assert event.correlation_id == cmd.correlation_id
     assert event.order_id == order.id
-    assert event.customer_id == create_order_cmd.customer_id
+    assert event.customer_id == order.customer_id
     assert event.state == OrderState.CANCELLED
 
 
 @pytest.mark.asyncio()
-async def test_cannot_cancel_pending_order() -> None:
-    uow = FakeUnitOfWork()
-    create_order_cmd = CreateOrderCommand(customer_id=uuid.uuid4(), order_total=Decimal("200.00"))
-    order = await use_cases.create_order(uow, create_order_cmd)
-
+async def test_cannot_cancel_pending_order(uow: FakeUnitOfWork, order: Order) -> None:
     response = await use_cases.cancel_order(uow, CancelOrderCommand(order_id=order.id))
 
-    assert isinstance(response, PendingOrderCannotBeCancelledErrorResponse)
+    assert isinstance(response, FailureResponse)
+    assert response.type == ResponseTypes.PENDING_ORDER_CANNOT_BE_CANCELLED_ERROR
     order_from_db = await uow.orders.get(order_id=order.id)
     assert order_from_db
     assert order_from_db.state == OrderState.PENDING

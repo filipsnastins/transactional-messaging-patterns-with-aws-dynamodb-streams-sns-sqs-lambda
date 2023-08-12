@@ -11,8 +11,7 @@ pytestmark = pytest.mark.usefixtures("_mock_dynamodb")
 
 
 @pytest.mark.asyncio()
-async def test_create_order() -> None:
-    uow = DynamoDBUnitOfWork.create()
+async def test_create_order(uow: DynamoDBUnitOfWork) -> None:
     order = Order.create(customer_id=uuid.uuid4(), order_total=Decimal("123.99"))
 
     await uow.orders.create(order)
@@ -23,8 +22,7 @@ async def test_create_order() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_order_already_exists() -> None:
-    uow = DynamoDBUnitOfWork.create()
+async def test_order_already_exists(uow: DynamoDBUnitOfWork) -> None:
     order = Order.create(customer_id=uuid.uuid4(), order_total=Decimal("123.99"))
     await uow.orders.create(order)
     await uow.commit()
@@ -35,8 +33,7 @@ async def test_order_already_exists() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_update_order() -> None:
-    uow = DynamoDBUnitOfWork.create()
+async def test_update_order(uow: DynamoDBUnitOfWork) -> None:
     order = Order.create(customer_id=uuid.uuid4(), order_total=Decimal("123.99"))
     await uow.orders.create(order)
     await uow.commit()
@@ -57,8 +54,7 @@ async def test_update_order() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_concurrent_order_update_raises_optimistic_lock_error() -> None:
-    uow = DynamoDBUnitOfWork.create()
+async def test_concurrent_order_update_raises_optimistic_lock_error(uow: DynamoDBUnitOfWork) -> None:
     order = Order.create(customer_id=uuid.uuid4(), order_total=Decimal("123.99"))
     await uow.orders.create(order)
     await uow.commit()

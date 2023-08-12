@@ -12,7 +12,7 @@ from types_aiobotocore_sqs import SQSClient
 
 from utils.time import datetime_to_str, utcnow
 
-scenarios("../order_credit_check.feature")
+scenarios("../features/order_credit_check.feature")
 
 
 @when("CustomerCreditReservationFailed event is received")

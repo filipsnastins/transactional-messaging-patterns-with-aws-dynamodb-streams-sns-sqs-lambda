@@ -14,5 +14,5 @@ Feature: Cancel order
     Scenario: Pending order cancellation is not allowed
         Given the order state is "PENDING"
         When order cancellation is requested
-        Then the order cancellation request failed - "PENDING_ORDER_CANNOT_BE_CANCELLED"
+        Then pending order cannot be cancelled error is returned
         And the order state is "PENDING"

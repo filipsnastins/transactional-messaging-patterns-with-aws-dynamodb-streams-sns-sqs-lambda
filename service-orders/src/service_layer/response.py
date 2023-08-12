@@ -3,7 +3,6 @@ import uuid
 from dataclasses import asdict, dataclass
 from decimal import Decimal
 from enum import Enum
-from typing import Protocol
 
 from stockholm import Money
 
@@ -11,19 +10,12 @@ from orders.order import Order, OrderState
 from utils.time import datetime_to_str
 
 
-class Response(Protocol):
-    @property
-    def status_code(self) -> int:
-        ...
-
-
-class ErrorCodes(Enum):
-    ORDER_NOT_FOUND = "ORDER_NOT_FOUND"
-    PENDING_ORDER_CANNOT_BE_CANCELLED = "PENDING_ORDER_CANNOT_BE_CANCELLED"
-
-
-class ErrorResponse(Response, Protocol):
-    error: ErrorCodes
+class ResponseTypes(Enum):
+    SUCCESS = "SUCCESS"
+    ORDER_NOT_FOUND_ERROR = "ORDER_NOT_FOUND_ERROR"
+    ORDER_ALREADY_EXISTS_ERROR = "ORDER_ALREADY_EXISTS_ERROR"
+    PENDING_ORDER_CANNOT_BE_CANCELLED_ERROR = "PENDING_ORDER_CANNOT_BE_CANCELLED_ERROR"
+    SYSTEM_ERROR = "SYSTEM_ERROR"
 
 
 @dataclass
@@ -54,28 +46,26 @@ class OrderLinks:
         return OrderLinks(self=GetOrderLink.create(order_id), cancel=CancelOrderLink.create(order_id))
 
 
-@dataclass
-class CreateOrderResponse(Response):
-    id: uuid.UUID
+@dataclass(kw_only=True)
+class Response:
+    type: ResponseTypes
     _links: OrderLinks
 
+
+@dataclass(kw_only=True)
+class FailureResponse(Response):
     @staticmethod
-    def create(order: Order) -> "CreateOrderResponse":
-        _links = OrderLinks.create(order_id=order.id)
-        return CreateOrderResponse(id=order.id, _links=_links)
+    def create(type: ResponseTypes, order_id: uuid.UUID) -> "FailureResponse":
+        return FailureResponse(type=type, _links=OrderLinks.create(order_id))
 
     def to_dict(self) -> dict:
         return {
-            "id": str(self.id),
+            "error": self.type.value,
             "_links": asdict(self._links),
         }
 
-    @property
-    def status_code(self) -> int:
-        return 200
 
-
-@dataclass
+@dataclass(kw_only=True)
 class GetOrderResponse(Response):
     id: uuid.UUID
     customer_id: uuid.UUID
@@ -84,11 +74,11 @@ class GetOrderResponse(Response):
     version: int
     created_at: datetime.datetime
     updated_at: datetime.datetime | None
-    _links: OrderLinks
 
     @staticmethod
     def create(order: Order) -> "GetOrderResponse":
         return GetOrderResponse(
+            type=ResponseTypes.SUCCESS,
             id=order.id,
             customer_id=order.customer_id,
             state=order.state,
@@ -111,19 +101,18 @@ class GetOrderResponse(Response):
             "_links": asdict(self._links),
         }
 
-    @property
-    def status_code(self) -> int:
-        return 200
 
-
-@dataclass
-class OrderCancelledResponse(Response):
+@dataclass(kw_only=True)
+class OrderCreatedResponse(Response):
     id: uuid.UUID
-    _links: OrderLinks
 
     @staticmethod
-    def create(order: Order) -> "OrderCancelledResponse":
-        return OrderCancelledResponse(id=order.id, _links=OrderLinks.create(order_id=order.id))
+    def create(order: Order) -> "OrderCreatedResponse":
+        return OrderCreatedResponse(
+            type=ResponseTypes.SUCCESS,
+            id=order.id,
+            _links=OrderLinks.create(order_id=order.id),
+        )
 
     def to_dict(self) -> dict:
         return {
@@ -131,46 +120,21 @@ class OrderCancelledResponse(Response):
             "_links": asdict(self._links),
         }
 
-    @property
-    def status_code(self) -> int:
-        return 200
 
-
-@dataclass
-class OrderNotFoundErrorResponse(ErrorResponse):
-    _links: OrderLinks
-    error: ErrorCodes = ErrorCodes.ORDER_NOT_FOUND
+@dataclass(kw_only=True)
+class OrderCancelledResponse(Response):
+    id: uuid.UUID
 
     @staticmethod
-    def create(order_id: uuid.UUID) -> "OrderNotFoundErrorResponse":
-        return OrderNotFoundErrorResponse(_links=OrderLinks.create(order_id))
+    def create(order: Order) -> "OrderCancelledResponse":
+        return OrderCancelledResponse(
+            type=ResponseTypes.SUCCESS,
+            id=order.id,
+            _links=OrderLinks.create(order_id=order.id),
+        )
 
     def to_dict(self) -> dict:
         return {
-            "error": self.error.value,
+            "id": str(self.id),
             "_links": asdict(self._links),
         }
-
-    @property
-    def status_code(self) -> int:
-        return 404
-
-
-@dataclass
-class PendingOrderCannotBeCancelledErrorResponse(ErrorResponse):
-    _links: OrderLinks
-    error: ErrorCodes = ErrorCodes.PENDING_ORDER_CANNOT_BE_CANCELLED
-
-    @staticmethod
-    def create(order_id: uuid.UUID) -> "PendingOrderCannotBeCancelledErrorResponse":
-        return PendingOrderCannotBeCancelledErrorResponse(_links=OrderLinks.create(order_id))
-
-    def to_dict(self) -> dict:
-        return {
-            "error": self.error.value,
-            "_links": asdict(self._links),
-        }
-
-    @property
-    def status_code(self) -> int:
-        return 400

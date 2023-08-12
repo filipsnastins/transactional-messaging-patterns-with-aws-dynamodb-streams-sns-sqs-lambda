@@ -4,7 +4,7 @@ import uuid
 from tomodachi_outbox.message import Message
 
 from adapters.event_repository import AbstractEventRepository
-from adapters.order_repository import AbstractOrderRepository, OrderNotFoundError
+from adapters.order_repository import AbstractOrderRepository, OrderAlreadyExistsError, OrderNotFoundError
 from orders.events import Event
 from orders.order import Order
 from service_layer.unit_of_work import AbstractUnitOfWork
@@ -15,6 +15,8 @@ class FakeOrderRepository(AbstractOrderRepository):
         self._orders = orders
 
     async def create(self, order: Order) -> None:
+        if await self.get(order.id):
+            raise OrderAlreadyExistsError(order.id)
         self._orders.append(copy.deepcopy(order))
 
     async def get(self, order_id: uuid.UUID) -> Order | None:

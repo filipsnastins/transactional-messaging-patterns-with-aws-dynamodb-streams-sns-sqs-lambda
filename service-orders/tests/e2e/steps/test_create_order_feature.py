@@ -10,7 +10,7 @@ from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.pytest.async_probes import probe_until
 from types_aiobotocore_sqs import SQSClient
 
-scenarios("../create_order.feature")
+scenarios("../features/create_order.feature")
 
 
 @given(parsers.parse('an order data with total amount of "{order_total}"'), target_fixture="order_data")
@@ -113,13 +113,13 @@ def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient) -> httpx.Re
     return event_loop.run_until_complete(_async())
 
 
-@then("the order is not found")
+@then("the order not found error returned")
 def _(get_not_existing_order: httpx.Response) -> None:
     order_id = get_not_existing_order.url.path.split("/")[-1]
 
     assert get_not_existing_order.status_code == 404
     assert get_not_existing_order.json() == {
-        "error": "ORDER_NOT_FOUND",
+        "error": "ORDER_NOT_FOUND_ERROR",
         "_links": {
             "self": {"href": f"/order/{order_id}"},
             "cancel": {"href": f"/order/{order_id}/cancel"},
