@@ -10,7 +10,7 @@ from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.pytest.async_probes import probe_until
 from types_aiobotocore_sqs import SQSClient
 
-scenarios("../features/create_order.feature")
+scenarios("../../features/create_order.feature")
 
 
 @given(parsers.parse('an order data with total amount of "{order_total}"'), target_fixture="order_data")

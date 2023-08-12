@@ -9,7 +9,7 @@ from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.pytest.async_probes import probe_until
 from types_aiobotocore_sqs import SQSClient
 
-scenarios("../features/cancel_order.feature")
+scenarios("../../features/cancel_order.feature")
 
 
 @when("order cancellation is requested", target_fixture="cancel_order")
