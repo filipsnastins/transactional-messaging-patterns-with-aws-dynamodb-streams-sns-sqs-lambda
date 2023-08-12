@@ -3,7 +3,6 @@ import uuid
 from dataclasses import asdict, dataclass
 from decimal import Decimal
 from enum import Enum
-from typing import Protocol
 
 from stockholm import Money
 
@@ -11,18 +10,10 @@ from customers.customer import Customer
 from utils.time import datetime_to_str
 
 
-class Response(Protocol):
-    @property
-    def status_code(self) -> int:
-        ...
-
-
-class ErrorCodes(Enum):
-    CUSTOMER_NOT_FOUND = "CUSTOMER_NOT_FOUND"
-
-
-class ErrorResponse(Response, Protocol):
-    error: ErrorCodes
+class ResponseTypes(Enum):
+    SUCCESS = "SUCCESS"
+    CUSTOMER_NOT_FOUND_ERROR = "CUSTOMER_NOT_FOUND_ERROR"
+    SYSTEM_ERROR = "SYSTEM_ERROR"
 
 
 @dataclass
@@ -43,25 +34,23 @@ class CustomerLinks:
         return CustomerLinks(self=GetCustomerLink.create(customer_id))
 
 
-@dataclass
-class CreateCustomerResponse(Response):
-    id: uuid.UUID
+@dataclass(kw_only=True)
+class Response:
+    type: ResponseTypes
     _links: CustomerLinks
 
+
+@dataclass(kw_only=True)
+class FailureResponse(Response):
     @staticmethod
-    def create(customer: Customer) -> "CreateCustomerResponse":
-        _links = CustomerLinks.create(customer_id=customer.id)
-        return CreateCustomerResponse(id=customer.id, _links=_links)
+    def create(type: ResponseTypes, customer_id: uuid.UUID) -> "FailureResponse":
+        return FailureResponse(type=type, _links=CustomerLinks.create(customer_id))
 
     def to_dict(self) -> dict:
         return {
-            "id": str(self.id),
+            "error": self.type.value,
             "_links": asdict(self._links),
         }
-
-    @property
-    def status_code(self) -> int:
-        return 200
 
 
 @dataclass
@@ -78,6 +67,7 @@ class GetCustomerResponse(Response):
     @staticmethod
     def create(customer: Customer) -> "GetCustomerResponse":
         return GetCustomerResponse(
+            type=ResponseTypes.SUCCESS,
             id=customer.id,
             name=customer.name,
             credit_limit=customer.credit_limit,
@@ -100,26 +90,23 @@ class GetCustomerResponse(Response):
             "_links": asdict(self._links),
         }
 
-    @property
-    def status_code(self) -> int:
-        return 200
-
 
 @dataclass
-class CustomerNotFoundErrorResponse(ErrorResponse):
+class CustomerCreatedResponse(Response):
+    id: uuid.UUID
     _links: CustomerLinks
-    error: ErrorCodes = ErrorCodes.CUSTOMER_NOT_FOUND
 
     @staticmethod
-    def create(customer_id: uuid.UUID) -> "CustomerNotFoundErrorResponse":
-        return CustomerNotFoundErrorResponse(_links=CustomerLinks.create(customer_id))
+    def create(customer: Customer) -> "CustomerCreatedResponse":
+        _links = CustomerLinks.create(customer_id=customer.id)
+        return CustomerCreatedResponse(
+            type=ResponseTypes.SUCCESS,
+            id=customer.id,
+            _links=_links,
+        )
 
     def to_dict(self) -> dict:
         return {
-            "error": self.error.value,
+            "id": str(self.id),
             "_links": asdict(self._links),
         }
-
-    @property
-    def status_code(self) -> int:
-        return 404

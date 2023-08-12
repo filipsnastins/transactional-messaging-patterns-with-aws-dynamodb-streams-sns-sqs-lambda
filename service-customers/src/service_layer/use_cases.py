@@ -10,12 +10,13 @@ from customers.events import (
     CustomerValidationErrors,
     CustomerValidationFailedEvent,
 )
+from service_layer.response import CustomerCreatedResponse
 from service_layer.unit_of_work import AbstractUnitOfWork
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
-async def create_customer(uow: AbstractUnitOfWork, cmd: CreateCustomerCommand) -> Customer:
+async def create_customer(uow: AbstractUnitOfWork, cmd: CreateCustomerCommand) -> CustomerCreatedResponse:
     async with uow:
         customer = Customer.create(name=cmd.name, credit_limit=cmd.credit_limit)
         event = CustomerCreatedEvent(
@@ -29,7 +30,7 @@ async def create_customer(uow: AbstractUnitOfWork, cmd: CreateCustomerCommand) -
         await uow.events.publish([event])
         await uow.commit()
         logger.info("customer_created", customer_id=customer.id)
-        return customer
+        return CustomerCreatedResponse.create(customer)
 
 
 async def reserve_credit(uow: AbstractUnitOfWork, cmd: ReserveCreditCommand) -> None:

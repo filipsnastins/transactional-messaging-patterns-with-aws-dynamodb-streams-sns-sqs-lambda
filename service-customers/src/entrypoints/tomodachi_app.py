@@ -9,7 +9,7 @@ from adapters import dynamodb, outbox, sns
 from adapters.settings import get_settings
 from customers.commands import CreateCustomerCommand, ReleaseCreditCommand, ReserveCreditCommand
 from service_layer import use_cases, views
-from service_layer.response import CreateCustomerResponse
+from service_layer.response import CustomerCreatedResponse
 from service_layer.unit_of_work import DynamoDBUnitOfWork
 
 
@@ -51,7 +51,7 @@ class TomodachiService(tomodachi.Service):
             credit_limit=Money.from_sub_units(int(data["credit_limit"])).as_decimal(),
         )
         customer = await use_cases.create_customer(uow, cmd)
-        response = CreateCustomerResponse.create(customer)
+        response = CustomerCreatedResponse.create(customer)
         return web.json_response(response.to_dict(), status=response.status_code)
 
     @tomodachi.http("GET", r"/customer/(?P<customer_id>[^/]+?)/?")
