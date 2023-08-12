@@ -3,7 +3,7 @@ import structlog
 from adapters.order_repository import OrderAlreadyExistsError, OrderNotFoundError
 from orders.commands import ApproveOrderCommand, CancelOrderCommand, CreateOrderCommand, RejectOrderCommand
 from orders.events import OrderApprovedEvent, OrderCancelledEvent, OrderCreatedEvent, OrderRejectedEvent
-from orders.order import Order, PendingOrderCannotBeCancelledError
+from orders.order import Order, OrderAlreadyCancelledError, PendingOrderCannotBeCancelledError
 from service_layer.response import FailureResponse, OrderCancelledResponse, OrderCreatedResponse, ResponseTypes
 from service_layer.unit_of_work import UnitOfWork
 
@@ -77,17 +77,20 @@ async def reject_order(uow: UnitOfWork, cmd: RejectOrderCommand) -> None:
 
 
 async def cancel_order(uow: UnitOfWork, cmd: CancelOrderCommand) -> OrderCancelledResponse | FailureResponse:
-    log = logger.bind(order_id=cmd.order_id)
     order = await uow.orders.get(order_id=cmd.order_id)
     if not order:
-        log.error("order_not_found")
+        logger.error("order_not_found", order_id=cmd.order_id)
         return FailureResponse.create(ResponseTypes.ORDER_NOT_FOUND_ERROR, order_id=cmd.order_id)
 
+    log = logger.bind(order_id=cmd.order_id, customer_id=order.customer_id)
     try:
         order.cancel()
     except PendingOrderCannotBeCancelledError:
-        log.error("pending_order_cannot_be_cancelled", customer_id=order.customer_id)
+        log.error("pending_order_cannot_be_cancelled")
         return FailureResponse.create(ResponseTypes.PENDING_ORDER_CANNOT_BE_CANCELLED_ERROR, order_id=cmd.order_id)
+    except OrderAlreadyCancelledError:
+        log.warning("order_already_cancelled")
+        return OrderCancelledResponse.create(order)
 
     event = OrderCancelledEvent(
         correlation_id=cmd.correlation_id,
@@ -98,5 +101,5 @@ async def cancel_order(uow: UnitOfWork, cmd: CancelOrderCommand) -> OrderCancell
     await uow.orders.update(order)
     await uow.events.publish([event])
     await uow.commit()
-    log.info("order_cancelled", customer_id=order.customer_id)
+    log.info("order_cancelled")
     return OrderCancelledResponse.create(order)

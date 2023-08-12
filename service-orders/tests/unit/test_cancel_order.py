@@ -58,3 +58,20 @@ async def test_cannot_cancel_pending_order(uow: FakeUnitOfWork, order: Order) ->
     order_from_db = await uow.orders.get(order_id=order.id)
     assert order_from_db
     assert order_from_db.state == OrderState.PENDING
+
+
+@pytest.mark.asyncio()
+async def test_cancel_order_is_idempotent__order_cancelled_event_not_published(
+    uow: FakeUnitOfWork, order: Order
+) -> None:
+    await use_cases.approve_order(uow, ApproveOrderCommand(order_id=order.id))
+    await use_cases.cancel_order(uow, CancelOrderCommand(order_id=order.id))
+    uow.events.clear()
+
+    response = await use_cases.cancel_order(uow, CancelOrderCommand(order_id=order.id))
+
+    assert len(uow.events.events) == 0
+    assert isinstance(response, OrderCancelledResponse)
+    order_from_db = await uow.orders.get(order_id=order.id)
+    assert order_from_db
+    assert order_from_db.state == OrderState.CANCELLED
