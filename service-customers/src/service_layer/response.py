@@ -26,31 +26,31 @@ class ErrorResponse(Response, Protocol):
 
 
 @dataclass
-class CustomerLink:
+class GetCustomerLink:
     href: str
 
     @staticmethod
-    def create(customer_id: uuid.UUID) -> "CustomerLink":
-        return CustomerLink(href=f"/customer/{str(customer_id)}")
+    def create(customer_id: uuid.UUID) -> "GetCustomerLink":
+        return GetCustomerLink(href=f"/customer/{customer_id}")
 
 
 @dataclass
-class SelfCustomerLink:
-    self: CustomerLink
+class CustomerLinks:
+    self: GetCustomerLink
 
     @staticmethod
-    def create(customer_id: uuid.UUID) -> "SelfCustomerLink":
-        return SelfCustomerLink(self=CustomerLink.create(customer_id))
+    def create(customer_id: uuid.UUID) -> "CustomerLinks":
+        return CustomerLinks(self=GetCustomerLink.create(customer_id))
 
 
 @dataclass
 class CreateCustomerResponse(Response):
     id: uuid.UUID
-    _links: SelfCustomerLink
+    _links: CustomerLinks
 
     @staticmethod
     def create(customer: Customer) -> "CreateCustomerResponse":
-        _links = SelfCustomerLink.create(customer_id=customer.id)
+        _links = CustomerLinks.create(customer_id=customer.id)
         return CreateCustomerResponse(id=customer.id, _links=_links)
 
     def to_dict(self) -> dict:
@@ -73,7 +73,7 @@ class GetCustomerResponse(Response):
     version: int
     created_at: datetime.datetime
     updated_at: datetime.datetime | None
-    _links: SelfCustomerLink
+    _links: CustomerLinks
 
     @staticmethod
     def create(customer: Customer) -> "GetCustomerResponse":
@@ -85,7 +85,7 @@ class GetCustomerResponse(Response):
             version=customer.version,
             created_at=customer.created_at,
             updated_at=customer.updated_at,
-            _links=SelfCustomerLink.create(customer_id=customer.id),
+            _links=CustomerLinks.create(customer_id=customer.id),
         )
 
     def to_dict(self) -> dict:
@@ -106,13 +106,13 @@ class GetCustomerResponse(Response):
 
 
 @dataclass
-class CustomerNotFoundResponse(ErrorResponse):
-    _links: SelfCustomerLink
+class CustomerNotFoundErrorResponse(ErrorResponse):
+    _links: CustomerLinks
     error: ErrorCodes = ErrorCodes.CUSTOMER_NOT_FOUND
 
     @staticmethod
-    def create(customer_id: uuid.UUID) -> "CustomerNotFoundResponse":
-        return CustomerNotFoundResponse(_links=SelfCustomerLink.create(customer_id))
+    def create(customer_id: uuid.UUID) -> "CustomerNotFoundErrorResponse":
+        return CustomerNotFoundErrorResponse(_links=CustomerLinks.create(customer_id))
 
     def to_dict(self) -> dict:
         return {
