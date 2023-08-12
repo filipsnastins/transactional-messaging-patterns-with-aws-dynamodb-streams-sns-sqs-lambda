@@ -3,12 +3,12 @@ import uuid
 import structlog
 
 from service_layer.response import FailureResponse, GetCustomerResponse, ResponseTypes
-from service_layer.unit_of_work import AbstractUnitOfWork
+from service_layer.unit_of_work import UnitOfWork
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
-async def get_customer(uow: AbstractUnitOfWork, customer_id: uuid.UUID) -> GetCustomerResponse | FailureResponse:
+async def get_customer(uow: UnitOfWork, customer_id: uuid.UUID) -> GetCustomerResponse | FailureResponse:
     log = logger.bind(customer_id=customer_id)
     customer = await uow.customers.get(customer_id)
     if not customer:
