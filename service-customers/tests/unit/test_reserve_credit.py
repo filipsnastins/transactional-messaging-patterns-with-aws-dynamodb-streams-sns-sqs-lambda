@@ -11,12 +11,11 @@ from customers.events import (
     CustomerValidationFailedEvent,
 )
 from service_layer import use_cases
-from tests.fakes import FakeUnitOfWork
+from tests.unit.fakes import FakeUnitOfWork
 
 
 @pytest.mark.asyncio()
-async def test_customer_not_found() -> None:
-    uow = FakeUnitOfWork()
+async def test_customer_not_found(uow: FakeUnitOfWork) -> None:
     reserve_credit_cmd = ReserveCreditCommand(
         customer_id=uuid.uuid4(), order_id=uuid.uuid4(), order_total=Decimal("100.00")
     )
@@ -41,8 +40,9 @@ async def test_customer_not_found() -> None:
     ],
 )
 @pytest.mark.asyncio()
-async def test_reserve_credit(credit_limit: Decimal, order_total: Decimal, expected_available_credit: Decimal) -> None:
-    uow = FakeUnitOfWork()
+async def test_reserve_credit(
+    uow: FakeUnitOfWork, credit_limit: Decimal, order_total: Decimal, expected_available_credit: Decimal
+) -> None:
     create_customer_cmd = CreateCustomerCommand(name="John Doe", credit_limit=credit_limit)
     customer = await use_cases.create_customer(uow, create_customer_cmd)
     reserve_credit_cmd = ReserveCreditCommand(customer_id=customer.id, order_id=uuid.uuid4(), order_total=order_total)
@@ -56,8 +56,7 @@ async def test_reserve_credit(credit_limit: Decimal, order_total: Decimal, expec
 
 
 @pytest.mark.asyncio()
-async def test_reserve_credit_for_multiple_orders() -> None:
-    uow = FakeUnitOfWork()
+async def test_reserve_credit_for_multiple_orders(uow: FakeUnitOfWork) -> None:
     create_customer_cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
     customer = await use_cases.create_customer(uow, create_customer_cmd)
     reserve_credit_cmd_1 = ReserveCreditCommand(
@@ -80,8 +79,7 @@ async def test_reserve_credit_for_multiple_orders() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_customer_credit_limit_reserved_event_published() -> None:
-    uow = FakeUnitOfWork()
+async def test_customer_credit_limit_reserved_event_published(uow: FakeUnitOfWork) -> None:
     create_customer_cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
     customer = await use_cases.create_customer(uow, create_customer_cmd)
     uow.events.clear()
@@ -99,8 +97,7 @@ async def test_customer_credit_limit_reserved_event_published() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_insufficient_credit() -> None:
-    uow = FakeUnitOfWork()
+async def test_insufficient_credit(uow: FakeUnitOfWork) -> None:
     create_customer_cmd = CreateCustomerCommand(name="John Doe", credit_limit=Decimal("200.00"))
     customer = await use_cases.create_customer(uow, create_customer_cmd)
     uow.events.clear()

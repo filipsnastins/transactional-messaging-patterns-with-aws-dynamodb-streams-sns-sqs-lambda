@@ -13,8 +13,6 @@ from types_aiobotocore_sqs import SQSClient
 
 from utils.time import datetime_to_str, utcnow
 
-# Shared steps
-
 
 @given(parsers.parse('customer exists with credit limit of "{credit_limit}"'), target_fixture="create_customer")
 def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, credit_limit: str) -> httpx.Response:

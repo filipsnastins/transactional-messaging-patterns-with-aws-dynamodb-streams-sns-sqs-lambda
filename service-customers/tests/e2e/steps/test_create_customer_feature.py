@@ -10,7 +10,7 @@ from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.pytest.async_probes import probe_until
 from types_aiobotocore_sqs import SQSClient
 
-scenarios("../create_customer.feature")
+scenarios("../../features/create_customer.feature")
 
 
 @given(parsers.parse('a customer data with credit limit of "{credit_limit}"'), target_fixture="customer_data")
