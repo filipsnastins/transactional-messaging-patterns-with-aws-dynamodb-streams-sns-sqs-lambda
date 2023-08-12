@@ -74,7 +74,6 @@ def _(
             "order_id": order_id,
             "customer_id": str(customer_id),
             "state": "REJECTED",
-            "error": "INSUFFICIENT_CREDIT",
             "created_at": message["created_at"],
         }
 

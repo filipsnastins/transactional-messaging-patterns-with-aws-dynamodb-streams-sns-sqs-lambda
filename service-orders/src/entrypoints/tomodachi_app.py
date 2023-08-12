@@ -99,3 +99,13 @@ class TomodachiService(tomodachi.Service):
         uow = DynamoDBUnitOfWork.create()
         cmd = RejectOrderCommand(correlation_id=uuid.UUID(data["correlation_id"]), order_id=uuid.UUID(data["order_id"]))
         await use_cases.reject_order(uow, cmd)
+
+    @tomodachi.aws_sns_sqs(
+        "customer--validation-failed",
+        queue="order--customer-validation-failed",
+        message_envelope=JsonBase,
+    )
+    async def customer_validation_failed_handler(self, data: dict) -> None:
+        uow = DynamoDBUnitOfWork.create()
+        cmd = RejectOrderCommand(correlation_id=uuid.UUID(data["correlation_id"]), order_id=uuid.UUID(data["order_id"]))
+        await use_cases.reject_order(uow, cmd)

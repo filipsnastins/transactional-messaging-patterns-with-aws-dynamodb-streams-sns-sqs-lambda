@@ -6,6 +6,7 @@
 awslocal --region=us-east-1 logs describe-log-groups
 
 awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--customers-outbox
+awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--orders-outbox
 ```
 
 ## Resources and acknowledgements
@@ -28,18 +29,36 @@ awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--custo
 
 - Create customer
 
-```bash
-curl -X POST --header "Content-Type: application/json" -d '{
-  "name": "Jane Doe",
-  "credit_limit": 250
-}' http://localhost:9701/customers
-```
+  ```bash
+  curl -X POST --header "Content-Type: application/json" -d '{
+    "name": "Jane Doe",
+    "credit_limit": 250
+  }' http://localhost:9701/customers
+  ```
 
 - Create order
 
-```bash
-curl -X POST --header "Content-Type: application/json" -d '{
-  "customer_id": "4237be4a-dfd6-40e2-91fb-da10ac388da7",
-  "order_total": 100
-}' http://localhost:9702/orders
-```
+  ```bash
+  curl -X POST --header "Content-Type: application/json" -d '{
+    "customer_id": "1b1642dd-d214-4b68-94c7-f17b91ab3f46",
+    "order_total": 100
+  }' http://localhost:9702/orders
+  ```
+
+- Get customer
+
+  ```bash
+  curl http://localhost:9701/customer/15883bbb-dbf9-4ea0-afec-b2fab1a0ab2f
+  ```
+
+- Get order
+
+  ```bash
+  curl http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c
+  ```
+
+- Cancel order
+
+  ```bash
+  curl -X POST http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c/cancel
+  ```
