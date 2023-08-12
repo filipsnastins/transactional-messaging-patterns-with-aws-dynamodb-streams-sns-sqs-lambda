@@ -63,8 +63,8 @@ def _(
         data = {
             "event_id": str(uuid.uuid4()),
             "correlation_id": str(uuid.uuid4()),
-            "order_id": order_id,
             "customer_id": str(customer_id),
+            "order_id": order_id,
             "created_at": datetime_to_str(utcnow()),
         }
 
