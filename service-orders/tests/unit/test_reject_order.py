@@ -1,19 +1,17 @@
 import uuid
-from decimal import Decimal
 
 import pytest
 
 from adapters.order_repository import OrderNotFoundError
-from orders.commands import CreateOrderCommand, RejectOrderCommand
+from orders.commands import RejectOrderCommand
 from orders.events import OrderRejectedEvent
-from orders.order import OrderState
+from orders.order import Order, OrderState
 from service_layer import use_cases
-from tests.fakes import FakeUnitOfWork
+from tests.unit.fakes import FakeUnitOfWork
 
 
 @pytest.mark.asyncio()
-async def test_reject_not_existing_order() -> None:
-    uow = FakeUnitOfWork()
+async def test_reject_not_existing_order(uow: FakeUnitOfWork) -> None:
     order_id = uuid.uuid4()
     cmd = RejectOrderCommand(order_id=order_id)
 
@@ -22,11 +20,7 @@ async def test_reject_not_existing_order() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_reject_pending_order() -> None:
-    uow = FakeUnitOfWork()
-    cmd = CreateOrderCommand(customer_id=uuid.uuid4(), order_total=Decimal("200.00"))
-    order = await use_cases.create_order(uow, cmd)
-
+async def test_reject_pending_order(uow: FakeUnitOfWork, order: Order) -> None:
     await use_cases.reject_order(uow, RejectOrderCommand(order_id=order.id))
 
     order_from_db = await uow.orders.get(order_id=order.id)
@@ -35,18 +29,14 @@ async def test_reject_pending_order() -> None:
 
 
 @pytest.mark.asyncio()
-async def test_order_rejected_event_published() -> None:
-    uow = FakeUnitOfWork()
-    create_order_cmd = CreateOrderCommand(customer_id=uuid.uuid4(), order_total=Decimal("200.00"))
-    order = await use_cases.create_order(uow, create_order_cmd)
-    uow.events.clear()
-    reject_order_cmd = RejectOrderCommand(order_id=order.id)
+async def test_order_rejected_event_published(uow: FakeUnitOfWork, order: Order) -> None:
+    cmd = RejectOrderCommand(order_id=order.id)
 
-    await use_cases.reject_order(uow, reject_order_cmd)
+    await use_cases.reject_order(uow, cmd)
 
     [event] = uow.events.events
     assert isinstance(event, OrderRejectedEvent)
-    assert event.correlation_id == reject_order_cmd.correlation_id
+    assert event.correlation_id == cmd.correlation_id
     assert event.order_id == order.id
-    assert event.customer_id == create_order_cmd.customer_id
+    assert event.customer_id == order.customer_id
     assert event.state == OrderState.REJECTED

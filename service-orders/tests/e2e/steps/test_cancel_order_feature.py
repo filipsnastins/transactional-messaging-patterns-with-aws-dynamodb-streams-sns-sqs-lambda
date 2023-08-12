@@ -3,13 +3,13 @@ from asyncio import AbstractEventLoop
 from typing import Any
 
 import httpx
-from pytest_bdd import parsers, scenarios, then, when
+from pytest_bdd import scenarios, then, when
 from tomodachi.envelope.json_base import JsonBase
 from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.pytest.async_probes import probe_until
 from types_aiobotocore_sqs import SQSClient
 
-scenarios("../cancel_order.feature")
+scenarios("../features/cancel_order.feature")
 
 
 @when("order cancellation is requested", target_fixture="cancel_order")
@@ -74,13 +74,13 @@ def _(create_order: httpx.Response, cancel_order: httpx.Response) -> None:
     }
 
 
-@then(parsers.parse('the order cancellation request failed - "{error}"'))
-def _(create_order: httpx.Response, cancel_order: httpx.Response, error: str) -> None:
+@then("pending order cannot be cancelled error is returned")
+def _(create_order: httpx.Response, cancel_order: httpx.Response) -> None:
     order_id = create_order.json()["id"]
 
     assert cancel_order.status_code == 400
     assert cancel_order.json() == {
-        "error": error,
+        "error": "PENDING_ORDER_CANNOT_BE_CANCELLED_ERROR",
         "_links": {
             "self": {"href": f"/order/{order_id}"},
             "cancel": {"href": f"/order/{order_id}/cancel"},

@@ -2,17 +2,17 @@ import uuid
 
 import structlog
 
-from service_layer.response import GetOrderResponse, OrderNotFoundErrorResponse
+from service_layer.response import FailureResponse, GetOrderResponse, ResponseTypes
 from service_layer.unit_of_work import AbstractUnitOfWork
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
-async def get_order(uow: AbstractUnitOfWork, order_id: uuid.UUID) -> GetOrderResponse | OrderNotFoundErrorResponse:
+async def get_order(uow: AbstractUnitOfWork, order_id: uuid.UUID) -> GetOrderResponse | FailureResponse:
     log = logger.bind(order_id=order_id)
     order = await uow.orders.get(order_id)
     if not order:
         log.error("order_not_found")
-        return OrderNotFoundErrorResponse.create(order_id)
+        return FailureResponse.create(ResponseTypes.ORDER_NOT_FOUND_ERROR, order_id=order_id)
     log.info("get_order")
     return GetOrderResponse.create(order)
