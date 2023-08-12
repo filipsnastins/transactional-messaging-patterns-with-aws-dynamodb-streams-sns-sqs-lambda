@@ -13,6 +13,10 @@ class PendingOrderCannotBeCancelledError(Exception):
     pass
 
 
+class OrderAlreadyCancelledError(Exception):
+    pass
+
+
 class OrderState(Enum):
     PENDING = "PENDING"
     APPROVED = "APPROVED"
@@ -75,5 +79,7 @@ class Order:
                 self.state = OrderState.CANCELLED
             case OrderState.PENDING:
                 raise PendingOrderCannotBeCancelledError(self.id)
+            case OrderState.CANCELLED:
+                raise OrderAlreadyCancelledError(self.id)
             case _:
                 raise RuntimeError(f"Can't cancel order in state: {self.state}")
