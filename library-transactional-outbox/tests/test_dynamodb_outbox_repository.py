@@ -7,7 +7,7 @@ import pytest
 from unit_of_work.dynamodb import DynamoDBClientFactory, DynamoDBSession
 
 from transactional_outbox.dynamodb import DynamoDBOutboxRepository
-from transactional_outbox.dynamodb.repository import UnknownTopicError
+from transactional_outbox.dynamodb.repository import MessageNotFoundError, UnknownTopicError
 from transactional_outbox.utils.time import datetime_to_str, utcnow
 
 pytestmark = pytest.mark.usefixtures("_create_outbox_table", "_reset_moto_container_on_teardown")
@@ -104,6 +104,14 @@ async def test_get_not_dispatched_messages(session: DynamoDBSession, repo: Dynam
     assert not_dispatched_messages[0] == await repo.get(message_id=event_1.event_id)
     assert not_dispatched_messages[1] == await repo.get(message_id=event_2.event_id)
     assert not_dispatched_messages[2] == await repo.get(message_id=event_3.event_id)
+
+
+@pytest.mark.asyncio()
+async def test_mark_dispatched_not_existing_message_raises(repo: DynamoDBOutboxRepository) -> None:
+    message_id = uuid.uuid4()
+
+    with pytest.raises(MessageNotFoundError, match=str(message_id)):
+        await repo.mark_dispatched(message_id=message_id)
 
 
 @pytest.mark.asyncio()
