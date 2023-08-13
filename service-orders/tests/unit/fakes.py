@@ -1,7 +1,7 @@
 import copy
 import uuid
 
-from tomodachi_outbox import OutboxRepository, PublishedMessage
+from transactional_outbox import OutboxRepository, PublishedMessage
 
 from adapters.order_repository import OrderAlreadyExistsError, OrderNotFoundError, OrderRepository
 from orders.events import Event

@@ -30,6 +30,7 @@
 - [ ] Production-ready outbox Lambda
 - [ ] Marks messages as dispatched
   - Mind infinite loop
+- [ ] CloudWatch alarm on NotDispatchedIndex
 
 ## Tests
 

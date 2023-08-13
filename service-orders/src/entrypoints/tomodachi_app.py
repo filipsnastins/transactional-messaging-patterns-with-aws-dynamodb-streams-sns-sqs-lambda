@@ -56,7 +56,7 @@ class TomodachiService(tomodachi.Service):
 
     @tomodachi.http("POST", r"/orders")
     async def create_order_handler(self, request: web.Request) -> web.Response:
-        uow = DynamoDBUnitOfWork.create()
+        uow = DynamoDBUnitOfWork()
         data = await request.json()
         cmd = CreateOrderCommand(
             customer_id=uuid.UUID(data["customer_id"]),
@@ -67,13 +67,13 @@ class TomodachiService(tomodachi.Service):
 
     @tomodachi.http("GET", r"/order/(?P<order_id>[^/]+?)/?")
     async def get_order_handler(self, request: web.Request, order_id: str) -> web.Response:
-        uow = DynamoDBUnitOfWork.create()
+        uow = DynamoDBUnitOfWork()
         response = await views.get_order(uow, order_id=uuid.UUID(order_id))
         return web.json_response(response.to_dict(), status=STATUS_CODES[response.type])
 
     @tomodachi.http("POST", r"/order/(?P<order_id>[^/]+?)/cancel?")
     async def cancel_order_handler(self, request: web.Request, order_id: str) -> web.Response:
-        uow = DynamoDBUnitOfWork.create()
+        uow = DynamoDBUnitOfWork()
         cmd = CancelOrderCommand(order_id=uuid.UUID(order_id))
         response = await use_cases.cancel_order(uow, cmd)
         return web.json_response(response.to_dict(), status=STATUS_CODES[response.type])
@@ -84,7 +84,7 @@ class TomodachiService(tomodachi.Service):
         message_envelope=JsonBase,
     )
     async def customer_credit_reserved_handler(self, data: dict) -> None:
-        uow = DynamoDBUnitOfWork.create()
+        uow = DynamoDBUnitOfWork()
         cmd = ApproveOrderCommand(
             correlation_id=uuid.UUID(data["correlation_id"]), order_id=uuid.UUID(data["order_id"])
         )
@@ -96,7 +96,7 @@ class TomodachiService(tomodachi.Service):
         message_envelope=JsonBase,
     )
     async def customer_credit_reservation_failed_handler(self, data: dict) -> None:
-        uow = DynamoDBUnitOfWork.create()
+        uow = DynamoDBUnitOfWork()
         cmd = RejectOrderCommand(correlation_id=uuid.UUID(data["correlation_id"]), order_id=uuid.UUID(data["order_id"]))
         await use_cases.reject_order(uow, cmd)
 
@@ -106,6 +106,6 @@ class TomodachiService(tomodachi.Service):
         message_envelope=JsonBase,
     )
     async def customer_validation_failed_handler(self, data: dict) -> None:
-        uow = DynamoDBUnitOfWork.create()
+        uow = DynamoDBUnitOfWork()
         cmd = RejectOrderCommand(correlation_id=uuid.UUID(data["correlation_id"]), order_id=uuid.UUID(data["order_id"]))
         await use_cases.reject_order(uow, cmd)

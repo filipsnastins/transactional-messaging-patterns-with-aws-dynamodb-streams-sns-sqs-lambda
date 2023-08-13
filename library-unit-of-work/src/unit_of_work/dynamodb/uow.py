@@ -1,5 +1,4 @@
 import structlog
-
 from unit_of_work.dynamodb.client import DynamoDBClientFactory
 from unit_of_work.dynamodb.session import DynamoDBSession
 from unit_of_work.uow import AbstractUnitOfWork
@@ -15,8 +14,8 @@ class BaseDynamoDBUnitOfWork(AbstractUnitOfWork):
 
     async def commit(self) -> None:
         await self.session.commit()
-        logger.debug("dynamodb_unit_of_work__committed")
+        logger.info("dynamodb_unit_of_work__committed")
 
     async def rollback(self) -> None:
         self.session.rollback()
-        logger.debug("dynamodb_unit_of_work__rolled_back")
+        logger.info("dynamodb_unit_of_work__rolled_back")
