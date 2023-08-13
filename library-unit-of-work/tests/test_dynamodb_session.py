@@ -19,14 +19,14 @@ async def test_commit_session(session: DynamoDBSession) -> None:
     transact_item_1: TransactWriteItemTypeDef = {
         "Put": {
             "TableName": "test-table",
-            "Item": {"PK": {"S": "item-1111"}},
+            "Item": {"PK": {"S": "product-1111"}},
             "ConditionExpression": "attribute_not_exists(PK)",
         }
     }
     transact_item_2: TransactWriteItemTypeDef = {
         "Put": {
             "TableName": "test-table",
-            "Item": {"PK": {"S": "item-2222"}},
+            "Item": {"PK": {"S": "product-2222"}},
             "ConditionExpression": "attribute_not_exists(PK)",
         }
     }
@@ -37,7 +37,7 @@ async def test_commit_session(session: DynamoDBSession) -> None:
 
     async with session.get_client() as client:
         scan_table_response = await client.scan(TableName="test-table")
-        assert scan_table_response["Items"] == [{"PK": {"S": "item-1111"}}, {"PK": {"S": "item-2222"}}]
+        assert scan_table_response["Items"] == [{"PK": {"S": "product-1111"}}, {"PK": {"S": "product-2222"}}]
         assert scan_table_response["Count"] == 2
 
 
@@ -46,14 +46,14 @@ async def test_rollback_session(session: DynamoDBSession) -> None:
     transact_item_1: TransactWriteItemTypeDef = {
         "Put": {
             "TableName": "test-table",
-            "Item": {"PK": {"S": "item-1111"}},
+            "Item": {"PK": {"S": "product-1111"}},
             "ConditionExpression": "attribute_not_exists(PK)",
         }
     }
     transact_item_2: TransactWriteItemTypeDef = {
         "Put": {
             "TableName": "test-table",
-            "Item": {"PK": {"S": "item-2222"}},
+            "Item": {"PK": {"S": "product-2222"}},
             "ConditionExpression": "attribute_not_exists(PK)",
         }
     }
@@ -73,7 +73,7 @@ async def test_session_cleared_after_commit(session: DynamoDBSession) -> None:
     transact_item: TransactWriteItemTypeDef = {
         "Put": {
             "TableName": "test-table",
-            "Item": {"PK": {"S": "item-1111"}},
+            "Item": {"PK": {"S": "product-1111"}},
             "ConditionExpression": "attribute_not_exists(PK)",
         },
     }
@@ -88,7 +88,7 @@ async def test_raise_dynamodb_exception(session: DynamoDBSession) -> None:
     transact_item: TransactWriteItemTypeDef = {
         "Put": {
             "TableName": "test-table",
-            "Item": {"PK": {"S": "item-1111"}},
+            "Item": {"PK": {"S": "product-1111"}},
             "ConditionExpression": "attribute_not_exists(PK)",
         },
     }
@@ -101,7 +101,7 @@ async def test_raise_dynamodb_exception(session: DynamoDBSession) -> None:
         await session.commit()
     assert exc_info.value.response["Error"]["Code"] == "TransactionCanceledException"
     async with session.get_client() as client:
-        get_item_response = await client.get_item(TableName="test-table", Key={"PK": {"S": "item-1111"}})
+        get_item_response = await client.get_item(TableName="test-table", Key={"PK": {"S": "product-1111"}})
         assert "Item" in get_item_response
 
 
@@ -110,7 +110,7 @@ async def test_raise_domain_exception(session: DynamoDBSession) -> None:
     transact_item: TransactWriteItemTypeDef = {
         "Put": {
             "TableName": "test-table",
-            "Item": {"PK": {"S": "item-1111"}},
+            "Item": {"PK": {"S": "product-1111"}},
             "ConditionExpression": "attribute_not_exists(PK)",
         },
     }
@@ -122,32 +122,32 @@ async def test_raise_domain_exception(session: DynamoDBSession) -> None:
     with pytest.raises(RuntimeError, match="Item already exists"):
         await session.commit()
     async with session.get_client() as client:
-        get_item_response = await client.get_item(TableName="test-table", Key={"PK": {"S": "item-1111"}})
+        get_item_response = await client.get_item(TableName="test-table", Key={"PK": {"S": "product-1111"}})
         assert "Item" in get_item_response
 
 
 @pytest.mark.asyncio()
 async def test_dynamodb_exception_raised_for_first_failing_item(session: DynamoDBSession) -> None:
-    session.add({"Put": {"TableName": "test-table", "Item": {"PK": {"S": "item-2222"}}}})
+    session.add({"Put": {"TableName": "test-table", "Item": {"PK": {"S": "product-2222"}}}})
     await session.commit()
 
     passing_item_1: TransactWriteItemTypeDef = {
         "Put": {
             "TableName": "test-table",
-            "Item": {"PK": {"S": "item-1111"}},
+            "Item": {"PK": {"S": "product-1111"}},
         }
     }
     failing_item_2: TransactWriteItemTypeDef = {
         "Put": {
             "TableName": "test-table",
-            "Item": {"PK": {"S": "item-2222"}},
+            "Item": {"PK": {"S": "product-2222"}},
             "ConditionExpression": "attribute_not_exists(PK)",  # This will fail
         }
     }
     passing_item_3: TransactWriteItemTypeDef = {
         "Put": {
             "TableName": "test-table",
-            "Item": {"PK": {"S": "item-3333"}},
+            "Item": {"PK": {"S": "product-3333"}},
         }
     }
     session.add(passing_item_1)
@@ -163,26 +163,26 @@ async def test_dynamodb_exception_raised_for_first_failing_item(session: DynamoD
 
 @pytest.mark.asyncio()
 async def test_domain_error_raised_for_first_failing_item(session: DynamoDBSession) -> None:
-    session.add({"Put": {"TableName": "test-table", "Item": {"PK": {"S": "item-2222"}}}})
+    session.add({"Put": {"TableName": "test-table", "Item": {"PK": {"S": "product-2222"}}}})
     await session.commit()
 
     passing_item_1: TransactWriteItemTypeDef = {
         "Put": {
             "TableName": "test-table",
-            "Item": {"PK": {"S": "item-1111"}},
+            "Item": {"PK": {"S": "product-1111"}},
         }
     }
     failing_item_2: TransactWriteItemTypeDef = {
         "Put": {
             "TableName": "test-table",
-            "Item": {"PK": {"S": "item-2222"}},
+            "Item": {"PK": {"S": "product-2222"}},
             "ConditionExpression": "attribute_not_exists(PK)",  # This will fail
         }
     }
     passing_item_3: TransactWriteItemTypeDef = {
         "Put": {
             "TableName": "test-table",
-            "Item": {"PK": {"S": "item-3333"}},
+            "Item": {"PK": {"S": "product-3333"}},
         }
     }
     session.add(passing_item_1)
