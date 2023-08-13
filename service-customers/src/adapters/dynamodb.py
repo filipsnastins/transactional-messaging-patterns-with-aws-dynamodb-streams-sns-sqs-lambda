@@ -6,12 +6,12 @@ from adapters.settings import get_settings
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
-def get_aggregate_table_name() -> str:
-    return get_settings().dynamodb_aggregate_table_name
+def get_customers_table_name() -> str:
+    return get_settings().dynamodb_customers_table_name
 
 
-async def create_aggregate_table() -> None:
-    table_name = get_aggregate_table_name()
+async def create_customers_table() -> None:
+    table_name = get_customers_table_name()
     async with clients.get_dynamodb_client() as client:
         try:
             await client.create_table(
@@ -31,6 +31,6 @@ async def create_aggregate_table() -> None:
                 BillingMode="PAY_PER_REQUEST",
             )
         except client.exceptions.ResourceInUseException:
-            logger.info("dynamodb_table_already_exists", table_name=table_name)
+            logger.info("customers_dynamodb_table_already_exists", table_name=table_name)
         else:
-            logger.info("dynamodb_table_created", table_name=table_name)
+            logger.info("customers_dynamodb_table_created", table_name=table_name)

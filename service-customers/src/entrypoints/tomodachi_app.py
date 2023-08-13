@@ -40,7 +40,7 @@ class TomodachiService(tomodachi.Service):
 
     async def _start_service(self) -> None:
         await sns.create_topics()
-        await dynamodb.create_aggregate_table()
+        await dynamodb.create_customers_table()
         await outbox.create_outbox_table()
         await outbox.create_dynamodb_streams_outbox()
 
@@ -54,7 +54,7 @@ class TomodachiService(tomodachi.Service):
 
     @tomodachi.http("POST", r"/customers")
     async def create_customer_handler(self, request: web.Request) -> web.Response:
-        uow = DynamoDBUnitOfWork.create()
+        uow = DynamoDBUnitOfWork()
         data = await request.json()
         cmd = CreateCustomerCommand(
             name=str(data["name"]),
@@ -65,13 +65,13 @@ class TomodachiService(tomodachi.Service):
 
     @tomodachi.http("GET", r"/customer/(?P<customer_id>[^/]+?)/?")
     async def get_customer_handler(self, request: web.Request, customer_id: str) -> web.Response:
-        uow = DynamoDBUnitOfWork.create()
+        uow = DynamoDBUnitOfWork()
         response = await views.get_customer(uow, customer_id=uuid.UUID(customer_id))
         return web.json_response(response.to_dict(), status=STATUS_CODES[response.type])
 
     @tomodachi.aws_sns_sqs("order--created", queue="customer--order-created", message_envelope=JsonBase)
     async def order_created_handler(self, data: dict) -> None:
-        uow = DynamoDBUnitOfWork.create()
+        uow = DynamoDBUnitOfWork()
         event = ReserveCreditCommand(
             correlation_id=uuid.UUID(data["correlation_id"]),
             order_id=uuid.UUID(data["order_id"]),
@@ -82,7 +82,7 @@ class TomodachiService(tomodachi.Service):
 
     @tomodachi.aws_sns_sqs("order--cancelled", queue="customer--order-cancelled", message_envelope=JsonBase)
     async def order_cancelled_handler(self, data: dict) -> None:
-        uow = DynamoDBUnitOfWork.create()
+        uow = DynamoDBUnitOfWork()
         event = ReleaseCreditCommand(
             correlation_id=uuid.UUID(data["correlation_id"]),
             order_id=uuid.UUID(data["order_id"]),

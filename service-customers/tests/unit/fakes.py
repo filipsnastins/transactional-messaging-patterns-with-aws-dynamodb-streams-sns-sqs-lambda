@@ -1,7 +1,7 @@
 import copy
 import uuid
 
-from tomodachi_outbox import OutboxRepository, PublishedMessage
+from transactional_outbox import OutboxRepository, PublishedMessage
 
 from adapters.customer_repository import CustomerNotFoundError, CustomerRepository
 from customers.customer import Customer
