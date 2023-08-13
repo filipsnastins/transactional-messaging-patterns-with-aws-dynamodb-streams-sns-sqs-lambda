@@ -38,13 +38,13 @@ class DynamoDBUnitOfWork(UnitOfWork, BaseDynamoDBUnitOfWork):
 
     @staticmethod
     def create() -> "DynamoDBUnitOfWork":
-        def client_factory() -> DynamoDBClient:
-            return clients.get_dynamodb_client()
+        client_factory = clients.get_dynamodb_client
+        session = DynamoDBSession()
 
         aggregate_table_name = dynamodb.get_aggregate_table_name()
         outbox_table_name = outbox.get_outbox_table_name()
 
-        session = DynamoDBSession()
         orders = DynamoDBCustomerRepository(aggregate_table_name, session, client_factory)
         events = DynamoDBOutboxRepository(outbox_table_name, session, client_factory, TOPICS_MAP)
+
         return DynamoDBUnitOfWork(client_factory, session, orders, events)
