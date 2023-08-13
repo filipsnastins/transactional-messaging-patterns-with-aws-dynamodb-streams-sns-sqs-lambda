@@ -4,18 +4,17 @@ from typing import Any
 import structlog
 from unit_of_work.dynamodb import DynamoDBSession
 
-from transactional_outbox.repository import Message, MessageAlreadyPublishedError, OutboxRepository, PublishedMessage
+from transactional_outbox.repository import (
+    Message,
+    MessageAlreadyPublishedError,
+    MessageNotFoundError,
+    OutboxRepository,
+    PublishedMessage,
+    UnknownTopicError,
+)
 from transactional_outbox.utils.time import datetime_to_str, str_to_datetime, utcnow
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
-
-
-class UnknownTopicError(Exception):
-    pass
-
-
-class MessageNotFoundError(Exception):
-    pass
 
 
 class DynamoDBOutboxRepository(OutboxRepository):
@@ -72,16 +71,18 @@ class DynamoDBOutboxRepository(OutboxRepository):
                 await client.update_item(
                     TableName=self._table_name,
                     Key={"PK": {"S": f"MESSAGE#{message_id}"}},
-                    UpdateExpression="REMOVE NotDispatched SET IsDispatched = :IsDispatched, DispatchedAt = :DispatchedAt",
+                    UpdateExpression=(
+                        "REMOVE NotDispatched SET IsDispatched = :IsDispatched, DispatchedAt = :DispatchedAt"
+                    ),
                     ExpressionAttributeValues={
                         ":IsDispatched": {"BOOL": True},
                         ":DispatchedAt": {"S": datetime_to_str(utcnow())},
                     },
                     ConditionExpression="attribute_exists(PK)",
                 )
-            except client.exceptions.ConditionalCheckFailedException:
+            except client.exceptions.ConditionalCheckFailedException as e:
                 log.error("dynamodb_message_repository__message_not_found")
-                raise MessageNotFoundError(message_id)
+                raise MessageNotFoundError(message_id) from e
             log.info("dynamodb_message_repository__message_marked_as_dispatched")
 
     async def get_not_dispatched_messages(self) -> list[PublishedMessage]:

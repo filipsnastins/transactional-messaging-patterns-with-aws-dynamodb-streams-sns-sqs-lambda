@@ -1,53 +1,17 @@
 import datetime
 import json
 import uuid
-from dataclasses import dataclass, field
 
 import pytest
 from unit_of_work.dynamodb import DynamoDBClientFactory, DynamoDBSession
 
+from tests.events import OrderCreatedEvent, UnknownOrderEvent
 from transactional_outbox.dynamodb import DynamoDBOutboxRepository
 from transactional_outbox.dynamodb.repository import MessageNotFoundError, UnknownTopicError
-from transactional_outbox.utils.time import datetime_to_str, utcnow
+from transactional_outbox.repository import MessageAlreadyPublishedError
+from transactional_outbox.utils.time import utcnow
 
 pytestmark = pytest.mark.usefixtures("_create_outbox_table", "_reset_moto_container_on_teardown")
-
-
-@dataclass(kw_only=True)
-class Event:
-    event_id: uuid.UUID = field(default_factory=uuid.uuid4)
-    correlation_id: uuid.UUID = field(default_factory=uuid.uuid4)
-    order_id: uuid.UUID
-    created_at: datetime.datetime = field(default_factory=utcnow)
-
-    @property
-    def message_id(self) -> uuid.UUID:
-        return self.event_id
-
-    @property
-    def aggregate_id(self) -> uuid.UUID:
-        return self.order_id
-
-    def to_dict(self) -> dict:
-        return {
-            "event_id": str(self.event_id),
-            "correlation_id": str(self.correlation_id),
-            "order_id": str(self.order_id),
-            "created_at": datetime_to_str(self.created_at),
-        }
-
-    def serialize(self) -> str:
-        return json.dumps(self.to_dict())
-
-
-@dataclass(kw_only=True)
-class OrderCreatedEvent(Event):
-    pass
-
-
-@dataclass(kw_only=True)
-class UnknownOrderEvent(Event):
-    pass
 
 
 @pytest.fixture()
@@ -57,9 +21,7 @@ def session(client_factory: DynamoDBClientFactory) -> DynamoDBSession:
 
 @pytest.fixture()
 def repo(session: DynamoDBSession) -> DynamoDBOutboxRepository:
-    TOPIC_MAP = {
-        OrderCreatedEvent: "order--created",
-    }
+    TOPIC_MAP = {OrderCreatedEvent: "order--created"}
     return DynamoDBOutboxRepository(table_name="orders-outbox", session=session, topic_map=TOPIC_MAP)
 
 
@@ -80,6 +42,17 @@ async def test_publish_message(session: DynamoDBSession, repo: DynamoDBOutboxRep
     assert published_message.created_at == event.created_at
     assert published_message.is_dispatched is False
     assert published_message.dispatched_at is None
+
+
+@pytest.mark.asyncio()
+async def test_message_already_published(session: DynamoDBSession, repo: DynamoDBOutboxRepository) -> None:
+    event = OrderCreatedEvent(order_id=uuid.uuid4())
+    await repo.publish([event])
+    await session.commit()
+
+    await repo.publish([event])
+    with pytest.raises(MessageAlreadyPublishedError, match=str(event.event_id)):
+        await session.commit()
 
 
 @pytest.mark.asyncio()
