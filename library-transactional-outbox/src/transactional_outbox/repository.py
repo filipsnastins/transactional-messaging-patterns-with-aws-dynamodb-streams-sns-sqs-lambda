@@ -8,6 +8,14 @@ class MessageAlreadyPublishedError(Exception):
     pass
 
 
+class UnknownTopicError(Exception):
+    pass
+
+
+class MessageNotFoundError(Exception):
+    pass
+
+
 class Message(Protocol):
     @property
     def message_id(self) -> uuid.UUID:
