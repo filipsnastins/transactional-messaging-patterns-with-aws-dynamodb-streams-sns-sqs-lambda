@@ -34,7 +34,7 @@ async def test_order_rejected_event_published(uow: FakeUnitOfWork, order: Order)
 
     await use_cases.reject_order(uow, cmd)
 
-    [event] = uow.events.events
+    [event] = uow.events.messages
     assert isinstance(event, OrderRejectedEvent)
     assert event.correlation_id == cmd.correlation_id
     assert event.order_id == order.id
