@@ -23,8 +23,8 @@ class DynamoDBUnitOfWork(UnitOfWork, BaseDynamoDBUnitOfWork):
     def __init__(self) -> None:
         super().__init__(clients.get_dynamodb_client)
 
-        aggregate_table_name = dynamodb.get_aggregate_table_name()
+        orders_table_name = dynamodb.get_orders_table_name()
         outbox_table_name = outbox.get_outbox_table_name()
 
-        self.orders = DynamoDBOrderRepository(aggregate_table_name, self.session)
+        self.orders = DynamoDBOrderRepository(orders_table_name, self.session)
         self.events = DynamoDBOutboxRepository(outbox_table_name, self.session, TOPICS_MAP)

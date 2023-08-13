@@ -2204,7 +2204,7 @@ unit-of-work = {path = "../library-unit-of-work"}
 
 [package.source]
 type = "directory"
-url = "../library-tranasctional-outbox"
+url = "../library-transactional-outbox"
 
 [[package]]
 name = "types-aiobotocore"

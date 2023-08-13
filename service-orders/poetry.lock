@@ -1075,6 +1075,24 @@ files = [
 ]
 
 [[package]]
+name = "lambda-outbox-dynamodb-streams"
+version = "0.0.0"
+description = ""
+optional = false
+python-versions = "^3.11"
+files = []
+develop = false
+
+[package.dependencies]
+structlog = "^23.1.0"
+transactional-outbox = {path = "../library-transactional-outbox"}
+types-aiobotocore = {version = "^2.6.0", extras = ["dynamodb", "iam", "lambda"]}
+
+[package.source]
+type = "directory"
+url = "../lambda-outbox-dynamodb-streams"
+
+[[package]]
 name = "lazy-object-proxy"
 version = "1.9.0"
 description = "A fast and thorough lazy object proxy."
@@ -2166,7 +2184,7 @@ unit-of-work = {path = "../library-unit-of-work"}
 
 [package.source]
 type = "directory"
-url = "../library-tranasctional-outbox"
+url = "../library-transactional-outbox"
 
 [[package]]
 name = "types-aiobotocore"
@@ -2941,4 +2959,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "69506c1cf2ea169320d046a505134179f4ad0dfd26b93e52aac72cdc3b3d7292"
+content-hash = "ac6be9e628184265f4e1739b6918a249930eabf8c94a2de55cbefd82e80ee635"

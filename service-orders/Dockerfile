@@ -17,7 +17,8 @@ RUN python -m pip install --no-cache-dir -U \
   virtualenv "$VIRTUAL_ENV"
 COPY --link service-orders/pyproject.toml service-orders/poetry.lock ./
 COPY --link lambda-outbox-dynamodb-streams ../lambda-outbox-dynamodb-streams
-COPY --link library-tomodachi-outbox ../library-tomodachi-outbox
+COPY --link library-transactional-outbox ../library-transactional-outbox
+COPY --link library-unit-of-work ../library-unit-of-work
 RUN poetry install --without dev
 
 FROM dependencies-base AS dependencies-release

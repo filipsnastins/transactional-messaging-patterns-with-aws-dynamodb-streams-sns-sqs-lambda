@@ -1,11 +1,8 @@
-import structlog
-from transactional_outbox import outbox
+from lambda_outbox_dynamodb_streams import outbox
 from transactional_outbox.dynamodb import create_outbox_table as transactional_outbox_create_outbox_table
 
 from adapters import clients
 from adapters.settings import get_settings
-
-logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
 def get_outbox_table_name() -> str:
@@ -36,5 +33,3 @@ async def create_dynamodb_streams_outbox() -> None:
             },
             dynamodb_table_name=dynamodb_table_name,
         )
-
-        logger.info("dynamodb_streams_outbox_created", dynamodb_table_name=dynamodb_table_name)

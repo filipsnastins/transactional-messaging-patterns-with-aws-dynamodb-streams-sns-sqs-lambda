@@ -54,7 +54,7 @@ def tomodachi_container(
         .with_env("AWS_ACCESS_KEY_ID", aws_config["aws_access_key_id"])
         .with_env("AWS_SECRET_ACCESS_KEY", aws_config["aws_secret_access_key"])
         .with_env("AWS_ENDPOINT_URL", moto_container.get_internal_url())
-        .with_env("DYNAMODB_AGGREGATE_TABLE_NAME", "orders")
+        .with_env("DYNAMODB_ORDERS_TABLE_NAME", "orders")
         .with_env("DYNAMODB_OUTBOX_TABLE_NAME", "orders-outbox")
     ) as container:
         yield cast(TomodachiContainer, container)

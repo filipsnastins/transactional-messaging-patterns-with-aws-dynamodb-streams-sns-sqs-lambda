@@ -12,7 +12,7 @@ types-aiobotocore = { extras = [
     "lambda",
 ], version = "^2.6.0" }
 structlog = "^23.1.0"
-transactional-outbox = { path = "../library-tranasctional-outbox" }
+transactional-outbox = { path = "../library-transactional-outbox" }
 
 [tool.poetry.group.lambda]
 optional = true

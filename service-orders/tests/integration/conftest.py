@@ -14,13 +14,13 @@ def _environment(monkeypatch: pytest.MonkeyPatch, moto_container: MotoContainer)
     monkeypatch.setenv("AWS_ACCESS_KEY_ID", aws_config["aws_access_key_id"])
     monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", aws_config["aws_secret_access_key"])
     monkeypatch.setenv("AWS_ENDPOINT_URL", aws_config["endpoint_url"])
-    monkeypatch.setenv("DYNAMODB_AGGREGATE_TABLE_NAME", "orders")
+    monkeypatch.setenv("DYNAMODB_ORDERS_TABLE_NAME", "orders")
     monkeypatch.setenv("DYNAMODB_OUTBOX_TABLE_NAME", "orders-outbox")
 
 
 @pytest_asyncio.fixture()
 async def _mock_dynamodb(_environment: None, _reset_moto_container_on_teardown: None) -> None:
-    await dynamodb.create_aggregate_table()
+    await dynamodb.create_orders_table()
     await outbox.create_outbox_table()
 
 
