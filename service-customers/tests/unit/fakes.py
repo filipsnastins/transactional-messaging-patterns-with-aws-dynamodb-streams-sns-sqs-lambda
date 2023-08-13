@@ -1,11 +1,10 @@
 import copy
 import uuid
 
-from transactional_outbox import OutboxRepository, PublishedMessage
+from transactional_outbox.fakes import FakeOutboxRepository
 
 from adapters.customer_repository import CustomerNotFoundError, CustomerRepository
 from customers.customer import Customer
-from customers.events import Event
 from service_layer.unit_of_work import UnitOfWork
 
 
@@ -25,26 +24,6 @@ class FakeCustomerRepository(CustomerRepository):
 
     async def get(self, customer_id: uuid.UUID) -> Customer | None:
         return next((copy.deepcopy(v) for v in self._customers if v.id == customer_id), None)
-
-
-class FakeOutboxRepository(OutboxRepository):
-    def __init__(self, events: list[Event]) -> None:
-        self.events = events
-
-    async def publish(self, messages: list[Event]) -> None:
-        self.events.extend(copy.deepcopy(messages))
-
-    async def get(self, message_id: uuid.UUID) -> PublishedMessage | None:
-        raise NotImplementedError
-
-    async def mark_dispatched(self, message_id: uuid.UUID) -> None:
-        raise NotImplementedError
-
-    async def get_not_dispatched_messages(self) -> list[PublishedMessage]:
-        raise NotImplementedError
-
-    def clear(self) -> None:
-        self.events.clear()
 
 
 class FakeUnitOfWork(UnitOfWork):
