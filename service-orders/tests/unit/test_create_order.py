@@ -39,7 +39,7 @@ async def test_order_created_event_published(uow: FakeUnitOfWork) -> None:
 
     assert isinstance(response, OrderCreatedResponse)
     assert response.type == ResponseTypes.SUCCESS
-    [event] = uow.events.events
+    [event] = uow.events.messages
     assert isinstance(event, OrderCreatedEvent)
     assert event.event_id
     assert event.correlation_id == cmd.correlation_id

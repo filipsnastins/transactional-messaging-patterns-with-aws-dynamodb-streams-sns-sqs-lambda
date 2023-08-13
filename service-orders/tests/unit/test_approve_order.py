@@ -34,7 +34,7 @@ async def test_order_approved_event_published(uow: FakeUnitOfWork, order: Order)
 
     await use_cases.approve_order(uow, cmd)
 
-    [event] = uow.events.events
+    [event] = uow.events.messages
     assert isinstance(event, OrderApprovedEvent)
     assert event.correlation_id == cmd.correlation_id
     assert event.order_id == order.id
@@ -54,7 +54,7 @@ async def test_order_in_non_pending_state_cannot_be_approved(
     with pytest.raises(NotPendingOrderCannotBeApprovedError, match=str(order.id)):
         await use_cases.approve_order(uow, ApproveOrderCommand(order_id=order.id))
 
-    assert len(uow.events.events) == 0
+    assert len(uow.events.messages) == 0
     order_from_db = await uow.orders.get(order_id=order.id)
     assert order_from_db
     assert order_from_db.state == order_state
