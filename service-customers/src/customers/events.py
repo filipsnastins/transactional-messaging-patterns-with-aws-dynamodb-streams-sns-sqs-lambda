@@ -32,8 +32,8 @@ class Event:
     def to_dict(self) -> dict:
         return {
             "event_id": str(self.event_id),
-            "customer_id": str(self.customer_id),
             "correlation_id": str(self.correlation_id),
+            "customer_id": str(self.customer_id),
             "created_at": datetime_to_str(self.created_at),
         }
 

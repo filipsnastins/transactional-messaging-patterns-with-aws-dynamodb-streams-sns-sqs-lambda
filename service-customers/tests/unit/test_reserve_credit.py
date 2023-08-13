@@ -21,7 +21,7 @@ async def test_customer_not_found(uow: FakeUnitOfWork) -> None:
 
     await use_cases.reserve_credit(uow, cmd)
 
-    [event] = uow.events.events
+    [event] = uow.events.messages
     assert isinstance(event, CustomerValidationFailedEvent)
     assert event.correlation_id == cmd.correlation_id
     assert event.customer_id == event.customer_id
@@ -85,7 +85,7 @@ async def test_customer_credit_limit_reserved_event_published(uow: FakeUnitOfWor
 
     await use_cases.reserve_credit(uow, cmd)
 
-    [event] = uow.events.events
+    [event] = uow.events.messages
     assert isinstance(event, CustomerCreditReservedEvent)
     assert event.correlation_id == cmd.correlation_id
     assert event.customer_id == customer.id
@@ -100,7 +100,7 @@ async def test_insufficient_credit(uow: FakeUnitOfWork, customer: Customer) -> N
 
     await use_cases.reserve_credit(uow, cmd)
 
-    [event] = uow.events.events
+    [event] = uow.events.messages
     assert isinstance(event, CustomerCreditReservationFailedEvent)
     assert event.correlation_id == cmd.correlation_id
     assert event.customer_id == customer.id
