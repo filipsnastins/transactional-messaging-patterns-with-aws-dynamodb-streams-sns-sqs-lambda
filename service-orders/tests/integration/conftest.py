@@ -26,4 +26,4 @@ async def _mock_dynamodb(_environment: None, _reset_moto_container_on_teardown: 
 
 @pytest.fixture()
 def uow() -> DynamoDBUnitOfWork:
-    return DynamoDBUnitOfWork.create()
+    return DynamoDBUnitOfWork()

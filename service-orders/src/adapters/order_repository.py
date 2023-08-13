@@ -3,7 +3,7 @@ from typing import Protocol
 
 import structlog
 from stockholm import Money
-from tomodachi_outbox.dynamodb import DynamoDBClientFactory, DynamoDBSession
+from unit_of_work.dynamodb import DynamoDBSession
 
 from orders.order import Order, OrderState
 from utils.time import datetime_to_str, str_to_datetime, utcnow
@@ -35,16 +35,15 @@ class OrderRepository(Protocol):
 
 
 class DynamoDBOrderRepository(OrderRepository):
-    def __init__(self, table_name: str, session: DynamoDBSession, client_factory: DynamoDBClientFactory) -> None:
-        self.table_name = table_name
-        self.session = session
-        self.get_client = client_factory
+    def __init__(self, table_name: str, session: DynamoDBSession) -> None:
+        self._table_name = table_name
+        self._session = session
 
     async def create(self, order: Order) -> None:
-        self.session.add(
+        self._session.add(
             {
                 "Put": {
-                    "TableName": self.table_name,
+                    "TableName": self._table_name,
                     "Item": {
                         "PK": {"S": f"ORDER#{order.id}"},
                         "OrderId": {"S": str(order.id)},
@@ -62,11 +61,11 @@ class DynamoDBOrderRepository(OrderRepository):
         logger.info("dynamodb_order_repository__create", order_id=order.id)
 
     async def get(self, order_id: uuid.UUID) -> Order | None:
-        async with self.get_client() as client:
-            response = await client.get_item(TableName=self.table_name, Key={"PK": {"S": f"ORDER#{order_id}"}})
+        async with self._session.get_client() as client:
+            response = await client.get_item(TableName=self._table_name, Key={"PK": {"S": f"ORDER#{order_id}"}})
             item = response.get("Item")
             if not item:
-                logger.debug("dynamodb_order_repository__order_not_found", order_id=order_id)
+                logger.info("dynamodb_order_repository__order_not_found", order_id=order_id)
                 return None
             return Order(
                 id=uuid.UUID(item["OrderId"]["S"]),
@@ -79,10 +78,10 @@ class DynamoDBOrderRepository(OrderRepository):
             )
 
     async def update(self, order: Order) -> None:
-        self.session.add(
+        self._session.add(
             {
                 "Put": {
-                    "TableName": self.table_name,
+                    "TableName": self._table_name,
                     "Item": {
                         "PK": {"S": f"ORDER#{order.id}"},
                         "OrderId": {"S": str(order.id)},

@@ -1,12 +1,8 @@
 import structlog
-from tomodachi_outbox import AbstractUnitOfWork, OutboxRepository
-from tomodachi_outbox.dynamodb import (
-    BaseDynamoDBUnitOfWork,
-    DynamoDBClientFactory,
-    DynamoDBOutboxRepository,
-    DynamoDBSession,
-)
-from types_aiobotocore_dynamodb import DynamoDBClient
+from transactional_outbox import OutboxRepository
+from transactional_outbox.dynamodb import DynamoDBOutboxRepository
+from unit_of_work import AbstractUnitOfWork
+from unit_of_work.dynamodb import BaseDynamoDBUnitOfWork, DynamoDBSession
 
 from adapters import clients, dynamodb, outbox
 from adapters.order_repository import DynamoDBOrderRepository, OrderRepository
@@ -21,30 +17,14 @@ class UnitOfWork(AbstractUnitOfWork):
 
 
 class DynamoDBUnitOfWork(UnitOfWork, BaseDynamoDBUnitOfWork):
-    session: DynamoDBSession
     orders: DynamoDBOrderRepository
     events: DynamoDBOutboxRepository
 
-    def __init__(
-        self,
-        client_factory: DynamoDBClientFactory,
-        session: DynamoDBSession,
-        orders: DynamoDBOrderRepository,
-        events: DynamoDBOutboxRepository,
-    ) -> None:
-        super().__init__(client_factory, session)
-        self.orders = orders
-        self.events = events
-
-    @staticmethod
-    def create() -> "DynamoDBUnitOfWork":
-        def client_factory() -> DynamoDBClient:
-            return clients.get_dynamodb_client()
+    def __init__(self) -> None:
+        super().__init__(clients.get_dynamodb_client)
 
         aggregate_table_name = dynamodb.get_aggregate_table_name()
         outbox_table_name = outbox.get_outbox_table_name()
 
-        session = DynamoDBSession()
-        customers = DynamoDBOrderRepository(aggregate_table_name, session, client_factory)
-        events = DynamoDBOutboxRepository(outbox_table_name, session, client_factory, TOPICS_MAP)
-        return DynamoDBUnitOfWork(client_factory, session, customers, events)
+        self.orders = DynamoDBOrderRepository(aggregate_table_name, self.session)
+        self.events = DynamoDBOutboxRepository(outbox_table_name, self.session, TOPICS_MAP)

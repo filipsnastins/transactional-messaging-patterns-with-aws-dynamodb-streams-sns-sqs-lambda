@@ -12,8 +12,9 @@ pydantic-settings = "^2.0.2"
 stockholm = "^0.5.5"
 structlog = "^23.1.0"
 tomodachi = "^0.25.0"
-tomodachi-outbox = { path = "../library-tomodachi-outbox" }
+transactional-outbox = { path = "../library-tranasctional-outbox" }
 types-aiobotocore = { extras = ["dynamodb", "sns"], version = "^2.5.2" }
+unit-of-work = { path = "../library-unit-of-work" }
 uvloop = "^0.17.0"
 
 [tool.poetry.group.dev.dependencies]

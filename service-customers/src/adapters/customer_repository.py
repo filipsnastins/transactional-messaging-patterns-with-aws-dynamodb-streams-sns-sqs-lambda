@@ -99,7 +99,7 @@ class DynamoDBCustomerRepository(CustomerRepository):
             response = await client.get_item(TableName=self.table_name, Key={"PK": {"S": f"CUSTOMER#{customer_id}"}})
             item = response.get("Item")
             if not item:
-                logger.debug(
+                logger.info(
                     "dynamodb_customer_repository__customer_not_found",
                     customer_id=customer_id,
                 )
