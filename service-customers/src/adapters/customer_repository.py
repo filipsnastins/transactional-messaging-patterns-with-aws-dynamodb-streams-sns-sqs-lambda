@@ -3,7 +3,7 @@ from typing import Protocol
 
 import structlog
 from stockholm import Money
-from tomodachi_outbox.dynamodb import DynamoDBClientFactory, DynamoDBSession
+from unit_of_work.dynamodb import DynamoDBSession
 
 from customers.customer import Customer
 from utils.time import datetime_to_str, str_to_datetime, utcnow
@@ -35,16 +35,15 @@ class CustomerRepository(Protocol):
 
 
 class DynamoDBCustomerRepository(CustomerRepository):
-    def __init__(self, table_name: str, session: DynamoDBSession, client_factory: DynamoDBClientFactory) -> None:
-        self.table_name = table_name
-        self.session = session
-        self.get_client = client_factory
+    def __init__(self, table_name: str, session: DynamoDBSession) -> None:
+        self._table_name = table_name
+        self._session = session
 
     async def create(self, customer: Customer) -> None:
-        self.session.add(
+        self._session.add(
             {
                 "Put": {
-                    "TableName": self.table_name,
+                    "TableName": self._table_name,
                     "Item": {
                         "PK": {"S": f"CUSTOMER#{customer.id}"},
                         "CustomerId": {"S": str(customer.id)},
@@ -67,10 +66,10 @@ class DynamoDBCustomerRepository(CustomerRepository):
         logger.info("dynamodb_customer_repository__create", customer_id=customer.id)
 
     async def update(self, customer: Customer) -> None:
-        self.session.add(
+        self._session.add(
             {
                 "Put": {
-                    "TableName": self.table_name,
+                    "TableName": self._table_name,
                     "Item": {
                         "PK": {"S": f"CUSTOMER#{customer.id}"},
                         "CustomerId": {"S": str(customer.id)},
@@ -95,8 +94,8 @@ class DynamoDBCustomerRepository(CustomerRepository):
         logger.info("dynamodb_customer_repository__update", customer_id=customer.id)
 
     async def get(self, customer_id: uuid.UUID) -> Customer | None:
-        async with self.get_client() as client:
-            response = await client.get_item(TableName=self.table_name, Key={"PK": {"S": f"CUSTOMER#{customer_id}"}})
+        async with self._session.get_client() as client:
+            response = await client.get_item(TableName=self._table_name, Key={"PK": {"S": f"CUSTOMER#{customer_id}"}})
             item = response.get("Item")
             if not item:
                 logger.info(
