@@ -42,8 +42,7 @@ class TomodachiService(tomodachi.Service):
 
     async def _start_service(self) -> None:
         await sns.create_topics()
-        await dynamodb.create_aggregate_table()
-        await outbox.create_outbox_table()
+        await dynamodb.create_orders_table()
         await outbox.create_dynamodb_streams_outbox()
 
     @tomodachi.http("GET", r"/orders/health/?", ignore_logging=[200])
