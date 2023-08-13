@@ -25,7 +25,7 @@ def get_sns_client() -> SNSClient:
     return boto3.client("sns", region_name=region_name, endpoint_url=endpoint_url)
 
 
-@event_source(data_class=DynamoDBStreamEvent)
+@event_source(data_class=DynamoDBStreamEvent)  # pylint: disable=no-value-for-parameter
 def lambda_handler(event: DynamoDBStreamEvent, context: LambdaContext) -> None:
     for record in event.records:
         if record.event_name != DynamoDBRecordEventName.INSERT:
