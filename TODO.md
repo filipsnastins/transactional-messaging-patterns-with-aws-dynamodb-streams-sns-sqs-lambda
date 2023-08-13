@@ -14,7 +14,7 @@
 
 ## Inbox
 
-- [ ] Inbox table - making consumers idempotent
+- [ ] Inbox table - idempotent consumer pattern
   - Order Created, Order Released, Order Created (received again)
 
 ## Outbox
@@ -23,14 +23,14 @@
 
 ## Unit of Work
 
-- [ ] Separate library? Decouple from `library-tomodachi-outbox`?
+...
 
 ## Lambda
 
 - [ ] Production-ready outbox Lambda
 - [ ] Marks messages as dispatched
   - Mind infinite loop
-- [ ] CloudWatch alarm on NotDispatchedIndex
+- [ ] CloudWatch alarm on NotDispatchedIndex - scheduled lambda that's periodically checking for not dispatched messages?
 
 ## Tests
 

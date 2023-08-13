@@ -1,17 +1,18 @@
 [tool.poetry]
 name = "lambda-outbox-dynamodb-streams"
-version = "0.0.0"
+version = "0.0.1"
 description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+structlog = "^23.1.0"
 types-aiobotocore = { extras = [
     "dynamodb",
     "iam",
     "lambda",
+    "s3",
 ], version = "^2.6.0" }
-structlog = "^23.1.0"
 transactional-outbox = { path = "../library-transactional-outbox" }
 
 [tool.poetry.group.lambda]

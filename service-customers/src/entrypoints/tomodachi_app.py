@@ -1,16 +1,15 @@
 import uuid
 
 import tomodachi
-from aiohttp import web
-from stockholm import Money
-from tomodachi.envelope.json_base import JsonBase
-
 from adapters import dynamodb, outbox, sns
 from adapters.settings import get_settings
+from aiohttp import web
 from customers.commands import CreateCustomerCommand, ReleaseCreditCommand, ReserveCreditCommand
 from service_layer import use_cases, views
 from service_layer.response import ResponseTypes
 from service_layer.unit_of_work import DynamoDBUnitOfWork
+from stockholm import Money
+from tomodachi.envelope.json_base import JsonBase
 
 STATUS_CODES: dict[ResponseTypes, int] = {
     ResponseTypes.SUCCESS: 200,
@@ -41,7 +40,6 @@ class TomodachiService(tomodachi.Service):
     async def _start_service(self) -> None:
         await sns.create_topics()
         await dynamodb.create_customers_table()
-        await outbox.create_outbox_table()
         await outbox.create_dynamodb_streams_outbox()
 
     @tomodachi.http("GET", r"/customers/health/?", ignore_logging=[200])

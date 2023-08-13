@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "transactional-outbox"
-version = "0.0.0"
+version = "0.0.1"
 description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
