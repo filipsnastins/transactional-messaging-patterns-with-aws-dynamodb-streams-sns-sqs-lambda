@@ -15,7 +15,7 @@ class BaseDynamoDBUnitOfWork(AbstractUnitOfWork):
         self.client_factory = client_factory
 
     async def commit(self) -> None:
-        items = self.session.get()
+        items = self.session._session.get()
         if not items:
             logger.debug("dynamodb_unit_of_work__nothing_to_commit")
             return
@@ -38,5 +38,5 @@ class BaseDynamoDBUnitOfWork(AbstractUnitOfWork):
                 await self.rollback()
 
     async def rollback(self) -> None:
-        self.session.clear()
+        self.session.rollback()
         logger.debug("dynamodb_unit_of_work__rollback")
