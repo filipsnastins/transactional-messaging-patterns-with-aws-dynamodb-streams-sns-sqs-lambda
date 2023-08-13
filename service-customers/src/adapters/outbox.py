@@ -20,12 +20,14 @@ async def create_dynamodb_streams_outbox() -> None:
         clients.get_lambda_client() as lambda_client,
         clients.get_iam_client() as iam_client,
         clients.get_dynamodb_client() as dynamodb_client,
+        clients.get_s3_client() as s3_client,
     ):
         dynamodb_table_name = get_outbox_table_name()
         await outbox.create_dynamodb_streams_outbox(
             lambda_client,
             iam_client,
             dynamodb_client,
+            s3_client,
             environment_variables={
                 "AWS_REGION": settings.aws_region,
                 "AWS_ENDPOINT_URL": settings.aws_endpoint_url or "",

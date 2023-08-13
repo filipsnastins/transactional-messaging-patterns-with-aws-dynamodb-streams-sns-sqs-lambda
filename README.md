@@ -40,7 +40,7 @@ awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--order
 
   ```bash
   curl -X POST --header "Content-Type: application/json" -d '{
-    "customer_id": "1b1642dd-d214-4b68-94c7-f17b91ab3f46",
+    "customer_id": "b4a630f7-7fdf-4c5e-8b07-f165f6b2eac5",
     "order_total": 100
   }' http://localhost:9702/orders
   ```

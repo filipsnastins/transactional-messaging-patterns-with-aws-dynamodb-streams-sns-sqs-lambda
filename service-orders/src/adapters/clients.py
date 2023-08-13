@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from types_aiobotocore_dynamodb import DynamoDBClient
 from types_aiobotocore_iam import IAMClient
 from types_aiobotocore_lambda import LambdaClient
+from types_aiobotocore_s3 import S3Client
 from types_aiobotocore_sns import SNSClient
 
 from adapters.settings import get_settings
@@ -35,6 +36,10 @@ def get_iam_client() -> IAMClient:
 
 def get_lambda_client() -> LambdaClient:
     return get_session().create_client("lambda", **AWSClientConfig.from_settings().model_dump())
+
+
+def get_s3_client() -> S3Client:
+    return get_session().create_client("s3", **AWSClientConfig.from_settings().model_dump())
 
 
 def get_sns_client() -> SNSClient:

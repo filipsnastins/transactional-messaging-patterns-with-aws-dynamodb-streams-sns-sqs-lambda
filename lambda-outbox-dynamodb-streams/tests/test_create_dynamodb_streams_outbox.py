@@ -13,6 +13,7 @@ from transactional_outbox.repository import PublishedMessage
 from types_aiobotocore_dynamodb import DynamoDBClient
 from types_aiobotocore_iam import IAMClient
 from types_aiobotocore_lambda import LambdaClient
+from types_aiobotocore_s3 import S3Client
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
 
@@ -39,6 +40,7 @@ async def test_create_dynamodb_streams_outbox(
     moto_iam_client: IAMClient,
     moto_lambda_client: LambdaClient,
     moto_dynamodb_client: DynamoDBClient,
+    moto_s3_client: S3Client,
     moto_sqs_client: SQSClient,
 ) -> None:
     aws_config = moto_container.get_aws_client_config()
@@ -57,6 +59,7 @@ async def test_create_dynamodb_streams_outbox(
         moto_lambda_client,
         moto_iam_client,
         moto_dynamodb_client,
+        moto_s3_client,
         environment_variables={
             "AWS_REGION": aws_config["region_name"],
             "AWS_ENDPOINT_URL": moto_container.get_internal_url(),

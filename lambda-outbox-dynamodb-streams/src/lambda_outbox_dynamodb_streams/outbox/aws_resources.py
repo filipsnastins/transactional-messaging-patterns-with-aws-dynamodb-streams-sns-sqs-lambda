@@ -6,6 +6,19 @@ from types_aiobotocore_iam import IAMClient
 from types_aiobotocore_iam.type_defs import CreateRoleResponseTypeDef
 from types_aiobotocore_lambda import LambdaClient
 from types_aiobotocore_lambda.type_defs import FunctionConfigurationResponseTypeDef
+from types_aiobotocore_s3 import S3Client
+
+
+async def upload_lambda_to_s3(s3_client: S3Client, s3_bucket_name: str, lambda_zip_path: Path) -> str:
+    try:
+        await s3_client.head_bucket(Bucket=s3_bucket_name)
+    except s3_client.exceptions.ClientError:
+        await s3_client.create_bucket(Bucket=s3_bucket_name)
+
+    s3_object_key = lambda_zip_path.name
+    with open(lambda_zip_path, "rb") as f:
+        await s3_client.put_object(Bucket=s3_bucket_name, Key=s3_object_key, Body=f)
+    return s3_object_key
 
 
 async def create_lambda_function(
@@ -13,20 +26,20 @@ async def create_lambda_function(
     function_name: str,
     environment_variables: dict[str, str],
     lambda_role_arn: str,
-    lambda_zip_path: Path,
+    s3_bucket_name: str,
+    s3_lambda_key: str,
 ) -> FunctionConfigurationResponseTypeDef:
-    with open(lambda_zip_path, "rb") as f:
-        return await lambda_client.create_function(
-            FunctionName=f"lambda-{function_name}",
-            Runtime="python3.11",
-            Role=lambda_role_arn,
-            Handler="app.lambda_function.lambda_handler",
-            Code={"ZipFile": f.read()},
-            Publish=True,
-            Timeout=30,
-            MemorySize=256,
-            Environment={"Variables": environment_variables},
-        )
+    return await lambda_client.create_function(
+        FunctionName=f"lambda-{function_name}",
+        Runtime="python3.10",
+        Role=lambda_role_arn,
+        Handler="app.lambda_function.lambda_handler",
+        Code={"S3Bucket": s3_bucket_name, "S3Key": s3_lambda_key},
+        Publish=True,
+        Timeout=30,
+        MemorySize=256,
+        Environment={"Variables": environment_variables},
+    )
 
 
 async def create_lambda_dynamodb_streams_role(
