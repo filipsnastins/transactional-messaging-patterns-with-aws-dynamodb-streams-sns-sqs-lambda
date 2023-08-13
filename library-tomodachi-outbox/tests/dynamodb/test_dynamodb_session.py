@@ -31,35 +31,54 @@ async def session(moto_container: MotoContainer) -> DynamoDBSession:
 
 @pytest.mark.asyncio()
 async def test_commit_session(session: DynamoDBSession, moto_dynamodb_client: DynamoDBClient) -> None:
-    transact_item: TransactWriteItemTypeDef = {
+    transact_item_1: TransactWriteItemTypeDef = {
         "Put": {
             "TableName": "TestTable",
             "Item": {"Id": {"S": "item-1111"}},
+            "ConditionExpression": "attribute_not_exists(Id)",
         }
     }
-    session.add(transact_item)
+    transact_item_2: TransactWriteItemTypeDef = {
+        "Put": {
+            "TableName": "TestTable",
+            "Item": {"Id": {"S": "item-2222"}},
+            "ConditionExpression": "attribute_not_exists(Id)",
+        }
+    }
+    session.add(transact_item_1)
+    session.add(transact_item_2)
 
     await session.commit()
 
-    get_item_response = await moto_dynamodb_client.get_item(TableName="TestTable", Key={"Id": {"S": "item-1111"}})
-    assert get_item_response["Item"] == {"Id": {"S": "item-1111"}}
+    scan_table_response = await moto_dynamodb_client.scan(TableName="TestTable")
+    assert scan_table_response["Items"] == [{"Id": {"S": "item-1111"}}, {"Id": {"S": "item-2222"}}]
+    assert scan_table_response["Count"] == 2
 
 
 @pytest.mark.asyncio()
 async def test_rollback_session(session: DynamoDBSession, moto_dynamodb_client: DynamoDBClient) -> None:
-    transact_item: TransactWriteItemTypeDef = {
+    transact_item_1: TransactWriteItemTypeDef = {
         "Put": {
             "TableName": "TestTable",
             "Item": {"Id": {"S": "item-1111"}},
+            "ConditionExpression": "attribute_not_exists(Id)",
         }
     }
-    session.add(transact_item)
+    transact_item_2: TransactWriteItemTypeDef = {
+        "Put": {
+            "TableName": "TestTable",
+            "Item": {"Id": {"S": "item-2222"}},
+            "ConditionExpression": "attribute_not_exists(Id)",
+        }
+    }
+    session.add(transact_item_1)
+    session.add(transact_item_2)
 
     session.rollback()
     await session.commit()
 
-    get_item_response = await moto_dynamodb_client.get_item(TableName="TestTable", Key={"Id": {"S": "item-1111"}})
-    assert "Item" not in get_item_response
+    scan_table_response = await moto_dynamodb_client.scan(TableName="TestTable")
+    assert scan_table_response["Count"] == 0
 
 
 @pytest.mark.asyncio()
