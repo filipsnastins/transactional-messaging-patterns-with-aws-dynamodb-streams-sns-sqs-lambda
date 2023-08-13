@@ -14,6 +14,10 @@ class UnknownTopicError(Exception):
     pass
 
 
+class MessageNotFoundError(Exception):
+    pass
+
+
 class DynamoDBOutboxRepository(OutboxRepository):
     def __init__(self, table_name: str, session: DynamoDBSession, topic_map: dict[type[Any], str]) -> None:
         self._table_name = table_name
@@ -58,22 +62,27 @@ class DynamoDBOutboxRepository(OutboxRepository):
             )
             item = response.get("Item")
             if not item:
-                logger.error("dynamodb_message_repository__message_not_found", message_id=message_id)
                 return None
             return self._item_to_published_message(item)
 
     async def mark_dispatched(self, message_id: uuid.UUID) -> None:
+        log = logger.bind(message_id=message_id)
         async with self._session.get_client() as client:
-            await client.update_item(
-                TableName=self._table_name,
-                Key={"PK": {"S": f"MESSAGE#{message_id}"}},
-                UpdateExpression="REMOVE NotDispatched SET IsDispatched = :IsDispatched, DispatchedAt = :DispatchedAt",
-                ExpressionAttributeValues={
-                    ":IsDispatched": {"BOOL": True},
-                    ":DispatchedAt": {"S": datetime_to_str(utcnow())},
-                },
-            )
-            logger.info("dynamodb_message_repository__message_marked_as_dispatched", message_id=message_id)
+            try:
+                await client.update_item(
+                    TableName=self._table_name,
+                    Key={"PK": {"S": f"MESSAGE#{message_id}"}},
+                    UpdateExpression="REMOVE NotDispatched SET IsDispatched = :IsDispatched, DispatchedAt = :DispatchedAt",
+                    ExpressionAttributeValues={
+                        ":IsDispatched": {"BOOL": True},
+                        ":DispatchedAt": {"S": datetime_to_str(utcnow())},
+                    },
+                    ConditionExpression="attribute_exists(PK)",
+                )
+            except client.exceptions.ConditionalCheckFailedException:
+                log.error("dynamodb_message_repository__message_not_found")
+                raise MessageNotFoundError(message_id)
+            log.info("dynamodb_message_repository__message_marked_as_dispatched")
 
     async def get_not_dispatched_messages(self) -> list[PublishedMessage]:
         async with self._session.get_client() as client:
@@ -83,9 +92,9 @@ class DynamoDBOutboxRepository(OutboxRepository):
                 KeyConditionExpression="NotDispatched = :NotDispatched",
                 ExpressionAttributeValues={":NotDispatched": {"S": "Y"}},
             )
-            if not response["Items"]:
+            items = response.get("Items")
+            if not items:
                 return []
-            items = response["Items"]
             return [self._item_to_published_message(item) for item in items]
 
     def _get_topic(self, message: Message) -> str:
