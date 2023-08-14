@@ -1,7 +1,25 @@
 import copy
 import uuid
 
+from transactional_outbox.idempotent_consumer import InboxRepository, MessageAlreadyProcessedError, ProcessedMessage
 from transactional_outbox.outbox import Message, MessageAlreadyPublishedError, OutboxRepository, PublishedMessage
+from transactional_outbox.utils.time import utcnow
+
+
+class FakeInboxRepository(InboxRepository):
+    """Fake implementation of InboxRepository for unit testing purposes."""
+
+    def __init__(self, messages: list[ProcessedMessage]) -> None:
+        self.messages = messages
+
+    async def save(self, message_id: uuid.UUID) -> None:
+        if await self.get(message_id=message_id):
+            raise MessageAlreadyProcessedError(message_id)
+        message = ProcessedMessage(message_id=message_id, created_at=utcnow())
+        self.messages.append(copy.deepcopy(message))
+
+    async def get(self, message_id: uuid.UUID) -> ProcessedMessage | None:
+        return next((copy.deepcopy(v) for v in self.messages if v.message_id == message_id), None)
 
 
 class FakeOutboxRepository(OutboxRepository):
