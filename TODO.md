@@ -19,7 +19,7 @@
 
 ## Outbox
 
-- [ ] **Tests**
+...
 
 ## Unit of Work
 
@@ -30,7 +30,7 @@
 - [ ] Production-ready outbox Lambda
 - [ ] Marks messages as dispatched
   - Mind infinite loop
-- [ ] CloudWatch alarm on NotDispatchedIndex - scheduled lambda that's periodically checking for not dispatched messages?
+- [ ] CloudWatch alarm on NotDispatchedMessagesIndex - scheduled lambda that's periodically checking for not dispatched messages?
 
 ## Tests
 
@@ -44,3 +44,4 @@
   - Create DynamoDB table
   - Create topics and queues (SNS SQS)
 - [ ] Test Terraform modules with Terratest
+- [ ] GitHub Actions workflows
