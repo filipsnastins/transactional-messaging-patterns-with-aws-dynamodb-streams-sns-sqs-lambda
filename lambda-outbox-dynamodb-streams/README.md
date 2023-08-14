@@ -7,7 +7,7 @@ poetry install --with lambda
 
 poetry shell
 
-poetry export --with lambda -f requirements.txt --output src/lambda_outbox_dynamodb_streams/requirements.txt
+poetry export --without-hashes --with lambda -f requirements.txt --output src/lambda_outbox_dynamodb_streams/requirements.txt
 
 rm -rf package
 mkdir package
