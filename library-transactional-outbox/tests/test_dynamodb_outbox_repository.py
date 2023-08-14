@@ -3,7 +3,7 @@ import json
 import uuid
 
 import pytest
-from unit_of_work.dynamodb import DynamoDBClientFactory, DynamoDBSession
+from unit_of_work.dynamodb import DynamoDBSession
 
 from tests.events import OrderCreatedEvent, UnknownOrderEvent
 from transactional_outbox.dynamodb import DynamoDBOutboxRepository
@@ -15,18 +15,13 @@ pytestmark = pytest.mark.usefixtures("_create_outbox_table", "_reset_moto_contai
 
 
 @pytest.fixture()
-def session(client_factory: DynamoDBClientFactory) -> DynamoDBSession:
-    return DynamoDBSession(client_factory)
-
-
-@pytest.fixture()
 def repo(session: DynamoDBSession) -> DynamoDBOutboxRepository:
     TOPIC_MAP = {OrderCreatedEvent: "order--created"}
     return DynamoDBOutboxRepository(table_name="orders-outbox", session=session, topic_map=TOPIC_MAP)
 
 
 @pytest.mark.asyncio()
-async def test_publish_message(session: DynamoDBSession, repo: DynamoDBOutboxRepository) -> None:
+async def test_publish_message(repo: DynamoDBOutboxRepository, session: DynamoDBSession) -> None:
     event = OrderCreatedEvent(order_id=uuid.uuid4())
 
     await repo.publish([event])
@@ -45,7 +40,7 @@ async def test_publish_message(session: DynamoDBSession, repo: DynamoDBOutboxRep
 
 
 @pytest.mark.asyncio()
-async def test_message_already_published(session: DynamoDBSession, repo: DynamoDBOutboxRepository) -> None:
+async def test_message_already_published(repo: DynamoDBOutboxRepository, session: DynamoDBSession) -> None:
     event = OrderCreatedEvent(order_id=uuid.uuid4())
     await repo.publish([event])
     await session.commit()
@@ -64,7 +59,7 @@ async def test_unknown_message_topic_raises(repo: DynamoDBOutboxRepository) -> N
 
 
 @pytest.mark.asyncio()
-async def test_get_not_dispatched_messages(session: DynamoDBSession, repo: DynamoDBOutboxRepository) -> None:
+async def test_get_not_dispatched_messages(repo: DynamoDBOutboxRepository, session: DynamoDBSession) -> None:
     event_1 = OrderCreatedEvent(order_id=uuid.uuid4())
     event_2 = OrderCreatedEvent(order_id=uuid.uuid4())
     event_3 = OrderCreatedEvent(order_id=uuid.uuid4())
@@ -88,7 +83,7 @@ async def test_mark_dispatched_not_existing_message_raises(repo: DynamoDBOutboxR
 
 
 @pytest.mark.asyncio()
-async def test_mark_dispatched(session: DynamoDBSession, repo: DynamoDBOutboxRepository) -> None:
+async def test_mark_dispatched(repo: DynamoDBOutboxRepository, session: DynamoDBSession) -> None:
     event = OrderCreatedEvent(order_id=uuid.uuid4())
     await repo.publish([event])
     await session.commit()
@@ -104,7 +99,7 @@ async def test_mark_dispatched(session: DynamoDBSession, repo: DynamoDBOutboxRep
 
 @pytest.mark.asyncio()
 async def test_dispatched_message_removed_from_not_dispatched_messages_collection(
-    session: DynamoDBSession, repo: DynamoDBOutboxRepository
+    repo: DynamoDBOutboxRepository, session: DynamoDBSession
 ) -> None:
     event_1 = OrderCreatedEvent(order_id=uuid.uuid4())
     event_2 = OrderCreatedEvent(order_id=uuid.uuid4())
