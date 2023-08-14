@@ -47,7 +47,7 @@ class DynamoDBOutboxRepository(OutboxRepository):
                 raise_on_condition_check_failure=MessageAlreadyPublishedError(message.message_id),
             )
             logger.info(
-                "dynamodb_message_repository__message_published",
+                "dynamodb_outbox_repository__message_published",
                 message_id=message.message_id,
                 aggregate_id=message.aggregate_id,
                 message_name=message.__class__.__name__,
@@ -82,9 +82,9 @@ class DynamoDBOutboxRepository(OutboxRepository):
                     ConditionExpression="attribute_exists(PK)",
                 )
             except client.exceptions.ConditionalCheckFailedException as e:
-                log.error("dynamodb_message_repository__message_not_found")
+                log.error("dynamodb_outbox_repository__message_not_found")
                 raise MessageNotFoundError(message_id) from e
-            log.info("dynamodb_message_repository__message_marked_as_dispatched")
+            log.info("dynamodb_outbox_repository__message_marked_as_dispatched")
 
     async def get_not_dispatched_messages(self) -> list[PublishedMessage]:
         async with self._session.get_client() as client:
@@ -104,7 +104,7 @@ class DynamoDBOutboxRepository(OutboxRepository):
             return self._topics_map[type(message)]
         except KeyError as e:
             message_name = message.__class__.__name__
-            logger.error("dynamodb_message_repository__unknown_topic", message_name=message_name)
+            logger.error("dynamodb_outbox_repository__unknown_topic", message_name=message_name)
             raise UnknownTopicError(message_name) from e
 
     def _item_to_published_message(self, item: dict[str, Any]) -> PublishedMessage:
