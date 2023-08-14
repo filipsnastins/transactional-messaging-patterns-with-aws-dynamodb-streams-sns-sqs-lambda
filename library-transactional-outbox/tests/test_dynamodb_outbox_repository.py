@@ -7,8 +7,8 @@ from unit_of_work.dynamodb import DynamoDBClientFactory, DynamoDBSession
 
 from tests.events import OrderCreatedEvent, UnknownOrderEvent
 from transactional_outbox.dynamodb import DynamoDBOutboxRepository
-from transactional_outbox.dynamodb.repository import MessageNotFoundError, UnknownTopicError
-from transactional_outbox.repository import MessageAlreadyPublishedError
+from transactional_outbox.dynamodb.outbox import MessageNotFoundError, UnknownTopicError
+from transactional_outbox.outbox import MessageAlreadyPublishedError
 from transactional_outbox.utils.time import utcnow
 
 pytestmark = pytest.mark.usefixtures("_create_outbox_table", "_reset_moto_container_on_teardown")

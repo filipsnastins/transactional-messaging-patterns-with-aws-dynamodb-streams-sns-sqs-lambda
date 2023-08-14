@@ -1,4 +1,4 @@
-from transactional_outbox.repository import Message, MessageAlreadyPublishedError, OutboxRepository, PublishedMessage
+from transactional_outbox.outbox import Message, MessageAlreadyPublishedError, OutboxRepository, PublishedMessage
 
 __all__ = [
     "Message",

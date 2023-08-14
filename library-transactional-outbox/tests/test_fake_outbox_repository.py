@@ -4,7 +4,7 @@ import pytest
 
 from tests.events import OrderCreatedEvent
 from transactional_outbox.fakes import FakeOutboxRepository
-from transactional_outbox.repository import PublishedMessage
+from transactional_outbox.outbox import PublishedMessage
 
 
 @pytest.fixture()

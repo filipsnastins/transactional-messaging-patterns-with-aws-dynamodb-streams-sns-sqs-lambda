@@ -1,7 +1,7 @@
 import datetime
 import uuid
 
-from transactional_outbox.repository import PublishedMessage
+from transactional_outbox.outbox import PublishedMessage
 
 
 def test_create_published_message_model() -> None:
