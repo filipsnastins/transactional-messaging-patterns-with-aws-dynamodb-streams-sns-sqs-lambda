@@ -1,5 +1,5 @@
 import structlog
-from transactional_outbox.dynamodb.table import create_outbox_table
+from transactional_outbox.dynamodb import create_outbox_table
 from types_aiobotocore_dynamodb import DynamoDBClient
 from types_aiobotocore_iam import IAMClient
 from types_aiobotocore_lambda import LambdaClient
