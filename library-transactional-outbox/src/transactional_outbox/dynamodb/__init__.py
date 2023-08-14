@@ -1,5 +1,5 @@
-from transactional_outbox.dynamodb.repository import DynamoDBOutboxRepository
-from transactional_outbox.dynamodb.table import create_outbox_table
+from transactional_outbox.dynamodb.outbox import DynamoDBOutboxRepository
+from transactional_outbox.dynamodb.tables import create_outbox_table
 
 __all__ = [
     "DynamoDBOutboxRepository",

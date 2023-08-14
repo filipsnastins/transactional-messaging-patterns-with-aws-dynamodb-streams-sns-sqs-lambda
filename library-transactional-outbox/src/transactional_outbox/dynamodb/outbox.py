@@ -4,7 +4,7 @@ from typing import Any
 import structlog
 from unit_of_work.dynamodb import DynamoDBSession
 
-from transactional_outbox.repository import (
+from transactional_outbox.outbox import (
     Message,
     MessageAlreadyPublishedError,
     MessageNotFoundError,
