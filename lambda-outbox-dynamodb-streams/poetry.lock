@@ -2190,7 +2190,7 @@ sftp = ["asyncssh (>=2.13.2,<3.0.0)"]
 
 [[package]]
 name = "transactional-outbox"
-version = "0.0.0"
+version = "0.0.5"
 description = ""
 optional = false
 python-versions = "^3.11"
@@ -2728,7 +2728,7 @@ devenv = ["black", "check-manifest", "flake8", "pyroma", "pytest (>=4.3)", "pyte
 
 [[package]]
 name = "unit-of-work"
-version = "0.0.0"
+version = "0.0.1"
 description = ""
 optional = false
 python-versions = "^3.11"
