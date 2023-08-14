@@ -54,9 +54,9 @@ class ProductDynamoDBRepository(ProductRepository):
                 TableName=self._table_name,
                 Key={"PK": {"S": f"PRODUCT#{product_id}"}},
             )
-            if "Item" not in get_item_response:
+            item = get_item_response.get("Item")
+            if not item:
                 return None
-            item = get_item_response["Item"]
             return Product(
                 id=item["Id"]["S"],
                 name=item["Name"]["S"],
