@@ -4,9 +4,8 @@ from typing import Protocol
 import pytest
 import structlog
 
-from unit_of_work.dynamodb.client import DynamoDBClientFactory
-from unit_of_work.dynamodb.session import DynamoDBSession
-from unit_of_work.uow import AbstractUnitOfWork
+from unit_of_work import AbstractUnitOfWork
+from unit_of_work.dynamodb import DynamoDBClientFactory, DynamoDBSession
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 

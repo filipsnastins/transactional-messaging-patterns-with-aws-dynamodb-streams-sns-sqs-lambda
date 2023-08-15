@@ -1,7 +1,7 @@
 import copy
 import uuid
 
-from transactional_outbox.fakes import FakeOutboxRepository
+from transactional_outbox.fakes import FakeInboxRepository, FakeOutboxRepository
 
 from adapters.customer_repository import CustomerNotFoundError, CustomerRepository
 from customers.customer import Customer
@@ -28,10 +28,13 @@ class FakeCustomerRepository(CustomerRepository):
 
 class FakeUnitOfWork(UnitOfWork):
     customers: FakeCustomerRepository
+    inbox: FakeInboxRepository
     events: FakeOutboxRepository
 
-    def __init__(self) -> None:
+    def __init__(self, message_id: uuid.UUID | None = None) -> None:
+        super().__init__(message_id=message_id)
         self.customers = FakeCustomerRepository([])
+        self.inbox = FakeInboxRepository([])
         self.events = FakeOutboxRepository([])
         self.committed = False
 

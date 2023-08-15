@@ -3,8 +3,7 @@ import pytest_asyncio
 from botocore.exceptions import ClientError
 from types_aiobotocore_dynamodb.type_defs import TransactWriteItemTypeDef
 
-from unit_of_work.dynamodb import DynamoDBSession
-from unit_of_work.dynamodb.client import DynamoDBClientFactory
+from unit_of_work.dynamodb import DynamoDBClientFactory, DynamoDBSession
 
 pytestmark = pytest.mark.usefixtures("_create_dynamodb_table", "_reset_moto_container_on_teardown")
 

@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     aws_sns_topic_prefix: str = ""
     aws_sqs_queue_name_prefix: str = ""
     dynamodb_customers_table_name: str
+    dynamodb_inbox_table_name: str
     dynamodb_outbox_table_name: str
 
 
