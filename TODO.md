@@ -1,12 +1,12 @@
 # TODOs
 
-## Customers
+## service-customers
 
-...
+✅
 
-## Orders
+## service-orders
 
-...
+✅
 
 ## service-order-history
 
@@ -14,16 +14,15 @@
 
 ## Inbox
 
-- [ ] Inbox table - idempotent consumer pattern
-  - Order Created, Order Released, Order Created (received again)
+✅
 
 ## Outbox
 
-...
+✅
 
 ## Unit of Work
 
-...
+✅
 
 ## Lambda
 
