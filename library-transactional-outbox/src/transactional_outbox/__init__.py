@@ -1,8 +1,8 @@
-from transactional_outbox.outbox import Message, MessageAlreadyPublishedError, OutboxRepository, PublishedMessage
+from transactional_outbox.idempotent_consumer import InboxRepository, ensure_idempotence
+from transactional_outbox.outbox import OutboxRepository
 
 __all__ = [
-    "Message",
-    "MessageAlreadyPublishedError",
+    "InboxRepository",
     "OutboxRepository",
-    "PublishedMessage",
+    "ensure_idempotence",
 ]
