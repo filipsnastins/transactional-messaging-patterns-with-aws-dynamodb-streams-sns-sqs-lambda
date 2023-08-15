@@ -6,7 +6,6 @@ import structlog
 
 from unit_of_work.dynamodb.client import DynamoDBClientFactory
 from unit_of_work.dynamodb.session import DynamoDBSession
-from unit_of_work.dynamodb.uow import BaseDynamoDBUnitOfWork
 from unit_of_work.uow import AbstractUnitOfWork
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
@@ -70,12 +69,21 @@ class UnitOfWork(AbstractUnitOfWork):
         return self
 
 
-class DynamoDBUnitOfWork(UnitOfWork, BaseDynamoDBUnitOfWork):
+class DynamoDBUnitOfWork(UnitOfWork):
+    session: DynamoDBSession
     products: ProductDynamoDBRepository
 
     def __init__(self, client_factory: DynamoDBClientFactory) -> None:
-        super().__init__(client_factory)
+        self.session = DynamoDBSession(client_factory)
         self.products = ProductDynamoDBRepository(table_name="test-table", session=self.session)
+
+    async def commit(self) -> None:
+        await self.session.commit()
+        logger.info("dynamodb_unit_of_work__committed")
+
+    async def rollback(self) -> None:
+        self.session.rollback()
+        logger.info("dynamodb_unit_of_work__rolled_back")
 
 
 @pytest.mark.asyncio()
