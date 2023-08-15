@@ -1,7 +1,7 @@
 import copy
 import uuid
 
-from transactional_outbox.fakes import FakeOutboxRepository
+from transactional_outbox.fakes import FakeInboxRepository, FakeOutboxRepository
 
 from adapters.order_repository import OrderAlreadyExistsError, OrderNotFoundError, OrderRepository
 from orders.order import Order
@@ -30,11 +30,13 @@ class FakeOrderRepository(OrderRepository):
 
 class FakeUnitOfWork(UnitOfWork):
     orders: FakeOrderRepository
+    inbox: FakeInboxRepository
     events: FakeOutboxRepository
 
     def __init__(self, message_id: uuid.UUID | None = None) -> None:
         super().__init__(message_id=message_id)
         self.orders = FakeOrderRepository([])
+        self.inbox = FakeInboxRepository([])
         self.events = FakeOutboxRepository([])
         self.committed = False
 
