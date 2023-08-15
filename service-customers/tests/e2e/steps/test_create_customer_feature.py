@@ -29,7 +29,7 @@ def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, customer_da
             "credit_limit": customer_data["credit_limit"],
         }
 
-        return await http_client.post("/customers", json=data)
+        return await http_client.post("/customers", json=data, timeout=10)
 
     return event_loop.run_until_complete(_async())
 

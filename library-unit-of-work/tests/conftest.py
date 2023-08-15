@@ -4,7 +4,7 @@ from aiobotocore.session import get_session
 from tomodachi_testcontainers.containers import MotoContainer
 from types_aiobotocore_dynamodb import DynamoDBClient
 
-from unit_of_work.dynamodb.client import DynamoDBClientFactory
+from unit_of_work.dynamodb import DynamoDBClientFactory
 
 
 @pytest.fixture()
