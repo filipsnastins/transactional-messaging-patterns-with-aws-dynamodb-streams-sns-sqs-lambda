@@ -17,6 +17,7 @@ services:
       AWS_SECRET_ACCESS_KEY: testing
       AWS_ENDPOINT_URL: http://localstack:4566
       DYNAMODB_CUSTOMERS_TABLE_NAME: customers
+      DYNAMODB_INBOX_TABLE_NAME: customers-inbox
       DYNAMODB_OUTBOX_TABLE_NAME: customers-outbox
   orders:
     build:
@@ -34,6 +35,7 @@ services:
       AWS_SECRET_ACCESS_KEY: testing
       AWS_ENDPOINT_URL: http://localstack:4566
       DYNAMODB_ORDERS_TABLE_NAME: orders
+      DYNAMODB_INBOX_TABLE_NAME: orders-inbox
       DYNAMODB_OUTBOX_TABLE_NAME: orders-outbox
   localstack:
     image: localstack/localstack:2.2.0

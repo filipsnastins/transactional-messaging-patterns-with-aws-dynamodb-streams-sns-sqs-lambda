@@ -1,6 +1,14 @@
 # tomodachi-transactional-outbox
 
-- Get Lambda logs when running application stack locally with Docker Compose
+## Run locally with Docker Compose
+
+- Start applications
+
+```bash
+docker compose up
+```
+
+- Get outbox lambda logs
 
 ```bash
 awslocal --region=us-east-1 logs describe-log-groups
@@ -24,7 +32,7 @@ awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--order
 
   ```bash
   curl -X POST --header "Content-Type: application/json" -d '{
-    "customer_id": "b4a630f7-7fdf-4c5e-8b07-f165f6b2eac5",
+    "customer_id": "b15658af-1643-4e59-b709-bb970b3a8f08",
     "order_total": 100
   }' http://localhost:9702/orders
   ```
