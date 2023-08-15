@@ -28,7 +28,7 @@ def _(
             "order_total": int(Money(order_total).to_sub_units()),
         }
 
-        return await http_client.post("/orders", json=data)
+        return await http_client.post("/orders", json=data, timeout=10)
 
     return event_loop.run_until_complete(_async())
 

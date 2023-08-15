@@ -32,7 +32,8 @@ class FakeUnitOfWork(UnitOfWork):
     orders: FakeOrderRepository
     events: FakeOutboxRepository
 
-    def __init__(self) -> None:
+    def __init__(self, message_id: uuid.UUID | None = None) -> None:
+        super().__init__(message_id=message_id)
         self.orders = FakeOrderRepository([])
         self.events = FakeOutboxRepository([])
         self.committed = False
