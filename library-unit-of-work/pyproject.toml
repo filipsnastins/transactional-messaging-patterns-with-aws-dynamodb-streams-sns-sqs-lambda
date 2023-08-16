@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "unit-of-work"
-version = "0.0.2"
+version = "0.0.4"
 description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 structlog = "^23.1.0"
 types-aiobotocore = { extras = ["dynamodb"], version = "^2.5.2" }
 
@@ -51,7 +51,7 @@ test-ci = "dev:test_ci"
 
 [tool.black]
 line-length = 120
-target-version = ['py311']
+target-version = ['py310']
 include = '\.pyi?$'
 exclude = '\.git/|\.mypy_cache/|\.venv/|\.pytest_cache/|\.vscode/|__pycache__/|build/|dist/'
 
@@ -85,7 +85,7 @@ exclude_dirs = [
 ]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.10"
 ignore_missing_imports = true
 
 [tool.flake8]
@@ -105,7 +105,7 @@ exclude = [
 ]
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py310"
 exclude = [
     ".bzr",
     ".direnv",
