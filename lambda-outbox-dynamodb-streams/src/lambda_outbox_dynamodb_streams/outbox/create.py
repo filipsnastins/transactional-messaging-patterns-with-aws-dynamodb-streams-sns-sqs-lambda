@@ -41,6 +41,7 @@ async def create_dynamodb_streams_outbox(
         function_name=f"dynamodb-streams--{dynamodb_table_name}",
         environment_variables=environment_variables,
         lambda_role_arn=lambda_role_arn,
+        handler="app.lambda_function.lambda_handler",
         s3_bucket_name=s3_bucket_name,
         s3_lambda_key=s3_lambda_key,
     )

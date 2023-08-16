@@ -26,6 +26,7 @@ async def create_lambda_function(
     function_name: str,
     environment_variables: dict[str, str],
     lambda_role_arn: str,
+    handler: str,
     s3_bucket_name: str,
     s3_lambda_key: str,
 ) -> FunctionConfigurationResponseTypeDef:
@@ -33,7 +34,7 @@ async def create_lambda_function(
         FunctionName=f"lambda-{function_name}",
         Runtime="python3.10",
         Role=lambda_role_arn,
-        Handler="app.lambda_function.lambda_handler",
+        Handler=handler,
         Code={"S3Bucket": s3_bucket_name, "S3Key": s3_lambda_key},
         Publish=True,
         Timeout=30,

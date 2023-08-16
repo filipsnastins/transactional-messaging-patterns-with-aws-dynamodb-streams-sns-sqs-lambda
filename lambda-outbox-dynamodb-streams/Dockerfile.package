@@ -1,0 +1,32 @@
+FROM mlupin/docker-lambda:python3.10-build AS python-base
+WORKDIR /lambda
+ARG VIRTUAL_ENV=/opt/venv
+ENV VIRTUAL_ENV=$VIRTUAL_ENV \
+    PATH=$VIRTUAL_ENV/bin:$PATH \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONBUFFERED=1 \
+    PYTHONPATH=/lambda/src:$PYTHONPATH
+
+FROM python-base AS dependencies-base
+ARG PIP_VERSION=23.2
+ARG POETRY_VERSION=1.5.1
+RUN python -m pip install --no-cache-dir -U \
+    "pip==$PIP_VERSION" \
+    "poetry==$POETRY_VERSION" && \
+    virtualenv "$VIRTUAL_ENV"
+COPY --link lambda-outbox-dynamodb-streams/pyproject.toml lambda-outbox-dynamodb-streams/poetry.lock ./
+COPY --link library-transactional-outbox ../library-transactional-outbox
+COPY --link library-unit-of-work ../library-unit-of-work
+RUN poetry install --with lambda --without dev
+
+FROM dependencies-base AS build-package
+WORKDIR /package
+RUN yum install -y zip && \
+    yum clean all
+COPY --link lambda-outbox-dynamodb-streams/src/lambda_outbox_dynamodb_streams/app ./app
+COPY --link --from=dependencies-base  /lambda .
+COPY --link --from=dependencies-base /opt/venv/lib/python3.10/site-packages .
+RUN zip -r /opt/lambda_outbox_dynamodb_streams.zip .
+
+FROM scratch as package
+COPY --from=build-package /opt/lambda_outbox_dynamodb_streams.zip /lambda_outbox_dynamodb_streams.zip
