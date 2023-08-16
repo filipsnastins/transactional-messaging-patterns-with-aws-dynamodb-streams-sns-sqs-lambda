@@ -2,7 +2,7 @@ import datetime
 
 
 def utcnow() -> datetime.datetime:
-    return datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
+    return datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
 
 
 def datetime_to_str(dt: datetime.datetime) -> str:
