@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "transactional-outbox"
-version = "0.0.7"
+version = "0.0.10"
 description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 structlog = "^23.1.0"
 types-aiobotocore = { extras = ["dynamodb"], version = "^2.5.2" }
 unit-of-work = { path = "../library-unit-of-work" }
