@@ -1,27 +1,24 @@
-import datetime
 import uuid
-from dataclasses import dataclass
-from typing import Any
 
-from aws_lambda_powertools.utilities.data_classes.dynamo_db_stream_event import StreamRecord
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.data_classes.dynamo_db_stream_event import DynamoDBRecord
+from transactional_outbox.outbox import PublishedMessage
+
+from .time import str_to_datetime
+
+logger = Logger()
 
 
-@dataclass
-class Message:
-    message_id: uuid.UUID
-    aggregate_id: uuid.UUID
-    correlation_id: uuid.UUID
-    topic: str
-    message: str
-    created_at: datetime.datetime
-
-    @staticmethod
-    def from_stream_record(record: StreamRecord | dict[str, Any]) -> "Message":
-        return Message(
-            message_id=uuid.UUID(record["MessageId"]),
-            aggregate_id=uuid.UUID(record["AggregateId"]),
-            correlation_id=uuid.UUID(record["CorrelationId"]),
-            topic=record["Topic"],
-            message=record["Message"],
-            created_at=datetime.datetime.fromisoformat(record["CreatedAt"]).replace(tzinfo=datetime.timezone.utc),
+def create_published_message_from_stream_record(record: DynamoDBRecord) -> PublishedMessage:
+    if record.dynamodb and record.dynamodb.new_image:
+        return PublishedMessage(
+            message_id=uuid.UUID(record.dynamodb.new_image["MessageId"]),
+            aggregate_id=uuid.UUID(record.dynamodb.new_image["AggregateId"]),
+            correlation_id=uuid.UUID(record.dynamodb.new_image["CorrelationId"]),
+            topic=record.dynamodb.new_image["Topic"],
+            message=record.dynamodb.new_image["Message"],
+            created_at=str_to_datetime(record.dynamodb.new_image["CreatedAt"]),
+            is_dispatched=False,
+            dispatched_at=None,
         )
+    raise ValueError("PublishedMessage not created from stream record")
