@@ -107,27 +107,15 @@ exclude = [
 [tool.ruff]
 target-version = "py310"
 exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
     ".git",
-    ".git-rewrite",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pytype",
     ".ruff_cache",
-    ".svn",
-    ".tox",
+    ".mypy_cache",
     ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
+    ".pytest_cache",
+    ".vscode",
+    "__pycache__",
     "build",
     "dist",
-    "node_modules",
-    "venv",
 ]
 line-length = 120
 
