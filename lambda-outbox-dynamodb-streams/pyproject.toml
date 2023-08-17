@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lambda-outbox-dynamodb-streams"
-version = "0.0.11"
+version = "0.0.18"
 description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
@@ -8,6 +8,8 @@ authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 python = "^3.10"
 aiobotocore = "^2.5.4"
 aws-lambda-powertools = "^2.22.0"
+pydantic = "^2.1.1"
+pydantic-settings = "^2.0.3"
 tomodachi = "^0.25.1"
 types-aiobotocore = { extras = [
     "dynamodb",

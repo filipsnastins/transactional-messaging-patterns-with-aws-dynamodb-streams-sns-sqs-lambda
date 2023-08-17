@@ -5,6 +5,7 @@ from types_aiobotocore_dynamodb import DynamoDBClient
 from types_aiobotocore_iam import IAMClient
 from types_aiobotocore_iam.type_defs import CreateRoleResponseTypeDef
 from types_aiobotocore_lambda import LambdaClient
+from types_aiobotocore_lambda.literals import ArchitectureType
 from types_aiobotocore_lambda.type_defs import FunctionConfigurationResponseTypeDef
 from types_aiobotocore_s3 import S3Client
 
@@ -29,6 +30,7 @@ async def create_lambda_function(
     handler: str,
     s3_bucket_name: str,
     s3_lambda_key: str,
+    architecture: ArchitectureType,
 ) -> FunctionConfigurationResponseTypeDef:
     return await lambda_client.create_function(
         FunctionName=f"lambda-{function_name}",
@@ -40,6 +42,7 @@ async def create_lambda_function(
         Timeout=30,
         MemorySize=256,
         Environment={"Variables": environment_variables},
+        Architectures=[architecture],
     )
 
 

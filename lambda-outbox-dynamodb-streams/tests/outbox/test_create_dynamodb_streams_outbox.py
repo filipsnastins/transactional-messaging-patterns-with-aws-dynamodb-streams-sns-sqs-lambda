@@ -21,6 +21,8 @@ pytestmark = pytest.mark.usefixtures(
     "_environment", "_create_topics_and_queues", "_create_outbox_table", "_reset_moto_container_on_teardown"
 )
 
+# Package Lambda as ZIP for changes in Lambda code to take effect
+
 
 @pytest.mark.asyncio()
 async def test_create_dynamodb_streams_outbox(
