@@ -28,10 +28,11 @@ async def create_dynamodb_streams_outbox() -> None:
             iam_client,
             dynamodb_client,
             s3_client,
-            environment_variables={
-                "AWS_REGION": settings.aws_region,
-                "AWS_ENDPOINT_URL": settings.aws_endpoint_url or "",
-                "DYNAMODB_OUTBOX_TABLE_NAME": dynamodb_table_name,
-            },
-            dynamodb_table_name=dynamodb_table_name,
+            settings=outbox.Settings(
+                dynamodb_outbox_table_name=dynamodb_table_name,
+                aws_region=settings.aws_region,
+                aws_access_key_id=settings.aws_access_key_id,
+                aws_secret_access_key=settings.aws_secret_access_key,
+                aws_endpoint_url=settings.aws_endpoint_url,
+            ),
         )

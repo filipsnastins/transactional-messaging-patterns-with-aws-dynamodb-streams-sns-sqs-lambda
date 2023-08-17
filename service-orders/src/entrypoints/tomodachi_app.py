@@ -44,6 +44,7 @@ class TomodachiService(tomodachi.Service):
         await sns.create_topics()
         await dynamodb.create_orders_table()
         await inbox.create_inbox_table()
+        await outbox.create_outbox_table()
         await outbox.create_dynamodb_streams_outbox()
 
     @tomodachi.http("GET", r"/orders/health/?", ignore_logging=[200])

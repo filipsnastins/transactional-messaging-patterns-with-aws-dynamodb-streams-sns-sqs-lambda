@@ -283,6 +283,27 @@ files = [
 pyflakes = ">=3.0.0"
 
 [[package]]
+name = "aws-lambda-powertools"
+version = "2.22.0"
+description = "Powertools for AWS Lambda (Python) is a developer toolkit to implement Serverless best practices and increase developer velocity."
+optional = false
+python-versions = ">=3.7.4,<4.0.0"
+files = [
+    {file = "aws_lambda_powertools-2.22.0-py3-none-any.whl", hash = "sha256:eae1f1c961893dab5d1e75ffb44d9b58f6426cb148aa39413b04cf36ae46fbe3"},
+    {file = "aws_lambda_powertools-2.22.0.tar.gz", hash = "sha256:0fd535251454b1bd68dbff65e3ed56aa567f3841011e2afbd557b125596a6814"},
+]
+
+[package.dependencies]
+typing-extensions = ">=4.6.2,<5.0.0"
+
+[package.extras]
+all = ["aws-xray-sdk (>=2.8.0,<3.0.0)", "fastjsonschema (>=2.14.5,<3.0.0)", "pydantic (>=1.8.2,<2.0.0)"]
+aws-sdk = ["boto3 (>=1.20.32,<2.0.0)"]
+parser = ["pydantic (>=1.8.2,<2.0.0)"]
+tracer = ["aws-xray-sdk (>=2.8.0,<3.0.0)"]
+validation = ["fastjsonschema (>=2.14.5,<3.0.0)"]
+
+[[package]]
 name = "bandit"
 version = "1.7.5"
 description = "Security oriented static analyser for python code."
@@ -370,13 +391,13 @@ crt = ["awscrt (==0.16.26)"]
 
 [[package]]
 name = "botocore-stubs"
-version = "1.31.27"
+version = "1.31.28"
 description = "Type annotations and code completion for botocore"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "botocore_stubs-1.31.27-py3-none-any.whl", hash = "sha256:a70662d238fa30a27960886eef03d96d14f103a408b0decddd7e351d88f7d4a3"},
-    {file = "botocore_stubs-1.31.27.tar.gz", hash = "sha256:3c7d316ce756fd3a3726fca98f1acc2845c3f76928ed026c59e832f2a18028bb"},
+    {file = "botocore_stubs-1.31.28-py3-none-any.whl", hash = "sha256:cb5d7e4e8c4ad8b70f082083275514c8fba02acda6932a7b69faeac7970284e0"},
+    {file = "botocore_stubs-1.31.28.tar.gz", hash = "sha256:9dc92576e3109c76d58df3916c74ae1cc4883984ea502302be6fce33f73f7981"},
 ]
 
 [package.dependencies]
@@ -1076,7 +1097,7 @@ files = [
 
 [[package]]
 name = "lambda-outbox-dynamodb-streams"
-version = "0.0.9"
+version = "0.0.18"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -1084,7 +1105,11 @@ files = []
 develop = false
 
 [package.dependencies]
-structlog = "^23.1.0"
+aiobotocore = "^2.5.4"
+aws-lambda-powertools = "^2.22.0"
+pydantic = "^2.1.1"
+pydantic-settings = "^2.0.3"
+tomodachi = "^0.25.1"
 transactional-outbox = {path = "../library-transactional-outbox"}
 types-aiobotocore = {version = "^2.6.0", extras = ["dynamodb", "iam", "lambda", "s3", "sns"]}
 
