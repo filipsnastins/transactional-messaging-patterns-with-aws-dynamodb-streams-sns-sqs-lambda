@@ -32,7 +32,7 @@ awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--order
 
   ```bash
   curl -X POST --header "Content-Type: application/json" -d '{
-    "customer_id": "b15658af-1643-4e59-b709-bb970b3a8f08",
+    "customer_id": "56ec0470-0339-4004-9c99-42caadf5a076",
     "order_total": 100
   }' http://localhost:9702/orders
   ```
@@ -54,6 +54,26 @@ awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--order
   ```bash
   curl -X POST http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c/cancel
   ```
+
+## Notes on running Outbox Lambda in a local environment or autotests
+
+### Moto: `arm64` vs `amd64` Lambda architecture
+
+Seems that Moto ignores specified Lambda architecture name, and uses whichever `mlupin/docker-lambda` Docker image
+is pulled to the local Docker daemon. If you get errors that outbox messages are not dispatched, try to
+delete locally cached `mlupin/docker-lambda` images and pull them again for your machines architecture.
+
+No such problems observed with LocalStack.
+
+### Moto: marking messages as dispatched doesn't work with Moto
+
+When Outbox Lambda is trying to mark a message as dispatched, Lambda goes into an infinite loop.
+That's why marking messages as dispatched is disabled when running Outbox Lambda in local environment or autotests.
+
+Seems that it happens because Moto publishes DynamoDB stream message before it returns a successful response on
+DynamoDB `put_item` operation, but further debugging in Moto is required.
+
+No such problems observed with LocalStack.
 
 ## Resources and acknowledgements
 
