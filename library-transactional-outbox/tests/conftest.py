@@ -5,7 +5,7 @@ from tomodachi_testcontainers.containers import MotoContainer
 from types_aiobotocore_dynamodb import DynamoDBClient
 from unit_of_work.dynamodb import DynamoDBClientFactory, DynamoDBSession
 
-from transactional_outbox.dynamodb import create_outbox_table
+from transactional_outbox.dynamodb import create_inbox_table, create_outbox_table
 
 
 @pytest.fixture()
@@ -20,7 +20,7 @@ async def _create_outbox_table(moto_dynamodb_client: DynamoDBClient) -> None:
 
 @pytest_asyncio.fixture()
 async def _create_inbox_table(moto_dynamodb_client: DynamoDBClient) -> None:
-    await create_outbox_table(table_name="orders-inbox", client=moto_dynamodb_client)
+    await create_inbox_table(table_name="orders-inbox", client=moto_dynamodb_client)
 
 
 @pytest.fixture()
