@@ -1,12 +1,14 @@
 [tool.poetry]
 name = "lambda-outbox-dynamodb-streams"
-version = "0.0.9"
+version = "0.0.11"
 description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-structlog = "^23.1.0"
+aiobotocore = "^2.5.4"
+aws-lambda-powertools = "^2.22.0"
+tomodachi = "^0.25.1"
 types-aiobotocore = { extras = [
     "dynamodb",
     "iam",
@@ -16,15 +18,12 @@ types-aiobotocore = { extras = [
 ], version = "^2.6.0" }
 transactional-outbox = { path = "../library-transactional-outbox" }
 
-[tool.poetry.group.lambda]
+[tool.poetry.group.outbox]
 optional = true
 
-[tool.poetry.group.lambda.dependencies]
-aiobotocore = "^2.5.4"
-aws-lambda-powertools = "^2.22.0"
-pydantic = "^2.1.1"
-pydantic-settings = "^2.0.3"
-tomodachi = "^0.25.1"
+[tool.poetry.group.outbox.dependencies]
+structlog = "^23.1.0"
+types-aiobotocore = { extras = ["iam", "lambda", "s3"], version = "^2.6.0" }
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "^2.2.0"
@@ -52,6 +51,7 @@ pylint = "^2.17.4"
 pytest = "^7.4.0"
 pytest-asyncio = "^0.21.1"
 pytest-cov = "^4.1.0"
+pytest-env = "^0.8.2"
 pytest-mock = "^3.11.1"
 ruff = "^0.0.277"
 tomodachi-testcontainers = "^0.5.0"
@@ -124,29 +124,25 @@ exclude = [
 [tool.ruff]
 target-version = "py311"
 exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
     ".git",
-    ".git-rewrite",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pytype",
     ".ruff_cache",
-    ".svn",
-    ".tox",
+    ".mypy_cache",
     ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
+    ".pytest_cache",
+    ".vscode",
+    "__pycache__",
     "build",
     "dist",
-    "node_modules",
-    "venv",
 ]
 line-length = 120
 
 [tool.pytest.ini_options]
 log_level = "INFO"
+env = [
+    # Set dummy AWS credentials so that we don't accidentally mutate real infrastructure
+    "AWS_DEFAULT_REGION=us-east-1",
+    "AWS_ACCESS_KEY_ID=testing",
+    "AWS_SECRET_ACCESS_KEY=testing",
+    "AWS_SECURITY_TOKEN=testing",
+    "AWS_SESSION_TOKEN=testing",
+]

@@ -17,7 +17,7 @@ RUN python -m pip install --no-cache-dir -U \
 COPY --link lambda-outbox-dynamodb-streams/pyproject.toml lambda-outbox-dynamodb-streams/poetry.lock ./
 COPY --link library-transactional-outbox ../library-transactional-outbox
 COPY --link library-unit-of-work ../library-unit-of-work
-RUN poetry install --with lambda --without dev
+RUN poetry install --without dev
 
 FROM dependencies-base AS build-package
 WORKDIR /package

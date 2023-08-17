@@ -2,10 +2,15 @@ import pytest
 import pytest_asyncio
 from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.containers import MotoContainer
-from transactional_outbox.dynamodb import create_outbox_table
+from transactional_outbox.dynamodb import DynamoDBOutboxRepository, create_outbox_table
 from types_aiobotocore_dynamodb import DynamoDBClient
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
+from unit_of_work.dynamodb import DynamoDBSession
+
+from lambda_outbox_dynamodb_streams.app import clients
+from lambda_outbox_dynamodb_streams.app.settings import get_settings
+from tests.fakes import SampleMessage
 
 
 @pytest.fixture()
@@ -34,3 +39,15 @@ async def _create_topics_and_queues(moto_sns_client: SNSClient, moto_sqs_client:
         topic="test-topic",
         queue="test-queue",
     )
+
+
+@pytest.fixture()
+def session() -> DynamoDBSession:
+    return DynamoDBSession(clients.get_dynamodb_client)
+
+
+@pytest.fixture()
+def outbox_repository(session: DynamoDBSession) -> DynamoDBOutboxRepository:
+    dynamodb_table_name = get_settings().dynamodb_outbox_table_name
+    topic_map = {SampleMessage: "test-topic"}
+    return DynamoDBOutboxRepository(dynamodb_table_name, session, topic_map)

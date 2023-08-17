@@ -31,10 +31,10 @@ async def envelope_json_message(message: PublishedMessage) -> str:
     return await JsonBase.build_message(service={}, topic=message.topic, data=json.loads(message.message))
 
 
-async def dispatch_sns_message(
+async def dispatch_message(
     sns_client: SNSClient, message: PublishedMessage, envelope_handler: EnvelopeHandler, topics_cache: TopicsCache
 ) -> None:
     topic_arn = await topics_cache.get_or_create_topic(message.topic, sns_client)
     envelope = await envelope_handler(message)
     await sns_client.publish(Message=envelope, TopicArn=topic_arn)
-    logger.info("sns_message_dispatched", message_id=message.message_id, topic_arn=topic_arn)
+    logger.info("message_dispatched", message_id=message.message_id, topic_name=message.topic, topic_arn=topic_arn)

@@ -11,7 +11,7 @@ from transactional_outbox.outbox import PublishedMessage
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
 
-from lambda_outbox_dynamodb_streams.app.dispatch import TopicsCache, dispatch_sns_message, envelope_json_message
+from lambda_outbox_dynamodb_streams.app.dispatch import TopicsCache, dispatch_message, envelope_json_message
 from lambda_outbox_dynamodb_streams.app.time import utcnow
 
 pytestmark = pytest.mark.usefixtures("_create_topics_and_queues", "_reset_moto_container_on_teardown")
@@ -74,7 +74,7 @@ async def test_dispatch_message(moto_sns_client: SNSClient, moto_sqs_client: SQS
         dispatched_at=None,
     )
 
-    await dispatch_sns_message(moto_sns_client, message, envelope_json_message, topics_cache)
+    await dispatch_message(moto_sns_client, message, envelope_json_message, topics_cache)
 
     async def _assert_message_received() -> None:
         [message] = await snssqs_client.receive(moto_sqs_client, "test-queue", JsonBase, dict[str, str])
