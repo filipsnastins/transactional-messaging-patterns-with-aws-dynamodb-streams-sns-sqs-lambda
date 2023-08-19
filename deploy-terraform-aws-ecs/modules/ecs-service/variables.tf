@@ -42,11 +42,11 @@ variable "ecs_task_execution_role_arn" {
   type = string
 }
 
-variable "memory" {
+variable "cpu" {
   type = number
 }
 
-variable "cpu" {
+variable "memory" {
   type = number
 }
 
