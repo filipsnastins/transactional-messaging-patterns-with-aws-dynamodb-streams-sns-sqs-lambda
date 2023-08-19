@@ -15,11 +15,13 @@ from . import clients
 from .dispatch import TopicsCache, dispatch_message, envelope_json_message
 from .message import create_published_message_from_stream_record
 from .outbox_repository import create_outbox_repository
+from .settings import get_settings
 
 logger = Logger()
 
+settings = get_settings()
 processor = AsyncBatchProcessor(event_type=EventType.DynamoDBStreams)
-topics_cache = TopicsCache()
+topics_cache = TopicsCache(topic_name_prefix=settings.aws_sns_topic_prefix)
 
 
 # Moto doesn't work well when the item from the same table is updated -

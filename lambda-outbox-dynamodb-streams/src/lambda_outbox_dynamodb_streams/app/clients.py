@@ -10,19 +10,12 @@ session: AioSession = get_session()
 
 class AWSClientConfig(BaseModel):
     region_name: str
-    aws_access_key_id: str | None = None
-    aws_secret_access_key: str | None = None
     endpoint_url: str | None = None
 
     @staticmethod
     def create() -> "AWSClientConfig":
         settings = get_settings()
-        return AWSClientConfig(
-            region_name=settings.aws_region,
-            aws_access_key_id=settings.aws_access_key_id,
-            aws_secret_access_key=settings.aws_secret_access_key,
-            endpoint_url=settings.aws_endpoint_url,
-        )
+        return AWSClientConfig(region_name=settings.aws_region, endpoint_url=settings.aws_endpoint_url)
 
 
 def get_dynamodb_client() -> DynamoDBClient:

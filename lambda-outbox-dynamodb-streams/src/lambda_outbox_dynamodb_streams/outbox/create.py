@@ -23,9 +23,8 @@ logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 class Settings:
     dynamodb_outbox_table_name: str
     aws_region: str
-    aws_access_key_id: str | None = None
-    aws_secret_access_key: str | None = None
     aws_endpoint_url: str | None = None
+    aws_sns_topic_prefix: str = ""
 
 
 async def create_dynamodb_streams_outbox(  # pylint: disable=too-many-locals
@@ -50,15 +49,12 @@ async def create_dynamodb_streams_outbox(  # pylint: disable=too-many-locals
     s3_lambda_key = await upload_lambda_to_s3(s3_client, s3_bucket_name=s3_bucket_name, lambda_zip_path=lambda_zip_path)
 
     environment_variables = {
-        "AWS_REGION": settings.aws_region,
         "DYNAMODB_OUTBOX_TABLE_NAME": dynamodb_table_name,
+        "AWS_SNS_TOPIC_PREFIX": settings.aws_sns_topic_prefix,
+        "AWS_REGION": settings.aws_region,
     }
     if skip_mark_messages_as_dispatched:
         environment_variables["OUTBOX_SKIP_MARK_MESSAGES_AS_DISPATCHED"] = "1"
-    if settings.aws_access_key_id:
-        environment_variables["AWS_ACCESS_KEY_ID"] = settings.aws_access_key_id
-    if settings.aws_secret_access_key:
-        environment_variables["AWS_SECRET_ACCESS_KEY"] = settings.aws_secret_access_key
     if settings.aws_endpoint_url:
         environment_variables["AWS_ENDPOINT_URL"] = settings.aws_endpoint_url
 

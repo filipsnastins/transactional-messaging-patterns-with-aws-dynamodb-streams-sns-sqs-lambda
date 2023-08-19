@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lambda-outbox-dynamodb-streams"
-version = "0.0.18"
+version = "0.0.19"
 description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
@@ -147,4 +147,8 @@ env = [
     "AWS_SECRET_ACCESS_KEY=testing",
     "AWS_SECURITY_TOKEN=testing",
     "AWS_SESSION_TOKEN=testing",
+    # Test configuration
+    "AWS_REGION=us-east-1",
+    "AWS_SNS_TOPIC_PREFIX=autotest-",
+    "DYNAMODB_OUTBOX_TABLE_NAME=outbox",
 ]

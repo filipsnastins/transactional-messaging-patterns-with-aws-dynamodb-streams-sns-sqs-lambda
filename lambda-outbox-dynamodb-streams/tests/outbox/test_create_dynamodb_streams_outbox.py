@@ -46,16 +46,15 @@ async def test_create_dynamodb_streams_outbox(
         settings=Settings(
             dynamodb_outbox_table_name="outbox",
             aws_region=aws_config["region_name"],
-            aws_access_key_id=aws_config["aws_access_key_id"],
-            aws_secret_access_key=aws_config["aws_secret_access_key"],
             aws_endpoint_url=moto_container.get_internal_url(),
+            aws_sns_topic_prefix="autotest-",
         ),
     )
     await outbox_repository.publish([message])
     await session.commit()
 
     async def _receive_sns_message() -> None:
-        [message] = await snssqs_client.receive(moto_sqs_client, "test-queue", JsonBase, dict[str, Any])
+        [message] = await snssqs_client.receive(moto_sqs_client, "autotest-test-queue", JsonBase, dict[str, Any])
 
         assert message == {"message": "test-message"}
 
