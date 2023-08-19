@@ -8,8 +8,10 @@ module "service_orders_ecs" {
   region      = var.region
   environment = var.environment
 
+  revision = 9
+
   service_name   = "orders"
-  port           = 9700
+  container_port = 9700
   vpc_id         = module.vpc.id
   vpc_subnet_ids = module.vpc.subnet_ids
 
@@ -29,11 +31,33 @@ module "service_orders_ecs" {
   environment_variables = [
     { "name" : "ENVIRONMENT", "value" : var.environment },
     { "name" : "AWS_REGION", "value" : var.region },
-    { "name" : "AWS_SNS_TOPIC_PREFIX", "value" : var.environment },
-    { "name" : "AWS_SQS_QUEUE_NAME_PREFIX", "value" : var.environment },
+    { "name" : "AWS_SNS_TOPIC_PREFIX", "value" : "${var.environment}-" },
+    { "name" : "AWS_SQS_QUEUE_NAME_PREFIX", "value" : "${var.environment}-" },
     { "name" : "DYNAMODB_ORDERS_TABLE_NAME", "value" : aws_dynamodb_table.service_orders_dynamodb_table.name },
     { "name" : "DYNAMODB_INBOX_TABLE_NAME", "value" : module.service_orders_dynamodb_inbox_table.name },
     { "name" : "DYNAMODB_OUTBOX_TABLE_NAME", "value" : module.service_orders_dynamodb_outbox_table.name },
+  ]
+
+  grant_dynamodb_permissions = [
+    aws_dynamodb_table.service_orders_dynamodb_table.arn,
+    module.service_orders_dynamodb_inbox_table.arn,
+    module.service_orders_dynamodb_outbox_table.arn,
+  ]
+
+  create_sns_topics = [
+    "order--approved",
+    "order--cancelled",
+    "order--created",
+    "order--rejected",
+    "customer--credit-reserved",
+    "customer--credit-reservation-failed",
+    "customer--validation-failed",
+  ]
+
+  create_and_subscribe_sqs_queues = [
+    { "topic" : "customer--credit-reserved", queue = "order--customer-credit-reserved" },
+    { "topic" : "customer--credit-reservation-failed", queue = "order--customer-credit-reservation-failed" },
+    { "topic" : "customer--validation-failed", queue = "order--customer-validation-failed" },
   ]
 }
 
@@ -43,10 +67,32 @@ resource "aws_dynamodb_table" "service_orders_dynamodb_table" {
 
   hash_key = "PK"
 
+  point_in_time_recovery {
+    enabled = true
+  }
+
   attribute {
     name = "PK"
     type = "S"
   }
+}
+
+module "service_orders_lambda_outbox_dynamodb_streams" {
+  source = "../modules/lambda-outbox-dynamodb-streams"
+
+  environment  = var.environment
+  service_name = "orders"
+
+  dynamodb_outbox_table_name       = module.service_orders_dynamodb_outbox_table.name
+  dynamodb_outbox_table_arn        = module.service_orders_dynamodb_outbox_table.arn
+  dynamodb_outbox_table_stream_arn = module.service_orders_dynamodb_outbox_table.stream_arn
+
+  create_sns_topics = [
+    "order--approved",
+    "order--cancelled",
+    "order--created",
+    "order--rejected",
+  ]
 }
 
 module "service_orders_dynamodb_inbox_table" {
