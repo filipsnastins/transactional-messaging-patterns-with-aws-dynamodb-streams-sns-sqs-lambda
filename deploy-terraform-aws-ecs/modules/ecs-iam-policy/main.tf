@@ -13,6 +13,7 @@ data "aws_iam_policy_document" "ecsCloudWatchLogs_policy" {
       "logs:DescribeLogStreams"
     ]
 
+    # tfsec:ignore:aws-iam-no-policy-wildcards
     resources = [
       "arn:aws:logs:*:*:*"
     ]

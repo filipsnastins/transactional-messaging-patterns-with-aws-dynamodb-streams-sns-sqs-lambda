@@ -2,6 +2,7 @@ locals {
   customers_table_name = "${var.environment}-customers"
 }
 
+# tfsec:ignore:aws-ecr-enforce-immutable-repository
 module "service_customers_ecs" {
   source = "../modules/ecs-service"
 
@@ -66,6 +67,10 @@ resource "aws_dynamodb_table" "service_customers_dynamodb_table" {
   hash_key = "PK"
 
   point_in_time_recovery {
+    enabled = true
+  }
+
+  server_side_encryption {
     enabled = true
   }
 

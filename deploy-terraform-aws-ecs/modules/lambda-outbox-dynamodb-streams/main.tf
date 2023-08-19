@@ -12,6 +12,7 @@ resource "aws_sqs_queue" "dead_letter_queue" {
   name = "${var.environment}-dynamodb-streams-outbox--${var.service_name}--dlq"
 
   message_retention_seconds = 1209600 # 14 days
+  kms_master_key_id         = "alias/aws/sqs"
 }
 
 # IAM Role
@@ -141,7 +142,7 @@ resource "aws_lambda_function" "default" {
 resource "aws_lambda_function_event_invoke_config" "default" {
   function_name                = aws_lambda_function.default.function_name
   maximum_event_age_in_seconds = var.maximum_event_age_in_seconds
-  maximum_retry_attempts       = 2
+  maximum_retry_attempts       = 0
 }
 
 # Event Source Mapping; DynamoDB Streams --> Lambda

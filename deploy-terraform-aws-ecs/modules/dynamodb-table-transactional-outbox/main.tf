@@ -10,6 +10,10 @@ resource "aws_dynamodb_table" "default" {
     enabled = true
   }
 
+  server_side_encryption {
+    enabled = true
+  }
+
   attribute {
     name = "PK"
     type = "S"
