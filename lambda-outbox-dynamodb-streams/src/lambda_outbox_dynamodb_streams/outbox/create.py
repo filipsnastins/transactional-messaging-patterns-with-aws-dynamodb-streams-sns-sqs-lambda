@@ -22,7 +22,6 @@ logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 @dataclass
 class Settings:
     dynamodb_outbox_table_name: str
-    aws_region: str
     aws_endpoint_url: str | None = None
     aws_sns_topic_prefix: str = ""
 
@@ -51,7 +50,6 @@ async def create_dynamodb_streams_outbox(  # pylint: disable=too-many-locals
     environment_variables = {
         "DYNAMODB_OUTBOX_TABLE_NAME": dynamodb_table_name,
         "AWS_SNS_TOPIC_PREFIX": settings.aws_sns_topic_prefix,
-        "AWS_REGION": settings.aws_region,
     }
     if skip_mark_messages_as_dispatched:
         environment_variables["OUTBOX_SKIP_MARK_MESSAGES_AS_DISPATCHED"] = "1"

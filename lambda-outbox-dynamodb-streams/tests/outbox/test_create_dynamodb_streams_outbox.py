@@ -45,7 +45,6 @@ async def test_create_dynamodb_streams_outbox(
         moto_s3_client,
         settings=Settings(
             dynamodb_outbox_table_name="outbox",
-            aws_region=aws_config["region_name"],
             aws_endpoint_url=moto_container.get_internal_url(),
             aws_sns_topic_prefix="autotest-",
         ),
