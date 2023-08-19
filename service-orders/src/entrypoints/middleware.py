@@ -31,7 +31,7 @@ async def message_correlation_id_middleware(func: Callable, *args: Any, **kwargs
     return await func(*args, **kwargs, correlation_id=correlation_id)
 
 
-async def structlog_logger_middleware(func: Callable, *args: Any, **kwargs: Any) -> Any:
+async def structlog_middleware(func: Callable, *args: Any, **kwargs: Any) -> Any:
     correlation_id = kwargs.get("correlation_id", uuid.uuid4())
     if not isinstance(correlation_id, uuid.UUID):
         correlation_id = uuid.UUID(correlation_id)
