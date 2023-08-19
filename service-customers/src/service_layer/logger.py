@@ -1,6 +1,7 @@
 import logging
 import sys
 import uuid
+from typing import Literal
 
 import structlog
 from structlog.types import EventDict
@@ -13,7 +14,7 @@ def cast_uuid_to_str(logger: logging.Logger, method_name: str, event_dict: Event
     return event_dict
 
 
-def configure_structlog(log_level: int = logging.INFO) -> None:
+def configure_structlog(renderer: Literal["json", "dev"] = "json", log_level: int = logging.INFO) -> None:
     processors = [
         structlog.contextvars.merge_contextvars,
         cast_uuid_to_str,
@@ -21,12 +22,30 @@ def configure_structlog(log_level: int = logging.INFO) -> None:
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.StackInfoRenderer(),
         structlog.processors.UnicodeDecoder(),
-        structlog.processors.ExceptionRenderer(),
-        structlog.processors.ExceptionPrettyPrinter(),
-        structlog.dev.ConsoleRenderer(),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
     ]
+    if renderer == "json":
+        processors.extend(
+            [
+                structlog.processors.dict_tracebacks,
+                structlog.processors.JSONRenderer(),
+            ]
+        )
+    elif renderer == "dev":
+        processors.extend(
+            [
+                structlog.processors.ExceptionPrettyPrinter(),
+                structlog.dev.ConsoleRenderer(),
+            ]
+        )
+    else:
+        processors.extend(
+            [
+                structlog.processors.KeyValueRenderer(),
+            ]
+        )
     logging.basicConfig(format="%(message)s", stream=sys.stdout, level=log_level)
     structlog.configure(
         processors=processors,  # type: ignore
