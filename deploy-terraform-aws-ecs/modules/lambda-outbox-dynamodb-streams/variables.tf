@@ -49,5 +49,5 @@ variable "parallelization_factor" {
 
 variable "maximum_event_age_in_seconds" {
   type    = number
-  default = 1800 # 30 minutes
+  default = 3600 # 1 hour
 }

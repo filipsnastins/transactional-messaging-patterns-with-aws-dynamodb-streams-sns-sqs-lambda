@@ -22,6 +22,8 @@ repos:
       - id: terraform_fmt
       - id: terraform_validate
       - id: terraform_tflint
+        args:
+          - --args=--config=__GIT_WORKING_DIR__/deploy-terraform-aws-ecs/.tflint.hcl
       - id: terraform_tfsec
         args:
-          - --args=--config-file=__GIT_WORKING_DIR__/deploy-terraform-aws-ecs/tfsec.yml
+          - --args=--config-file=__GIT_WORKING_DIR__/deploy-terraform-aws-ecs/.tfsec.yml

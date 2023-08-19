@@ -1,7 +1,0 @@
----
-minimum_severity: MEDIUM
-exclude:
-  - aws-sqs-queue-encryption-use-cmk
-  - aws-sns-topic-encryption-use-cmk
-  - aws-ec2-require-vpc-flow-logs-for-all-vpcs
-  - aws-ecr-enable-image-scans
