@@ -142,7 +142,7 @@ resource "aws_lambda_function" "default" {
 resource "aws_lambda_function_event_invoke_config" "default" {
   function_name                = aws_lambda_function.default.function_name
   maximum_event_age_in_seconds = var.maximum_event_age_in_seconds
-  maximum_retry_attempts       = 0
+  maximum_retry_attempts       = 2
 }
 
 # Event Source Mapping; DynamoDB Streams --> Lambda
@@ -158,4 +158,10 @@ resource "aws_lambda_event_source_mapping" "default" {
   batch_size             = var.batch_size
   maximum_retry_attempts = var.maximum_retry_attempts
   parallelization_factor = var.parallelization_factor
+
+  destination_config {
+    on_failure {
+      destination_arn = aws_sqs_queue.dead_letter_queue.arn
+    }
+  }
 }

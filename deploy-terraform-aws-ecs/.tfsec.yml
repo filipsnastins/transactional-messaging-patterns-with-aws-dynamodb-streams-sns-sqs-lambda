@@ -1,0 +1,11 @@
+---
+exclude:
+  - aws-dynamodb-table-customer-key
+  - aws-ec2-add-description-to-security-group
+  - aws-ec2-add-description-to-security-group-rule
+  - aws-ec2-require-vpc-flow-logs-for-all-vpcs
+  - aws-ecr-enable-image-scans
+  - aws-ecr-repository-customer-key
+  - aws-ecs-enable-container-insight
+  - aws-sns-topic-encryption-use-cmk
+  - aws-sqs-queue-encryption-use-cmk
