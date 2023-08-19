@@ -12,7 +12,7 @@ from entrypoints.middleware import (
     http_correlation_id_middleware,
     message_correlation_id_middleware,
     message_retry_middleware,
-    structlog_logger_middleware,
+    structlog_middleware,
 )
 from service_layer import use_cases, views
 from service_layer.logger import configure_structlog
@@ -31,17 +31,20 @@ class TomodachiService(tomodachi.Service):
 
     http_middleware: list = [
         http_correlation_id_middleware,
-        structlog_logger_middleware,
+        structlog_middleware,
     ]
     message_middleware: list = [
         message_retry_middleware,
         message_correlation_id_middleware,
-        structlog_logger_middleware,
+        structlog_middleware,
     ]
 
     def __init__(self) -> None:
-        configure_structlog()
         self.settings = get_settings()
+
+        self.is_dev_env = self.settings.environment in ["development", "autotest"]
+        configure_structlog(renderer="dev" if self.is_dev_env else "json")
+
         self.options = tomodachi.Options(
             aws_endpoint_urls=tomodachi.Options.AWSEndpointURLs(
                 sns=self.settings.aws_endpoint_url,
@@ -57,7 +60,7 @@ class TomodachiService(tomodachi.Service):
         )
 
     async def _start_service(self) -> None:
-        if self.settings.environment in ["development", "autotest"]:
+        if self.is_dev_env:
             await sns.create_topics()
             await dynamodb.create_customers_table()
             await inbox.create_inbox_table()
