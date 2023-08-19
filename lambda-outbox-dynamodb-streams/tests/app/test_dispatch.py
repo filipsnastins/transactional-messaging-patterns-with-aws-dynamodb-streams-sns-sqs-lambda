@@ -20,23 +20,23 @@ pytestmark = pytest.mark.usefixtures("_create_topics_and_queues", "_reset_moto_c
 @pytest.mark.asyncio()
 async def test_topics_cache__topic_created_on_first_call(moto_sns_client: SNSClient, mocker: MockerFixture) -> None:
     client_spy = mocker.spy(moto_sns_client, "create_topic")
-    topics_cache = TopicsCache()
+    topics_cache = TopicsCache(topic_name_prefix="autotest-")
 
     topic_arn = await topics_cache.get_or_create_topic("test-topic", moto_sns_client)
 
-    assert topic_arn == "arn:aws:sns:us-east-1:123456789012:test-topic"
-    assert client_spy.call_args == call(Name="test-topic")
+    assert topic_arn == "arn:aws:sns:us-east-1:123456789012:autotest-test-topic"
+    assert client_spy.call_args == call(Name="autotest-test-topic")
 
 
 @pytest.mark.asyncio()
 async def test_topics_cache__cache_hit_on_second_call(moto_sns_client: SNSClient, mocker: MockerFixture) -> None:
-    topics_cache = TopicsCache()
+    topics_cache = TopicsCache(topic_name_prefix="autotest-")
     await topics_cache.get_or_create_topic("test-topic", moto_sns_client)
     client_spy = mocker.spy(moto_sns_client, "create_topic")
 
     topic_arn = await topics_cache.get_or_create_topic("test-topic", moto_sns_client)
 
-    assert topic_arn == "arn:aws:sns:us-east-1:123456789012:test-topic"
+    assert topic_arn == "arn:aws:sns:us-east-1:123456789012:autotest-test-topic"
     assert client_spy.call_count == 0
 
 
@@ -62,7 +62,7 @@ async def test_envelope_json_message() -> None:
 
 @pytest.mark.asyncio()
 async def test_dispatch_message(moto_sns_client: SNSClient, moto_sqs_client: SQSClient) -> None:
-    topics_cache = TopicsCache()
+    topics_cache = TopicsCache(topic_name_prefix="autotest-")
     message = PublishedMessage(
         message_id=uuid.uuid4(),
         aggregate_id=uuid.uuid4(),
@@ -77,7 +77,7 @@ async def test_dispatch_message(moto_sns_client: SNSClient, moto_sqs_client: SQS
     await dispatch_message(moto_sns_client, message, envelope_json_message, topics_cache)
 
     async def _assert_message_received() -> None:
-        [message] = await snssqs_client.receive(moto_sqs_client, "test-queue", JsonBase, dict[str, str])
+        [message] = await snssqs_client.receive(moto_sqs_client, "autotest-test-queue", JsonBase, dict[str, str])
 
         assert message == {"message": "test-message"}
 

@@ -15,16 +15,20 @@ EnvelopeHandler = Callable[[PublishedMessage], Awaitable[str]]
 
 
 class TopicsCache:
-    def __init__(self) -> None:
+    def __init__(self, topic_name_prefix: str) -> None:
+        self._topic_name_prefix = topic_name_prefix
         self._topics: dict[TopicName, TopicArn] = {}
 
     async def get_or_create_topic(self, topic: str, client: SNSClient) -> str:
         topic_arn = self._topics.get(topic)
         if topic_arn is None:
-            create_topic_response = await client.create_topic(Name=topic)
+            create_topic_response = await client.create_topic(Name=self._prefix_topic(topic))
             topic_arn = create_topic_response["TopicArn"]
             self._topics[topic] = topic_arn
         return topic_arn
+
+    def _prefix_topic(self, topic: str) -> str:
+        return f"{self._topic_name_prefix}{topic}"
 
 
 async def envelope_json_message(message: PublishedMessage) -> str:
@@ -32,9 +36,9 @@ async def envelope_json_message(message: PublishedMessage) -> str:
 
 
 async def dispatch_message(
-    sns_client: SNSClient, message: PublishedMessage, envelope_handler: EnvelopeHandler, topics_cache: TopicsCache
+    client: SNSClient, message: PublishedMessage, envelope_handler: EnvelopeHandler, topics_cache: TopicsCache
 ) -> None:
-    topic_arn = await topics_cache.get_or_create_topic(message.topic, sns_client)
+    topic_arn = await topics_cache.get_or_create_topic(topic=message.topic, client=client)
     envelope = await envelope_handler(message)
-    await sns_client.publish(Message=envelope, TopicArn=topic_arn)
+    await client.publish(Message=envelope, TopicArn=topic_arn)
     logger.info("message_dispatched", message_id=message.message_id, topic_name=message.topic, topic_arn=topic_arn)

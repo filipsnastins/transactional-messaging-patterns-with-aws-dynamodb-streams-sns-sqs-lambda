@@ -21,12 +21,13 @@ RUN poetry install --without dev
 
 FROM dependencies-base AS build-package
 WORKDIR /package
+# hadolint ignore=DL3033
 RUN yum install -y zip && \
     yum clean all
 COPY --link lambda-outbox-dynamodb-streams/src/lambda_outbox_dynamodb_streams/app ./app
 COPY --link --from=dependencies-base  /lambda .
 COPY --link --from=dependencies-base /opt/venv/lib/python3.10/site-packages .
-RUN zip -r /opt/lambda_outbox_dynamodb_streams_${AWS_EXECUTION_ARCH}.zip .
+RUN zip -r "/opt/lambda_outbox_dynamodb_streams_${AWS_EXECUTION_ARCH}.zip" .
 
 FROM scratch as package
-COPY --from=build-package /opt/lambda_outbox_dynamodb_streams_*.zip .
+COPY --from=build-package /opt/lambda_outbox_dynamodb_streams_*.zip /

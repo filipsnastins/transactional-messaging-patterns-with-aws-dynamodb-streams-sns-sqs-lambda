@@ -26,7 +26,7 @@ async def test_dynamodb_insert_event__message_dispatched(
     await async_record_handler(record)
 
     async def _assert_message_received() -> None:
-        [message] = await snssqs_client.receive(moto_sqs_client, "test-queue", JsonBase, dict[str, str])
+        [message] = await snssqs_client.receive(moto_sqs_client, "autotest-test-queue", JsonBase, dict[str, str])
 
         assert message == {"message": "test-message"}
 
@@ -58,7 +58,7 @@ async def test_dynamodb_update_event__not_insert_message_skipped(moto_sqs_client
     await async_record_handler(record)
 
     async def _assert_message_received() -> None:
-        messages = await snssqs_client.receive(moto_sqs_client, "test-queue", JsonBase, dict[str, str])
+        messages = await snssqs_client.receive(moto_sqs_client, "autotest-test-queue", JsonBase, dict[str, str])
 
         assert len(messages) == 0
 
