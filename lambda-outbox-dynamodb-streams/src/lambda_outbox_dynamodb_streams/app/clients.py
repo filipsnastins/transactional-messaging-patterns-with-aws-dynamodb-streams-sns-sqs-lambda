@@ -9,13 +9,12 @@ session: AioSession = get_session()
 
 
 class AWSClientConfig(BaseModel):
-    region_name: str
     endpoint_url: str | None = None
 
     @staticmethod
     def create() -> "AWSClientConfig":
         settings = get_settings()
-        return AWSClientConfig(region_name=settings.aws_region, endpoint_url=settings.aws_endpoint_url)
+        return AWSClientConfig(endpoint_url=settings.aws_endpoint_url)
 
 
 def get_dynamodb_client() -> DynamoDBClient:
