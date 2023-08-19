@@ -24,6 +24,7 @@
 
 ## Outbox
 
+- [ ] Tomodachi SQS consumer doesn't work when SQS encryption is enabled by Terraform?
 - [ ] Increase DispatchedCount when marking a message as dispatched
 - [ ] A script to manually publish not dispatched messages
 - [ ] How to resend DynamoDB Streams Iterator from DLQ to the Outbox Lambda?

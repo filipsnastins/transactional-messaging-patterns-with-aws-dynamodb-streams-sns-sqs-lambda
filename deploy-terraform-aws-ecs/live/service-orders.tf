@@ -9,7 +9,7 @@ module "service_orders_ecs" {
   region      = var.region
   environment = var.environment
 
-  revision = 9
+  revision = 11
 
   service_name   = "orders"
   container_port = 9700

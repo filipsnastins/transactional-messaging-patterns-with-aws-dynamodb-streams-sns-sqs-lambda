@@ -12,7 +12,7 @@ resource "aws_sqs_queue" "dead_letter_queue" {
   name = "${var.environment}-dynamodb-streams-outbox--${var.service_name}--dlq"
 
   message_retention_seconds = 1209600 # 14 days
-  kms_master_key_id         = "alias/aws/sqs"
+  # kms_master_key_id         = "alias/aws/sqs"
 }
 
 # IAM Role
