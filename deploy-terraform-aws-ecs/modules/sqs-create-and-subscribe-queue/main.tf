@@ -6,12 +6,14 @@ resource "aws_sqs_queue" "source_queue" {
   name = "${var.environment}-${var.queue_name}"
 
   message_retention_seconds = local.message_retention_seconds
+  kms_master_key_id         = "alias/aws/sqs"
 }
 
 resource "aws_sqs_queue" "dead_letter_queue" {
   name = "${var.environment}-${var.queue_name}--dlq"
 
   message_retention_seconds = local.message_retention_seconds
+  kms_master_key_id         = "alias/aws/sqs"
 
   redrive_allow_policy = jsonencode({
     redrivePermission = "byQueue",

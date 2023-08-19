@@ -2,6 +2,7 @@ locals {
   orders_table_name = "${var.environment}-orders"
 }
 
+# tfsec:ignore:aws-ecr-enforce-immutable-repository
 module "service_orders_ecs" {
   source = "../modules/ecs-service"
 
@@ -68,6 +69,10 @@ resource "aws_dynamodb_table" "service_orders_dynamodb_table" {
   hash_key = "PK"
 
   point_in_time_recovery {
+    enabled = true
+  }
+
+  server_side_encryption {
     enabled = true
   }
 

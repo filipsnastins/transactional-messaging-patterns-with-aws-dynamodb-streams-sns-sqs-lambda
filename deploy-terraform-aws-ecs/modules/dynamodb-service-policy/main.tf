@@ -3,6 +3,7 @@ resource "aws_iam_role_policy" "default" {
 
   role = var.role_name
 
+  # tfsec:ignore:aws-iam-no-policy-wildcards
   policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [

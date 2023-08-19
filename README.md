@@ -17,6 +17,8 @@ awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--custo
 awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--orders-outbox
 ```
 
+- Check DynamoDB content with [DynamoDB Admin](https://github.com/aaronshaf/dynamodb-admin) at `http://localhost:8001`
+
 ## Sample requests
 
 - Create customer
@@ -55,6 +57,16 @@ awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--order
   curl -X POST http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c/cancel
   ```
 
+## Limitations
+
+- To save storage costs, Inbox and Outbox repositories should use `DynamoDB time-to-live`
+  to cleanup old items, for example, after one year.
+- If a published message payload exceeds DynamoDB item size limit of `400 KB`, message saving to the database will fail.
+  If large messages are expected, consider saving them in S3 and storing only a reference to the message in DynamoDB.
+  Read more in [Best practices for storing large items and attributes](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-use-s3-too.html).
+  The same bottleneck will occur in SQS too, so the same approach for transporting large SQS messages needs to be implemented.
+  Read more in [Managing large Amazon SQS messages using Amazon S3](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-s3-messages.html)
+
 ## Notes on running Outbox Lambda in a local environment or autotests
 
 ### Moto: `arm64` vs `amd64` Lambda architecture
@@ -90,3 +102,16 @@ No such problems observed with LocalStack.
   - [Clean Architectures in Python: A practical approach to better software design.](https://leanpub.com/clean-architectures-in-python) Book by Leonardo Giordani.
 - Articles:
   - ...
+
+## Development
+
+```bash
+brew install tflint
+brew install tfsec
+
+# Run commit hooks
+brew install pre-commit
+pre-commit install
+
+pre-commit run --all-files
+```
