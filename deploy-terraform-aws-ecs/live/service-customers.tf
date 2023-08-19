@@ -22,8 +22,8 @@ module "service_customers_ecs" {
   ecs_cluster_id              = module.ecs_cluster.id
   ecs_task_execution_role_arn = module.ecs_iam_policy.ecs_task_execution_role_arn
 
-  memory   = 512
   cpu      = 256
+  memory   = 512
   replicas = 1
 
   http_healthcheck_path    = "/customers/health"
