@@ -1,5 +1,11 @@
 # TODOs
 
+## Documentation
+
+- [ ] AWS architecture diagram
+- [ ] Simple transactional outbox and idempotent consumer diagram
+- [ ] Prose description
+
 ## service-customers
 
 ✅
@@ -19,6 +25,10 @@
 ## Outbox
 
 - [ ] Increase DispatchedCount when marking a message as dispatched
+- [ ] A script to manually publish not dispatched messages
+- [ ] How to resend DynamoDB Streams Iterator from DLQ to the Outbox Lambda?
+- [ ] CloudWatch alarm: NotDispatchedMessagesIndex - Lambda that's periodically checking for old, not dispatched messages
+- [ ] CloudWatch alarm: use Amazon CloudWatch on IteratorAge to determine if your Kinesis stream is being processed. For example, configure a CloudWatch alarm with a maximum setting to 30000 (30 seconds).
 
 ## Unit of Work
 
@@ -26,22 +36,13 @@
 
 ## Lambda
 
-...
+✅
 
 ## Tests
 
-- [ ] End-to-end tests
+- [ ] End-to-end tests - deploy to AWS autotest environment with Terratest and perform basic sanity checks
+- [ ] End-to-end tests - deploy local Docker Compose stack with Testcontainers and perform basic sanity checks
 
 ## Deploy
 
-- [x] Production-ready Terraform modules for deployment to ECS
-  - Deploy containers
-  - Deploy outbox lambda
-  - Create DynamoDB tables
-  - Create topics, queues and dead-letter-queues
-- [x] Add DLQ for outbox lambda
-- [ ] Refactor Terraform, explore [Lambda best practices](https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html)
-- [ ] Test Lambda + DLQ - how to retry failed DynamoDB stream messages
-- [ ] CloudWatch alarm on NotDispatchedMessagesIndex - scheduled lambda that's periodically checking for not dispatched messages
-- [ ] GitHub Actions workflows
-- [ ] Test Terraform modules with Terratest
+- [ ] GitHub Actions workflows for monorepo
