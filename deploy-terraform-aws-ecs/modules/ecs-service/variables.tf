@@ -11,7 +11,11 @@ variable "service_name" {
   type = string
 }
 
-variable "port" {
+variable "revision" {
+  type = string
+}
+
+variable "container_port" {
   type = number
 }
 
@@ -63,6 +67,22 @@ variable "environment_variables" {
   type = list(object({
     name  = string
     value = string
+  }))
+  default = []
+}
+
+variable "grant_dynamodb_permissions" {
+  type = list(string)
+}
+
+variable "create_sns_topics" {
+  type = list(string)
+}
+
+variable "create_and_subscribe_sqs_queues" {
+  type = list(object({
+    topic = string
+    queue = string
   }))
   default = []
 }

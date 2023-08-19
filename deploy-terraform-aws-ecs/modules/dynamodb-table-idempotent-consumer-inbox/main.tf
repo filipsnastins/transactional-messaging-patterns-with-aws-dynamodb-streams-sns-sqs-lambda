@@ -4,6 +4,10 @@ resource "aws_dynamodb_table" "default" {
 
   hash_key = "PK"
 
+  point_in_time_recovery {
+    enabled = true
+  }
+
   attribute {
     name = "PK"
     type = "S"
