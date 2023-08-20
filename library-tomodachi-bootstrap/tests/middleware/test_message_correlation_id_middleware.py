@@ -65,3 +65,23 @@ async def test_new_correlation_id_generated__other_message_type() -> None:
         assert isinstance(correlation_id, uuid.UUID)
 
     await message_correlation_id_middleware(_message_handler, message=message)
+
+
+@pytest.mark.asyncio()
+async def test_function_arguments_forwarded() -> None:
+    async def _message_handler(arg_1: str, correlation_id: uuid.UUID, kwarg_2: str = "") -> None:
+        assert arg_1 == "arg_1"
+        assert isinstance(correlation_id, uuid.UUID)
+        assert kwarg_2 == "kwarg_2"
+
+    await message_correlation_id_middleware(_message_handler, "arg_1", kwarg_2="kwarg_2")
+
+
+@pytest.mark.asyncio()
+async def test_function_return_value_forwarded() -> None:
+    async def _message_handler(correlation_id: uuid.UUID) -> str:
+        return "return_value"
+
+    response = await message_correlation_id_middleware(_message_handler)
+
+    assert response == "return_value"

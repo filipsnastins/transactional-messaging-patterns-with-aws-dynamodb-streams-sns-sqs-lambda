@@ -28,3 +28,13 @@ async def test_function_arguments_forwarded() -> None:
         assert kwarg_2 == "kwarg_2"
 
     await sns_sqs_message_retry_middleware(_passing_handler, "arg_1", kwarg_2="kwarg_2")
+
+
+@pytest.mark.asyncio()
+async def test_function_return_value_forwarded() -> None:
+    async def _passing_handler() -> str:
+        return "return_value"
+
+    response = await sns_sqs_message_retry_middleware(_passing_handler)
+
+    assert response == "return_value"
