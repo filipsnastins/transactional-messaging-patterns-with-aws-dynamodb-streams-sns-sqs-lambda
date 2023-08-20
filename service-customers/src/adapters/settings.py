@@ -1,16 +1,9 @@
 from functools import lru_cache
 
-from pydantic_settings import BaseSettings
+from tomodachi_bootstrap import TomodachiBaseSettings
 
 
-class Settings(BaseSettings):
-    environment: str
-    aws_region: str
-    aws_access_key_id: str | None = None
-    aws_secret_access_key: str | None = None
-    aws_endpoint_url: str | None = None
-    aws_sns_topic_prefix: str = ""
-    aws_sqs_queue_name_prefix: str = ""
+class Settings(TomodachiBaseSettings):
     dynamodb_customers_table_name: str
     dynamodb_inbox_table_name: str
     dynamodb_outbox_table_name: str

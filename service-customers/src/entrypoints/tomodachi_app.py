@@ -4,18 +4,11 @@ import tomodachi
 from aiohttp import web
 from stockholm import Money
 from tomodachi.envelope.json_base import JsonBase
+from tomodachi_bootstrap import TomodachiServiceBase
 
 from adapters import dynamodb, inbox, outbox, sns
-from adapters.settings import get_settings
 from customers.commands import CreateCustomerCommand, ReleaseCreditCommand, ReserveCreditCommand
-from entrypoints.middleware import (
-    http_correlation_id_middleware,
-    message_correlation_id_middleware,
-    message_retry_middleware,
-    structlog_middleware,
-)
 from service_layer import use_cases, views
-from service_layer.logger import configure_structlog
 from service_layer.response import ResponseTypes
 from service_layer.unit_of_work import DynamoDBUnitOfWork
 
@@ -26,38 +19,8 @@ STATUS_CODES: dict[ResponseTypes, int] = {
 }
 
 
-class TomodachiService(tomodachi.Service):
+class TomodachiService(TomodachiServiceBase):
     name = "service-customers"
-
-    http_middleware: list = [
-        http_correlation_id_middleware,
-        structlog_middleware,
-    ]
-    message_middleware: list = [
-        message_retry_middleware,
-        message_correlation_id_middleware,
-        structlog_middleware,
-    ]
-
-    def __init__(self) -> None:
-        self.settings = get_settings()
-
-        self.is_dev_env = self.settings.environment in ["development", "autotest"]
-        configure_structlog(renderer="dev" if self.is_dev_env else "json")
-
-        self.options = tomodachi.Options(
-            aws_endpoint_urls=tomodachi.Options.AWSEndpointURLs(
-                sns=self.settings.aws_endpoint_url,
-                sqs=self.settings.aws_endpoint_url,
-            ),
-            aws_sns_sqs=tomodachi.Options.AWSSNSSQS(
-                region_name=self.settings.aws_region,
-                aws_access_key_id=self.settings.aws_access_key_id,
-                aws_secret_access_key=self.settings.aws_secret_access_key,
-                topic_prefix=self.settings.aws_sns_topic_prefix,
-                queue_name_prefix=self.settings.aws_sqs_queue_name_prefix,
-            ),
-        )
 
     async def _start_service(self) -> None:
         if self.is_dev_env:
@@ -69,19 +32,11 @@ class TomodachiService(tomodachi.Service):
 
     @tomodachi.http("GET", r"/customers/health/?", ignore_logging=[200])
     async def healthcheck(self, request: web.Request, correlation_id: uuid.UUID) -> web.Response:
-        return web.json_response(
-            {"status": "ok"},
-            status=200,
-            headers={"X-Correlation-Id": str(correlation_id)},
-        )
+        return web.json_response({"status": "ok"}, status=20)
 
     @tomodachi.http_error(status_code=500)
     async def error_500(self, request: web.Request, correlation_id: uuid.UUID) -> web.Response:
-        return web.json_response(
-            {"error": ResponseTypes.SYSTEM_ERROR.value},
-            status=500,
-            headers={"X-Correlation-Id": str(correlation_id)},
-        )
+        return web.json_response({"error": ResponseTypes.SYSTEM_ERROR.value}, status=50)
 
     @tomodachi.http("POST", r"/customers")
     async def create_customer_handler(self, request: web.Request, correlation_id: uuid.UUID) -> web.Response:
@@ -93,11 +48,7 @@ class TomodachiService(tomodachi.Service):
                 credit_limit=Money.from_sub_units(int(data["credit_limit"])).as_decimal(),
             )
             response = await use_cases.create_customer(uow, cmd)
-            return web.json_response(
-                response.to_dict(),
-                status=STATUS_CODES[response.type],
-                headers={"X-Correlation-Id": str(correlation_id)},
-            )
+            return web.json_response(response.to_dict(), status=STATUS_CODES[response.type])
 
     @tomodachi.http("GET", r"/customer/(?P<customer_id>[^/]+?)/?")
     async def get_customer_handler(
@@ -105,11 +56,7 @@ class TomodachiService(tomodachi.Service):
     ) -> web.Response:
         async with DynamoDBUnitOfWork() as uow:
             response = await views.get_customer(uow, customer_id=uuid.UUID(customer_id))
-            return web.json_response(
-                response.to_dict(),
-                status=STATUS_CODES[response.type],
-                headers={"X-Correlation-Id": str(correlation_id)},
-            )
+            return web.json_response(response.to_dict(), status=STATUS_CODES[response.type])
 
     @tomodachi.aws_sns_sqs(
         "order--created",

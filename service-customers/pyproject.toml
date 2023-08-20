@@ -12,6 +12,7 @@ pydantic-settings = "^2.0.2"
 stockholm = "^0.5.5"
 structlog = "^23.1.0"
 tomodachi = "^0.25.1"
+tomodachi-bootstrap = { path = "../library-tomodachi-bootstrap" }
 transactional-outbox = { path = "../library-transactional-outbox" }
 types-aiobotocore = { extras = [
     "dynamodb",
