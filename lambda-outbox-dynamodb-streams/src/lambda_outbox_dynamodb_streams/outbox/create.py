@@ -58,7 +58,7 @@ async def create_dynamodb_streams_outbox(  # pylint: disable=too-many-locals
 
     create_lambda_function_response = await create_lambda_function(
         lambda_client,
-        function_name=f"dynamodb-streams--{dynamodb_table_name}",
+        function_name=f"outbox-dynamodb-streams--{dynamodb_table_name}",
         environment_variables=environment_variables,
         lambda_role_arn=lambda_role_arn,
         handler="app.lambda_function.lambda_handler",
