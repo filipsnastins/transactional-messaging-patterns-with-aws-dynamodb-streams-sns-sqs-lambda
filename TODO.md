@@ -25,17 +25,22 @@
 ## Outbox
 
 - [ ] Tomodachi SQS consumer doesn't work when SQS encryption is enabled by Terraform?
-- [ ] Increase ApproximateDispatchCount when marking a message as dispatched
-- [ ] A script to manually publish not dispatched messages
-- [ ] How to resend DynamoDB Streams Iterator from DLQ to the Outbox Lambda?
 - [ ] CloudWatch alarm: NotDispatchedMessagesIndex - Lambda that's periodically checking for old, not dispatched messages
 - [ ] CloudWatch alarm: use Amazon CloudWatch on IteratorAge to determine if your Kinesis stream is being processed. For example, configure a CloudWatch alarm with a maximum setting to 30000 (30 seconds).
+- [ ] How to resend DynamoDB Streams Iterator from DLQ to the Outbox Lambda?
+- [ ] A script to resend stuck, not dispatched messages.
+  - Invoke Lambda manually with simulated/manually assembled DynamoDB Streams event?
+- [ ] A script to manually re-publish already dispatched messages
+  - `OutboxRepository.mark_for_dispatch`
+    - [ ] Set `IsDispatched` to `false`, and let Lambda pickup `MODIFY` even and capture `OLD_IMAGE IsDispatched=true` and `NEW_IMAGE IsDispatched=false`; resend message automatically
+    - [ ] Add `NotDispatched=Y`
+    - [x] Rename `DispatchedAt` to `LastDispatchedAt`
 
 ## Unit of Work
 
 ✅
 
-## Lambda
+## Lambda Outbox DynamoDB Streams
 
 ✅
 

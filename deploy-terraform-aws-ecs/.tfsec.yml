@@ -10,3 +10,5 @@ exclude:
   - aws-ecs-enable-container-insight
   - aws-sns-topic-encryption-use-cmk
   - aws-sqs-queue-encryption-use-cmk
+  - aws-sns-enable-topic-encryption # TODO
+  - aws-sqs-enable-queue-encryption # TODO
