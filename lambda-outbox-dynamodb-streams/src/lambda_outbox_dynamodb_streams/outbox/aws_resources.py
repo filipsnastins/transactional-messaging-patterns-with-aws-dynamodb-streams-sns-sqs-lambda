@@ -33,7 +33,7 @@ async def create_lambda_function(
     architecture: ArchitectureType,
 ) -> FunctionConfigurationResponseTypeDef:
     return await lambda_client.create_function(
-        FunctionName=f"lambda-{function_name}",
+        FunctionName=function_name,
         Runtime="python3.10",
         Role=lambda_role_arn,
         Handler=handler,
@@ -52,7 +52,7 @@ async def create_lambda_dynamodb_streams_role(
     describe_table_response = await dynamodb_client.describe_table(TableName=dynamodb_table_name)
     table_arn = describe_table_response["Table"]["TableArn"]
     return await iam_client.create_role(
-        RoleName=f"role-lambda-dynamodb-streams--{dynamodb_table_name}",
+        RoleName=f"lambda-outbox-dynamodb-streams--{dynamodb_table_name}",
         AssumeRolePolicyDocument=json.dumps(
             {
                 "Version": "2012-10-17",

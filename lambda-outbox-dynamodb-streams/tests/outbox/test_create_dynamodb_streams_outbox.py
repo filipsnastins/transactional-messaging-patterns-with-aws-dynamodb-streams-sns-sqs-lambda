@@ -35,7 +35,6 @@ async def test_create_dynamodb_streams_outbox(
     session: DynamoDBSession,
     outbox_repository: DynamoDBOutboxRepository,
 ) -> None:
-    aws_config = moto_container.get_aws_client_config()
     message = message_factory()
 
     await create_dynamodb_streams_outbox(

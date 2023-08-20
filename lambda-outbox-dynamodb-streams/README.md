@@ -1,6 +1,6 @@
 # lambda-outbox-dynamodb-streams
 
-## Build Lambda `zip` package for local testing
+## Build Lambda `zip` package
 
 ```bash
 docker buildx build --platform linux/arm64 -f Dockerfile.package --target=package --output type=local,dest=$(pwd)/src/lambda_outbox_dynamodb_streams ..

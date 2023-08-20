@@ -13,7 +13,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 from . import clients
 from .dispatch import TopicsCache, dispatch_message, envelope_json_message
-from .message import create_published_message_from_stream_record
+from .message import create_published_message_from_dynamodb_stream_record
 from .outbox_repository import create_outbox_repository
 from .settings import get_settings
 
@@ -30,7 +30,7 @@ topics_cache = TopicsCache(topic_name_prefix=settings.aws_sns_topic_prefix)
 
 async def async_record_handler(record: DynamoDBRecord) -> None:
     if record.event_name == DynamoDBRecordEventName.INSERT:
-        published_message = create_published_message_from_stream_record(record)
+        published_message = create_published_message_from_dynamodb_stream_record(record)
 
         async with clients.get_sns_client() as sns_client:
             await dispatch_message(sns_client, published_message, envelope_json_message, topics_cache)

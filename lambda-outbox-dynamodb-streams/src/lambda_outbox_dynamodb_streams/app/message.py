@@ -9,7 +9,7 @@ from .time import str_to_datetime
 logger = Logger()
 
 
-def create_published_message_from_stream_record(record: DynamoDBRecord) -> PublishedMessage:
+def create_published_message_from_dynamodb_stream_record(record: DynamoDBRecord) -> PublishedMessage:
     if record.dynamodb and record.dynamodb.new_image:
         return PublishedMessage(
             message_id=uuid.UUID(record.dynamodb.new_image["MessageId"]),
@@ -18,7 +18,5 @@ def create_published_message_from_stream_record(record: DynamoDBRecord) -> Publi
             topic=record.dynamodb.new_image["Topic"],
             message=record.dynamodb.new_image["Message"],
             created_at=str_to_datetime(record.dynamodb.new_image["CreatedAt"]),
-            is_dispatched=False,
-            dispatched_at=None,
         )
     raise ValueError("PublishedMessage not created from stream record")

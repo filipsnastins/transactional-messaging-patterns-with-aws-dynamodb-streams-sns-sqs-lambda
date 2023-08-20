@@ -5,10 +5,10 @@ import uuid
 import pytest
 from aws_lambda_powertools.utilities.data_classes.dynamo_db_stream_event import DynamoDBRecord
 
-from lambda_outbox_dynamodb_streams.app.message import create_published_message_from_stream_record
+from lambda_outbox_dynamodb_streams.app.message import create_published_message_from_dynamodb_stream_record
 
 
-def test_create_published_message_from_stream_record() -> None:
+def test_create_published_message_from_dynamodb_stream_record() -> None:
     record = DynamoDBRecord(
         {
             "eventID": "1e8883d7812c4016b68a365ad51dd453",
@@ -37,7 +37,7 @@ def test_create_published_message_from_stream_record() -> None:
         }
     )
 
-    message = create_published_message_from_stream_record(record)
+    message = create_published_message_from_dynamodb_stream_record(record)
 
     assert message
     assert message.message_id == uuid.UUID("c79e7d16-4562-4350-ab53-f697bfc120e9")
@@ -72,4 +72,4 @@ async def test_value_error_if_new_image_not_provided() -> None:
     )
 
     with pytest.raises(ValueError, match="PublishedMessage not created from stream record"):
-        create_published_message_from_stream_record(record)
+        create_published_message_from_dynamodb_stream_record(record)
