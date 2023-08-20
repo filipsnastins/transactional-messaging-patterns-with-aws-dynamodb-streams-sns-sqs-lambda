@@ -1,6 +1,14 @@
 import tomodachi
 from pydantic_settings import BaseSettings
 
+from tomodachi_bootstrap.logger import configure_structlog
+from tomodachi_bootstrap.middleware import (
+    http_correlation_id_middleware,
+    message_correlation_id_middleware,
+    sns_sqs_message_retry_middleware,
+    structlog_middleware,
+)
+
 
 class TomodachiBaseSettings(BaseSettings):
     environment: str
@@ -17,9 +25,18 @@ class TomodachiBaseSettings(BaseSettings):
 
 
 class TomodachiServiceBase(tomodachi.Service):
+    http_middleware: list = [
+        http_correlation_id_middleware,
+        structlog_middleware,
+    ]
+    message_middleware: list = [
+        sns_sqs_message_retry_middleware,
+        message_correlation_id_middleware,
+        structlog_middleware,
+    ]
+
     def __init__(self) -> None:
         settings = TomodachiBaseSettings()  # type: ignore
-        self.is_dev_env = settings.is_dev_env
         self.options = tomodachi.Options(
             aws_endpoint_urls=tomodachi.Options.AWSEndpointURLs(
                 sns=settings.aws_endpoint_url,
@@ -33,3 +50,5 @@ class TomodachiServiceBase(tomodachi.Service):
                 queue_name_prefix=settings.aws_sqs_queue_name_prefix,
             ),
         )
+        self.is_dev_env = settings.is_dev_env
+        configure_structlog(renderer="dev" if self.is_dev_env else "json")
