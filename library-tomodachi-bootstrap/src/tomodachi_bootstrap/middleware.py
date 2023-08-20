@@ -3,7 +3,6 @@ from typing import Any, Callable
 
 import structlog
 from aiohttp import web
-from google.protobuf.message import Message as ProtobufMessage
 from tomodachi.transport.aws_sns_sqs import AWSSNSSQSInternalServiceError
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
@@ -44,7 +43,7 @@ async def message_correlation_id_middleware(func: Callable, *args: Any, **kwargs
 
     if isinstance(message, dict):
         correlation_id = message.get("data", {}).get("correlation_id", uuid.uuid4())
-    elif isinstance(message, ProtobufMessage) and hasattr(message, "correlation_id"):
+    elif hasattr(message, "correlation_id"):
         correlation_id = getattr(message, "correlation_id")
     else:
         correlation_id = uuid.uuid4()

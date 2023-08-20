@@ -2,8 +2,8 @@ import uuid
 
 import pytest
 
-from tests.middleware.proto_build.message_pb2 import MessageWithCorrelationId, MessageWithoutCorrelationId
-from tomodachi_bootstrap import message_correlation_id_middleware
+from tests.unit.middleware.proto_build.message_pb2 import MessageWithCorrelationId, MessageWithoutCorrelationId
+from tomodachi_bootstrap.middleware import message_correlation_id_middleware
 
 
 @pytest.mark.asyncio()

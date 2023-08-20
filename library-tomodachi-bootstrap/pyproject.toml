@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tomodachi-bootstrap"
-version = "0.0.1"
+version = "0.0.6"
 description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 

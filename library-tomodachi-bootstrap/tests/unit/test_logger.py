@@ -5,7 +5,7 @@ import uuid
 import pytest
 import structlog
 
-from tomodachi_bootstrap import configure_structlog
+from tomodachi_bootstrap.logger import configure_structlog
 
 
 def test_default_json_renderer(caplog: pytest.LogCaptureFixture) -> None:
@@ -18,12 +18,12 @@ def test_default_json_renderer(caplog: pytest.LogCaptureFixture) -> None:
 
     assert len(caplog.record_tuples) == 1
     record = caplog.record_tuples[0]
-    assert record[0] == "tests.test_logger"
+    assert record[0] == "tests.unit.test_logger"
     assert record[1] == logging.INFO
     payload = json.loads(record[2])
     assert payload == {
         "event": "test_log",
-        "logger": "tests.test_logger",
+        "logger": "tests.unit.test_logger",
         "level": "info",
         "timestamp": payload["timestamp"],
     }
