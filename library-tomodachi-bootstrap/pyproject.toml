@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tomodachi-bootstrap"
-version = "0.0.7"
+version = "0.0.8"
 description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
@@ -32,6 +32,7 @@ flake8-return = "^1.2.0"
 flake8-simplify = "^0.20.0"
 flake8-use-pathlib = "^0.3.0"
 flake8-warnings = "^0.4.0"
+httpx = "^0.24.1"
 isort = "^5.12.0"
 mypy = "^1.4.1"
 mypy-protobuf = "^3.5.0"
@@ -39,7 +40,9 @@ pylint = "^2.17.4"
 pytest = "^7.4.0"
 pytest-asyncio = "^0.21.1"
 pytest-cov = "^4.1.0"
+pytest-env = "^0.8.2"
 ruff = "^0.0.277"
+tomodachi-testcontainers = "^0.5.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -120,3 +123,17 @@ exclude = [
     "dist",
 ]
 line-length = 120
+
+[tool.pytest.ini_options]
+log_level = "INFO"
+env = [
+    # Set dummy AWS credentials so that we don't accidentally mutate real infrastructure
+    "AWS_DEFAULT_REGION=us-east-1",
+    "AWS_ACCESS_KEY_ID=testing",
+    "AWS_SECRET_ACCESS_KEY=testing",
+    "AWS_SECURITY_TOKEN=testing",
+    "AWS_SESSION_TOKEN=testing",
+    # Testcontainers configuration
+    "DOCKER_BUILDKIT=1",
+    "TOMODACHI_TESTCONTAINER_DOCKERFILE_PATH=./examples/Dockerfile",
+]
