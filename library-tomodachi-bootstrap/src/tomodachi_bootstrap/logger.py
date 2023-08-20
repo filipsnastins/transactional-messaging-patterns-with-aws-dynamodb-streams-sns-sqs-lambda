@@ -14,7 +14,7 @@ def cast_uuid_to_str_processor(logger: logging.Logger, method_name: str, event_d
     return event_dict
 
 
-def configure_structlog(renderer: Literal["json", "dev"] = "json", log_level: int = logging.INFO) -> None:
+def configure_structlog(renderer: Literal["json", "dev", "key-value"] = "json", log_level: int = logging.INFO) -> None:
     processors = [
         structlog.contextvars.merge_contextvars,
         cast_uuid_to_str_processor,
@@ -40,7 +40,7 @@ def configure_structlog(renderer: Literal["json", "dev"] = "json", log_level: in
                 structlog.dev.ConsoleRenderer(),
             ]
         )
-    else:
+    elif renderer == "key-value":
         processors.extend(
             [
                 structlog.processors.format_exc_info,
