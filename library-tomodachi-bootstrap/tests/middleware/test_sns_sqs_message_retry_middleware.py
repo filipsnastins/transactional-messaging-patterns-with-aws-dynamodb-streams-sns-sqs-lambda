@@ -1,7 +1,7 @@
 import pytest
 from tomodachi.transport.aws_sns_sqs import AWSSNSSQSInternalServiceError
 
-from tomodachi_bootstrap.middleware import sns_sqs_message_retry_middleware
+from tomodachi_bootstrap import sns_sqs_message_retry_middleware
 
 
 @pytest.mark.asyncio()

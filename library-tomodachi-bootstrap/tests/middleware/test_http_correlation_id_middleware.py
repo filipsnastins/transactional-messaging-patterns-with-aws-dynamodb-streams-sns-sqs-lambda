@@ -5,7 +5,7 @@ import pytest
 from aiohttp import web
 from structlog.testing import capture_logs
 
-from tomodachi_bootstrap.middleware import http_correlation_id_middleware
+from tomodachi_bootstrap import http_correlation_id_middleware
 
 
 @pytest.mark.asyncio()
