@@ -9,7 +9,7 @@ module "sns_topic" {
 
 # SQS Dead Letter Queue
 resource "aws_sqs_queue" "dead_letter_queue" {
-  name = "${var.environment}-dynamodb-streams-outbox--${var.service_name}--dlq"
+  name = "${var.environment}-outbox-dynamodb-streams--${var.service_name}--dlq"
 
   message_retention_seconds = 1209600 # 14 days
   # kms_master_key_id         = "alias/aws/sqs"
@@ -22,7 +22,7 @@ module "lambda_assume_role_policy" {
 
 resource "aws_iam_role" "default" {
   assume_role_policy = module.lambda_assume_role_policy.json
-  name               = "${var.environment}-dynamodb-streams-outbox--${var.service_name}"
+  name               = "${var.environment}-outbox-dynamodb-streams--${var.service_name}"
 }
 
 resource "aws_iam_role_policy_attachment" "aws_lambda_basic_execution_role" {
@@ -31,7 +31,7 @@ resource "aws_iam_role_policy_attachment" "aws_lambda_basic_execution_role" {
 }
 
 resource "aws_iam_role_policy" "dynamodb_policy" {
-  name = "${var.environment}-dynamodb-streams-outbox--${var.service_name}--dynamodb"
+  name = "${var.environment}-outbox-dynamodb-streams--${var.service_name}--dynamodb"
 
   role = aws_iam_role.default.name
 
@@ -68,7 +68,7 @@ resource "aws_iam_role_policy" "dynamodb_policy" {
 }
 
 resource "aws_iam_role_policy" "sns_policy" {
-  name = "${var.environment}-dynamodb-streams-outbox--${var.service_name}--sns"
+  name = "${var.environment}-outbox-dynamodb-streams--${var.service_name}--sns"
 
   role = aws_iam_role.default.name
 
@@ -85,7 +85,7 @@ resource "aws_iam_role_policy" "sns_policy" {
 }
 
 resource "aws_iam_role_policy" "sqs_policy" {
-  name = "${var.environment}-dynamodb-streams-outbox--${var.service_name}--sqs"
+  name = "${var.environment}-outbox-dynamodb-streams--${var.service_name}--sqs"
 
   role = aws_iam_role.default.name
 
@@ -107,7 +107,7 @@ data "local_file" "source" {
 }
 
 resource "aws_lambda_function" "default" {
-  function_name = "${var.environment}-dynamodb-streams-outbox--${var.service_name}"
+  function_name = "${var.environment}-outbox-dynamodb-streams--${var.service_name}"
   description   = "Transactional Outbox publisher - listens to DynamoDB Streams and publishes messages to SNS"
 
   role = aws_iam_role.default.arn
