@@ -78,12 +78,12 @@ class DynamoDBOutboxRepository(OutboxRepository):
                         "REMOVE NotDispatched "
                         "SET ApproximateDispatchCount = ApproximateDispatchCount + :Increment, "
                         "IsDispatched = :IsDispatched, "
-                        "DispatchedAt = :DispatchedAt"
+                        "LastDispatchedAt = :LastDispatchedAt"
                     ),
                     ExpressionAttributeValues={
                         ":Increment": {"N": "1"},
                         ":IsDispatched": {"BOOL": True},
-                        ":DispatchedAt": {"S": datetime_to_str(utcnow())},
+                        ":LastDispatchedAt": {"S": datetime_to_str(utcnow())},
                     },
                     ConditionExpression="attribute_exists(PK)",
                 )
@@ -123,7 +123,7 @@ class DynamoDBOutboxRepository(OutboxRepository):
             created_at=str_to_datetime(item["CreatedAt"]["S"]),
             approximate_dispatch_count=int(item["ApproximateDispatchCount"]["N"]),
             is_dispatched=bool(item["IsDispatched"]["BOOL"]),
-            dispatched_at=str_to_datetime(item["DispatchedAt"]["S"]) if item.get("DispatchedAt") else None,
+            last_dispatched_at=str_to_datetime(item["LastDispatchedAt"]["S"]) if item.get("LastDispatchedAt") else None,
         )
 
 

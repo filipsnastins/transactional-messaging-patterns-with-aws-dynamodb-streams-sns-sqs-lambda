@@ -14,7 +14,7 @@ def test_create_published_message_model() -> None:
         created_at=datetime.datetime(2021, 1, 1, 0, 0, 0, 0).replace(tzinfo=datetime.timezone.utc),
         approximate_dispatch_count=1,
         is_dispatched=True,
-        dispatched_at=datetime.datetime(2022, 1, 1, 0, 0, 0, 0).replace(tzinfo=datetime.timezone.utc),
+        last_dispatched_at=datetime.datetime(2022, 1, 1, 0, 0, 0, 0).replace(tzinfo=datetime.timezone.utc),
     )
 
     assert msg.message_id == uuid.UUID("a3f3a3a3-3a3a-3a3a-3a3a-3a3a3a3a3a3a")
@@ -25,4 +25,4 @@ def test_create_published_message_model() -> None:
     assert msg.created_at == datetime.datetime(2021, 1, 1, 0, 0, 0, 0).replace(tzinfo=datetime.timezone.utc)
     assert msg.approximate_dispatch_count == 1
     assert msg.is_dispatched is True
-    assert msg.dispatched_at == datetime.datetime(2022, 1, 1, 0, 0, 0, 0).replace(tzinfo=datetime.timezone.utc)
+    assert msg.last_dispatched_at == datetime.datetime(2022, 1, 1, 0, 0, 0, 0).replace(tzinfo=datetime.timezone.utc)

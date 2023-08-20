@@ -37,7 +37,7 @@ async def test_publish_message(repo: DynamoDBOutboxRepository, session: DynamoDB
     assert published_message.created_at == event.created_at
     assert published_message.approximate_dispatch_count == 0
     assert published_message.is_dispatched is False
-    assert published_message.dispatched_at is None
+    assert published_message.last_dispatched_at is None
 
 
 @pytest.mark.asyncio()
@@ -95,8 +95,8 @@ async def test_mark_as_dispatched(repo: DynamoDBOutboxRepository, session: Dynam
     assert published_message
     assert published_message.approximate_dispatch_count == 1
     assert published_message.is_dispatched is True
-    assert published_message.dispatched_at
-    assert datetime.timedelta(seconds=1) > utcnow() - published_message.dispatched_at
+    assert published_message.last_dispatched_at
+    assert datetime.timedelta(seconds=1) > utcnow() - published_message.last_dispatched_at
 
 
 @pytest.mark.asyncio()
