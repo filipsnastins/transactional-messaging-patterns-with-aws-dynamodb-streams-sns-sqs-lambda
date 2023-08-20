@@ -7,11 +7,10 @@ authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.11"
 lambda-outbox-dynamodb-streams = { path = "../lambda-outbox-dynamodb-streams" }
-pydantic = "^2.1.1"
-pydantic-settings = "^2.0.2"
 stockholm = "^0.5.5"
 structlog = "^23.1.0"
 tomodachi = "^0.25.0"
+tomodachi-bootstrap = { path = "../library-tomodachi-bootstrap" }
 transactional-outbox = { path = "../library-transactional-outbox" }
 types-aiobotocore = { extras = [
     "dynamodb",

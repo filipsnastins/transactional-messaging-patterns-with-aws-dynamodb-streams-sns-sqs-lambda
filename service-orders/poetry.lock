@@ -2182,6 +2182,25 @@ scheduler = ["asahi-extras"]
 uvloop = ["uvloop (>=0.14.0,<1.0.0)"]
 
 [[package]]
+name = "tomodachi-bootstrap"
+version = "0.0.6"
+description = ""
+optional = false
+python-versions = "^3.10"
+files = []
+develop = false
+
+[package.dependencies]
+pydantic = "^2.2.1"
+pydantic-settings = "^2.0.3"
+structlog = "^23.1.0"
+tomodachi = "^0.25.1"
+
+[package.source]
+type = "directory"
+url = "../library-tomodachi-bootstrap"
+
+[[package]]
 name = "tomodachi-testcontainers"
 version = "0.4.1"
 description = "Collection of Testcontainers, pytest fixtures and test clients for end-to-end/integration testing for Python Tomodachi framework. A great starting point to learn more about Testcontainers and necessity of integration testing."
@@ -2994,4 +3013,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "3e0d3304875854108658e02e73befeca6c5b7dad5451f026dd191f3918a73b68"
+content-hash = "3cabbd1a504258912c09b1ae2a9afed9a960844ebabb8fec6f35e751ef7bb3b7"
