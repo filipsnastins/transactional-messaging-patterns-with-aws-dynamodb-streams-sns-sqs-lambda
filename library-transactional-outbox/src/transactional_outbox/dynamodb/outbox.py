@@ -40,6 +40,7 @@ class DynamoDBOutboxRepository(OutboxRepository):
                             "Message": {"S": message.serialize()},
                             "CreatedAt": {"S": datetime_to_str(message.created_at)},
                             "NotDispatched": {"S": "Y"},
+                            "ApproximateDispatchCount": {"N": "0"},
                         },
                         "ConditionExpression": "attribute_not_exists(PK)",
                     }
@@ -73,9 +74,13 @@ class DynamoDBOutboxRepository(OutboxRepository):
                     TableName=self._table_name,
                     Key={"PK": {"S": f"MESSAGE#{message_id}"}},
                     UpdateExpression=(
-                        "REMOVE NotDispatched SET IsDispatched = :IsDispatched, DispatchedAt = :DispatchedAt"
+                        "REMOVE NotDispatched "
+                        "SET ApproximateDispatchCount = ApproximateDispatchCount + :Increment, "
+                        "IsDispatched = :IsDispatched, "
+                        "DispatchedAt = :DispatchedAt"
                     ),
                     ExpressionAttributeValues={
+                        ":Increment": {"N": "1"},
                         ":IsDispatched": {"BOOL": True},
                         ":DispatchedAt": {"S": datetime_to_str(utcnow())},
                     },
@@ -115,6 +120,7 @@ class DynamoDBOutboxRepository(OutboxRepository):
             topic=item["Topic"]["S"],
             message=item["Message"]["S"],
             created_at=str_to_datetime(item["CreatedAt"]["S"]),
+            approximate_dispatch_count=int(item["ApproximateDispatchCount"]["N"]),
             is_dispatched=bool(item["IsDispatched"]["BOOL"]) if item.get("IsDispatched") else False,
             dispatched_at=str_to_datetime(item["DispatchedAt"]["S"]) if item.get("DispatchedAt") else None,
         )

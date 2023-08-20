@@ -49,6 +49,7 @@ class FakeOutboxRepository(OutboxRepository):
             topic=message.__class__.__name__,
             message=message.serialize(),
             created_at=message.created_at,
+            approximate_dispatch_count=0,
             is_dispatched=False,
             dispatched_at=None,
         )

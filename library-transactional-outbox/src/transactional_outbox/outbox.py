@@ -45,6 +45,7 @@ class PublishedMessage:
     topic: str
     message: str
     created_at: datetime.datetime
+    approximate_dispatch_count: int
     is_dispatched: bool
     dispatched_at: datetime.datetime | None
 
