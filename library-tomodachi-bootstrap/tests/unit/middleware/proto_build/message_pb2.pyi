@@ -28,7 +28,9 @@ class MessageWithCorrelationId(google.protobuf.message.Message):
         event_id: builtins.str = ...,
         correlation_id: builtins.str = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["correlation_id", b"correlation_id", "event_id", b"event_id"]) -> None: ...
+    def ClearField(
+        self, field_name: typing_extensions.Literal["correlation_id", b"correlation_id", "event_id", b"event_id"]
+    ) -> None: ...  # noqa # pylint: disable=line-too-long
 
 global___MessageWithCorrelationId = MessageWithCorrelationId
 
