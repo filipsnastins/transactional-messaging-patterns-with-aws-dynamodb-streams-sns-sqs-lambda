@@ -45,9 +45,9 @@ class PublishedMessage:
     topic: str
     message: str
     created_at: datetime.datetime
-    approximate_dispatch_count: int
-    is_dispatched: bool
-    dispatched_at: datetime.datetime | None
+    approximate_dispatch_count: int = 0
+    is_dispatched: bool = False
+    dispatched_at: datetime.datetime | None = None
 
 
 class OutboxRepository(Protocol):

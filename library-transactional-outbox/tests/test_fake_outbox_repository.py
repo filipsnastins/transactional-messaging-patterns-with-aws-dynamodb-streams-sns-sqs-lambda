@@ -36,9 +36,6 @@ async def test_get_message(repo: FakeOutboxRepository) -> None:
         topic="OrderCreatedEvent",
         message=event.serialize(),
         created_at=event.created_at,
-        approximate_dispatch_count=0,
-        is_dispatched=False,
-        dispatched_at=None,
     )
 
 
