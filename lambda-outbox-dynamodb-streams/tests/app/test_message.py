@@ -46,8 +46,6 @@ def test_create_published_message_from_dynamodb_stream_record() -> None:
     assert message.topic == "test-topic"
     assert message.message == json.dumps({"message": "test-message"})
     assert message.created_at == datetime.datetime(2023, 8, 15, 8, 24, 5, 961363, tzinfo=datetime.timezone.utc)
-    assert message.is_dispatched is False
-    assert message.dispatched_at is None
 
 
 @pytest.mark.asyncio()

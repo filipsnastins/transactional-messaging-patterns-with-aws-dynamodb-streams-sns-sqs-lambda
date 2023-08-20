@@ -49,8 +49,6 @@ async def test_envelope_json_message() -> None:
         topic="test-topic",
         message=json.dumps({"message": "test-message"}),
         created_at=utcnow(),
-        is_dispatched=False,
-        dispatched_at=None,
     )
 
     envelope = json.loads(await envelope_json_message(message))
@@ -70,8 +68,6 @@ async def test_dispatch_message(moto_sns_client: SNSClient, moto_sqs_client: SQS
         topic="test-topic",
         message=json.dumps({"message": "test-message"}),
         created_at=utcnow(),
-        is_dispatched=False,
-        dispatched_at=None,
     )
 
     await dispatch_message(moto_sns_client, message, envelope_json_message, topics_cache)
