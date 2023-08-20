@@ -2,6 +2,29 @@ import pytest
 from pydantic import ValidationError
 
 from tomodachi_bootstrap import TomodachiServiceBase
+from tomodachi_bootstrap.middleware import (
+    http_correlation_id_middleware,
+    message_correlation_id_middleware,
+    sns_sqs_message_retry_middleware,
+    structlog_middleware,
+)
+
+
+def test_middleware_is_set(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ENVIRONMENT", "production")
+    monkeypatch.setenv("AWS_REGION", "us-east-1")
+
+    service = TomodachiServiceBase()
+
+    assert service.http_middleware == [
+        http_correlation_id_middleware,
+        structlog_middleware,
+    ]
+    assert service.message_middleware == [
+        sns_sqs_message_retry_middleware,
+        message_correlation_id_middleware,
+        structlog_middleware,
+    ]
 
 
 def test_mandatory_envvars_not_set(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -35,6 +58,11 @@ def test_tomodachi_options_set_from_envvars(monkeypatch: pytest.MonkeyPatch) -> 
 def test_tomodachi_option_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ENVIRONMENT", "production")
     monkeypatch.setenv("AWS_REGION", "us-east-1")
+    monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
+    monkeypatch.delenv("AWS_SECRET_ACCESS_KEY", raising=False)
+    monkeypatch.delenv("AWS_ENDPOINT_URL", raising=False)
+    monkeypatch.delenv("AWS_SNS_TOPIC_PREFIX", raising=False)
+    monkeypatch.delenv("AWS_SQS_QUEUE_NAME_PREFIX", raising=False)
 
     service = TomodachiServiceBase()
 
