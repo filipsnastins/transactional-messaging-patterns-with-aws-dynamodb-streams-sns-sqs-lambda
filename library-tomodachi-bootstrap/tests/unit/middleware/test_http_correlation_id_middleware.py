@@ -62,7 +62,7 @@ async def test_correlation_id_not_set_if_request_handler_return_type_is_not_web_
     assert cap_logs == [
         {
             "correlation_id": uuid.UUID("430d1506-5e9c-467d-a303-751d2ddee79d"),
-            "event": (
+            "event": (  # noqa: PAR001
                 "HTTP correlation ID middleware did not receive a Response object;"
                 " 'X-Correlation-Id' header will not be set"
             ),
