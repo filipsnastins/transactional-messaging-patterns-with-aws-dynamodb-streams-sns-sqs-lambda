@@ -69,3 +69,29 @@ async def test_correlation_id_not_set_if_request_handler_return_type_is_not_web_
             "log_level": "warning",
         }
     ]
+
+
+@pytest.mark.asyncio()
+async def test_function_arguments_forwarded() -> None:
+    service = Mock()
+    request = Mock(headers={})
+
+    async def _request_handler(arg_1: str, correlation_id: uuid.UUID, kwarg_2: str = "") -> None:
+        assert arg_1 == "arg_1"
+        assert isinstance(correlation_id, uuid.UUID)
+        assert kwarg_2 == "kwarg_2"
+
+    await http_correlation_id_middleware(_request_handler, service, request, "arg_1", kwarg_2="kwarg_2")
+
+
+@pytest.mark.asyncio()
+async def test_function_return_value_forwarded() -> None:
+    service = Mock()
+    request = Mock(headers={})
+
+    async def _request_handler(correlation_id: uuid.UUID) -> str:
+        return "return_value"
+
+    response = await http_correlation_id_middleware(_request_handler, service, request)
+
+    assert response == "return_value"
