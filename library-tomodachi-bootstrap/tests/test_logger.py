@@ -5,10 +5,11 @@ import uuid
 import pytest
 import structlog
 
-from tomodachi_bootstrap.logger import configure_structlog
+from tomodachi_bootstrap import configure_structlog
 
 
 def test_default_json_renderer(caplog: pytest.LogCaptureFixture) -> None:
+    caplog.set_level(logging.INFO)
     configure_structlog()
     structlog.configure(cache_logger_on_first_use=False)
     logger: structlog.stdlib.BoundLogger = structlog.get_logger()
@@ -29,6 +30,7 @@ def test_default_json_renderer(caplog: pytest.LogCaptureFixture) -> None:
 
 
 def test_uuid_casted_to_string(caplog: pytest.LogCaptureFixture) -> None:
+    caplog.set_level(logging.INFO)
     configure_structlog()
     structlog.configure(cache_logger_on_first_use=False)
     logger: structlog.stdlib.BoundLogger = structlog.get_logger()

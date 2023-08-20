@@ -3,7 +3,7 @@ import uuid
 import pytest
 import structlog
 
-from tomodachi_bootstrap.middleware import structlog_middleware
+from tomodachi_bootstrap import structlog_middleware
 
 
 @pytest.mark.asyncio()
