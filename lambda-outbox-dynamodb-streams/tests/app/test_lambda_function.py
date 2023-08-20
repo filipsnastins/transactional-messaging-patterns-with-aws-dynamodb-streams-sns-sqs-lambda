@@ -15,7 +15,7 @@ pytestmark = pytest.mark.usefixtures(
 
 
 @pytest.mark.asyncio()
-async def test_dynamodb_insert_event__message_dispatched(
+async def test_dynamodb_streams_insert_record__message_dispatched(
     moto_sqs_client: SQSClient, session: DynamoDBSession, outbox_repository: DynamoDBOutboxRepository
 ) -> None:
     record = record_factory(event_name="INSERT")
@@ -46,13 +46,33 @@ async def test_dynamodb_insert_event__message_marked_as_dispatched(
 
     published_message = await outbox_repository.get(message_id=message.message_id)
     assert published_message
+    assert published_message.approximate_dispatch_count == 1
     assert published_message.is_dispatched is True
-    assert published_message.dispatched_at
+    assert published_message.last_dispatched_at
+
+
+@pytest.mark.asyncio()
+async def test_dispatch_the_same_message_twice(
+    session: DynamoDBSession, outbox_repository: DynamoDBOutboxRepository
+) -> None:
+    record = record_factory(event_name="INSERT")
+    message = message_factory()
+    await outbox_repository.publish([message])
+    await session.commit()
+
+    await async_record_handler(record)
+    await async_record_handler(record)
+
+    published_message = await outbox_repository.get(message_id=message.message_id)
+    assert published_message
+    assert published_message.approximate_dispatch_count == 2
 
 
 @pytest.mark.parametrize("event_name", ["MODIFY", "REMOVE"])
 @pytest.mark.asyncio()
-async def test_dynamodb_update_event__not_insert_message_skipped(moto_sqs_client: SQSClient, event_name: str) -> None:
+async def test_dynamodb_update_event__not_insert_dynamodb_stream_record_skipped(
+    moto_sqs_client: SQSClient, event_name: str
+) -> None:
     record = record_factory(event_name=event_name)
 
     await async_record_handler(record)
