@@ -2183,7 +2183,7 @@ uvloop = ["uvloop (>=0.14.0,<1.0.0)"]
 
 [[package]]
 name = "tomodachi-bootstrap"
-version = "0.0.6"
+version = "0.0.7"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -3013,4 +3013,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "3cabbd1a504258912c09b1ae2a9afed9a960844ebabb8fec6f35e751ef7bb3b7"
+content-hash = "f0b7d0b6396f5e9c77472d1bb3fe1c8e4bbaf6881f3579404bbceb9f7a178790"
