@@ -9,7 +9,7 @@ module "service_customers_ecs" {
   region      = var.region
   environment = var.environment
 
-  revision = 10
+  revision = 13
 
   service_name   = "customers"
   container_port = 9700

@@ -1,5 +1,10 @@
 # deploy-terraform-aws-ecs
 
+**Warning!** The Terraform definitions in this repository are for demo purposes only,
+and must not be used for production deployments.
+The IaC code omits many security practices for brevity and simplicity,
+and most of the `tfsec` errors are ignored.
+
 ## Deploying Customers and Orders to AWS Elastic Container Service (ECS) with Terraform
 
 - Application stack:
@@ -13,8 +18,8 @@
 - Create AWS resources
 
 ```bash
-terraform init
-terraform apply
+terraform -chdir=live init
+terraform -chdir=live apply
 ```
 
 - Build and push Docker images to AWS Elastic Container Registry (ECR)
@@ -34,10 +39,21 @@ docker tag $ORDERS_IMAGE $ECR_HOST/$ORDERS_IMAGE
 docker push $ECR_HOST/$ORDERS_IMAGE
 ```
 
+- Go to AWS Console and update ECS task definitions to use new Docker images
+
+- Update revision variable in [service-orders.tf](live/service-orders.tf) and [service-customers.tf](live/service-customers.tf)
+  to the latest revision of the task definition.
+
+- Deploy!
+
+```bash
+terraform -chdir=live apply
+```
+
 - Get service ingress URLs
 
 ```bash
-terraform output
+terraform -chdir=live output
 ```
 
 ## References
