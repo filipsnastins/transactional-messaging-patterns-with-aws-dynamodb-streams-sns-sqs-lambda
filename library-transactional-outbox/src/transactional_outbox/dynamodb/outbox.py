@@ -39,8 +39,9 @@ class DynamoDBOutboxRepository(OutboxRepository):
                             "Topic": {"S": topic},
                             "Message": {"S": message.serialize()},
                             "CreatedAt": {"S": datetime_to_str(message.created_at)},
-                            "NotDispatched": {"S": "Y"},
                             "ApproximateDispatchCount": {"N": "0"},
+                            "IsDispatched": {"BOOL": False},
+                            "NotDispatched": {"S": "Y"},  # Flag for a sparse index NotDispatchedMessagesIndex
                         },
                         "ConditionExpression": "attribute_not_exists(PK)",
                     }
@@ -121,7 +122,7 @@ class DynamoDBOutboxRepository(OutboxRepository):
             message=item["Message"]["S"],
             created_at=str_to_datetime(item["CreatedAt"]["S"]),
             approximate_dispatch_count=int(item["ApproximateDispatchCount"]["N"]),
-            is_dispatched=bool(item["IsDispatched"]["BOOL"]) if item.get("IsDispatched") else False,
+            is_dispatched=bool(item["IsDispatched"]["BOOL"]),
             dispatched_at=str_to_datetime(item["DispatchedAt"]["S"]) if item.get("DispatchedAt") else None,
         )
 
