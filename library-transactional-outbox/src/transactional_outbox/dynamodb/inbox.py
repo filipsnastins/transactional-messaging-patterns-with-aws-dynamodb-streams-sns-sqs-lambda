@@ -37,7 +37,7 @@ class DynamoDBInboxRepository(InboxRepository):
             response = await client.get_item(
                 TableName=self._table_name,
                 Key={"PK": {"S": f"MESSAGE#{message_id}"}},
-                ConsistentRead=True,  # TODO: how to test that the consistent read is used?
+                ConsistentRead=True,  # ConsistentRead is required to ensure idempotence
             )
             item = response.get("Item")
             if not item:
