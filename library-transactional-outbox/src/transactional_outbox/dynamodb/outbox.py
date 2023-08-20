@@ -66,7 +66,7 @@ class DynamoDBOutboxRepository(OutboxRepository):
                 return None
             return self._item_to_published_message(item)
 
-    async def mark_dispatched(self, message_id: uuid.UUID) -> None:
+    async def mark_as_dispatched(self, message_id: uuid.UUID) -> None:
         log = logger.bind(message_id=message_id)
         async with self._session.get_client() as client:
             try:

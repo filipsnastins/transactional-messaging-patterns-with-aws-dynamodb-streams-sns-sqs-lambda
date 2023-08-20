@@ -76,20 +76,20 @@ async def test_get_not_dispatched_messages(repo: DynamoDBOutboxRepository, sessi
 
 
 @pytest.mark.asyncio()
-async def test_mark_dispatched_not_existing_message_raises(repo: DynamoDBOutboxRepository) -> None:
+async def test_mark_as_dispatched_not_existing_message_raises(repo: DynamoDBOutboxRepository) -> None:
     message_id = uuid.uuid4()
 
     with pytest.raises(MessageNotFoundError, match=str(message_id)):
-        await repo.mark_dispatched(message_id=message_id)
+        await repo.mark_as_dispatched(message_id=message_id)
 
 
 @pytest.mark.asyncio()
-async def test_mark_dispatched(repo: DynamoDBOutboxRepository, session: DynamoDBSession) -> None:
+async def test_mark_as_dispatched(repo: DynamoDBOutboxRepository, session: DynamoDBSession) -> None:
     event = OrderCreatedEvent(order_id=uuid.uuid4())
     await repo.publish([event])
     await session.commit()
 
-    await repo.mark_dispatched(message_id=event.event_id)
+    await repo.mark_as_dispatched(message_id=event.event_id)
 
     published_message = await repo.get(message_id=event.event_id)
     assert published_message
@@ -97,6 +97,20 @@ async def test_mark_dispatched(repo: DynamoDBOutboxRepository, session: DynamoDB
     assert published_message.is_dispatched is True
     assert published_message.dispatched_at
     assert datetime.timedelta(seconds=1) > utcnow() - published_message.dispatched_at
+
+
+@pytest.mark.asyncio()
+async def test_mark_as_dispatched_twice(repo: DynamoDBOutboxRepository, session: DynamoDBSession) -> None:
+    event = OrderCreatedEvent(order_id=uuid.uuid4())
+    await repo.publish([event])
+    await session.commit()
+
+    await repo.mark_as_dispatched(message_id=event.event_id)
+    await repo.mark_as_dispatched(message_id=event.event_id)
+
+    published_message = await repo.get(message_id=event.event_id)
+    assert published_message
+    assert published_message.approximate_dispatch_count == 2
 
 
 @pytest.mark.asyncio()
@@ -108,7 +122,7 @@ async def test_dispatched_message_removed_from_not_dispatched_messages_collectio
     await repo.publish([event_1, event_2])
     await session.commit()
 
-    await repo.mark_dispatched(message_id=event_1.event_id)
+    await repo.mark_as_dispatched(message_id=event_1.event_id)
 
     not_dispatched_messages = await repo.get_not_dispatched_messages()
     assert len(not_dispatched_messages) == 1

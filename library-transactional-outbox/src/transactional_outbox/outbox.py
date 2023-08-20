@@ -57,7 +57,7 @@ class OutboxRepository(Protocol):
     async def get(self, message_id: uuid.UUID) -> PublishedMessage | None:
         ...
 
-    async def mark_dispatched(self, message_id: uuid.UUID) -> None:
+    async def mark_as_dispatched(self, message_id: uuid.UUID) -> None:
         ...
 
     async def get_not_dispatched_messages(self) -> list[PublishedMessage]:

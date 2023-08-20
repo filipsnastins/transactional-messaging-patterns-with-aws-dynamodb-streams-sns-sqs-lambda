@@ -57,7 +57,7 @@ class FakeOutboxRepository(OutboxRepository):
     def clear(self) -> None:
         self.messages.clear()
 
-    async def mark_dispatched(self, message_id: uuid.UUID) -> None:
+    async def mark_as_dispatched(self, message_id: uuid.UUID) -> None:
         raise NotImplementedError
 
     async def get_not_dispatched_messages(self) -> list[PublishedMessage]:
