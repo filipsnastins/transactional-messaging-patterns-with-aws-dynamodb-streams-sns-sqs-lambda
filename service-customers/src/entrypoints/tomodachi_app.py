@@ -32,11 +32,11 @@ class TomodachiService(TomodachiServiceBase):
 
     @tomodachi.http("GET", r"/customers/health/?", ignore_logging=[200])
     async def healthcheck(self, request: web.Request, correlation_id: uuid.UUID) -> web.Response:
-        return web.json_response({"status": "ok"}, status=20)
+        return web.json_response({"status": "ok"}, status=200)
 
     @tomodachi.http_error(status_code=500)
     async def error_500(self, request: web.Request, correlation_id: uuid.UUID) -> web.Response:
-        return web.json_response({"error": ResponseTypes.SYSTEM_ERROR.value}, status=50)
+        return web.json_response({"error": ResponseTypes.SYSTEM_ERROR.value}, status=500)
 
     @tomodachi.http("POST", r"/customers")
     async def create_customer_handler(self, request: web.Request, correlation_id: uuid.UUID) -> web.Response:
