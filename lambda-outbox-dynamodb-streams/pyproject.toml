@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lambda-outbox-dynamodb-streams"
-version = "0.0.20"
+version = "0.0.22"
 description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 

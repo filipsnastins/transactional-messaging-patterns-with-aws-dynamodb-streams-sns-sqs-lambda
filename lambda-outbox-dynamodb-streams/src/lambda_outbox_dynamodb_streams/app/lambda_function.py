@@ -36,7 +36,7 @@ async def async_record_handler(record: DynamoDBRecord) -> None:
             await dispatch_message(sns_client, published_message, envelope_json_message, topics_cache)
 
         if not os.getenv("OUTBOX_SKIP_MARK_MESSAGES_AS_DISPATCHED"):
-            await create_outbox_repository().mark_dispatched(message_id=published_message.message_id)
+            await create_outbox_repository().mark_as_dispatched(message_id=published_message.message_id)
 
 
 @event_source(data_class=DynamoDBStreamEvent)  # pylint: disable=no-value-for-parameter
