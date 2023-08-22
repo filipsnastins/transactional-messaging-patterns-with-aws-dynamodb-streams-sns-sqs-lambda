@@ -105,13 +105,4 @@ No such problems observed with LocalStack.
 
 ## Development
 
-```bash
-brew install tflint
-brew install tfsec
-
-# Run commit hooks
-brew install pre-commit
-pre-commit install
-
-pre-commit run --all-files
-```
+...

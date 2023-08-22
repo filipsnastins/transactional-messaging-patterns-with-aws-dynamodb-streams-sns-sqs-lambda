@@ -70,7 +70,7 @@ variable "environment_variables" {
   default = []
 }
 
-variable "grant_dynamodb_permissions" {
+variable "dynamodb_table_arns" {
   type = list(string)
 }
 

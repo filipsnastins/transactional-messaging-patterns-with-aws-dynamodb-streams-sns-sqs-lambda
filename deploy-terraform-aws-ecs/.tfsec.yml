@@ -8,7 +8,5 @@ exclude:
   - aws-ecr-enforce-immutable-repository
   - aws-ecr-repository-customer-key
   - aws-ecs-enable-container-insight
-  - aws-sns-topic-encryption-use-cmk
-  - aws-sqs-queue-encryption-use-cmk
-  - aws-sns-enable-topic-encryption # TODO
-  - aws-sqs-enable-queue-encryption # TODO
+  - aws-sns-enable-topic-encryption
+  - aws-sqs-enable-queue-encryption

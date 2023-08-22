@@ -1,26 +1,20 @@
-locals {
-  customers_table_name = "${var.environment}-customers"
-}
-
-# tfsec:ignore:aws-ecr-enforce-immutable-repository
 module "service_customers_ecs" {
   source = "../modules/ecs-service"
 
-  region      = var.region
-  environment = var.environment
+  region       = var.region
+  environment  = var.environment
+  service_name = "customers"
 
-  revision = 16
+  revision = 21
 
-  service_name   = "customers"
-  container_port = 9700
-  vpc_id         = module.vpc.id
-  vpc_subnet_ids = module.vpc.subnet_ids
-
+  container_port    = 9700
+  vpc_id            = module.vpc.id
+  vpc_subnet_ids    = module.vpc.subnet_ids
   alb_listener_arn  = module.alb.listener_arn
   security_group_id = module.alb.service_security_group_id
 
   ecs_cluster_id              = module.ecs_cluster.id
-  ecs_task_execution_role_arn = module.ecs_iam_policy.ecs_task_execution_role_arn
+  ecs_task_execution_role_arn = module.ecs_iam_task_execution_role.arn
 
   cpu      = 256
   memory   = 512
@@ -34,22 +28,18 @@ module "service_customers_ecs" {
     { "name" : "AWS_REGION", "value" : var.region },
     { "name" : "AWS_SNS_TOPIC_PREFIX", "value" : "${var.environment}-" },
     { "name" : "AWS_SQS_QUEUE_NAME_PREFIX", "value" : "${var.environment}-" },
-    { "name" : "DYNAMODB_CUSTOMERS_TABLE_NAME", "value" : aws_dynamodb_table.service_customers_dynamodb_table.name },
-    { "name" : "DYNAMODB_INBOX_TABLE_NAME", "value" : module.service_customers_dynamodb_inbox_table.name },
-    { "name" : "DYNAMODB_OUTBOX_TABLE_NAME", "value" : module.service_customers_dynamodb_outbox_table.name },
+    { "name" : "DYNAMODB_CUSTOMERS_TABLE_NAME", "value" : aws_dynamodb_table.customers.name },
+    { "name" : "DYNAMODB_INBOX_TABLE_NAME", "value" : module.service_customers_inbox_table.name },
+    { "name" : "DYNAMODB_OUTBOX_TABLE_NAME", "value" : module.service_customers_outbox_dynamodb_streams.dynamodb_outbox_table_name },
   ]
 
-  grant_dynamodb_permissions = [
-    aws_dynamodb_table.service_customers_dynamodb_table.arn,
-    module.service_customers_dynamodb_inbox_table.arn,
-    module.service_customers_dynamodb_outbox_table.arn,
+  dynamodb_table_arns = [
+    aws_dynamodb_table.customers.arn,
+    module.service_customers_inbox_table.arn,
+    module.service_customers_outbox_dynamodb_streams.dynamodb_outbox_table_arn,
   ]
 
   create_sns_topics = [
-    "customer--created",
-    "customer--credit-reservation-failed",
-    "customer--credit-reserved",
-    "customer--validation-failed",
     "order--created",
     "order--cancelled",
   ]
@@ -60,11 +50,10 @@ module "service_customers_ecs" {
   ]
 }
 
-resource "aws_dynamodb_table" "service_customers_dynamodb_table" {
-  name         = local.customers_table_name
+resource "aws_dynamodb_table" "customers" {
+  name         = "${var.environment}-customers"
   billing_mode = "PAY_PER_REQUEST"
-
-  hash_key = "PK"
+  hash_key     = "PK"
 
   point_in_time_recovery {
     enabled = true
@@ -80,15 +69,18 @@ resource "aws_dynamodb_table" "service_customers_dynamodb_table" {
   }
 }
 
-module "service_customers_lambda_outbox_dynamodb_streams" {
-  source = "../modules/lambda-outbox-dynamodb-streams"
+module "service_customers_inbox_table" {
+  source = "../../terraform-transactional-outbox/idempotent-consumer-dynamodb-inbox"
 
   environment  = var.environment
   service_name = "customers"
+}
 
-  dynamodb_outbox_table_name       = module.service_customers_dynamodb_outbox_table.name
-  dynamodb_outbox_table_arn        = module.service_customers_dynamodb_outbox_table.arn
-  dynamodb_outbox_table_stream_arn = module.service_customers_dynamodb_outbox_table.stream_arn
+module "service_customers_outbox_dynamodb_streams" {
+  source = "../../terraform-transactional-outbox/outbox-dynamodb-streams"
+
+  environment  = var.environment
+  service_name = "customers"
 
   create_sns_topics = [
     "customer--created",
@@ -96,18 +88,4 @@ module "service_customers_lambda_outbox_dynamodb_streams" {
     "customer--credit-reserved",
     "customer--validation-failed",
   ]
-}
-
-module "service_customers_dynamodb_inbox_table" {
-  source = "../modules/dynamodb-table-idempotent-consumer-inbox"
-
-  environment    = var.environment
-  aggregate_name = "customers"
-}
-
-module "service_customers_dynamodb_outbox_table" {
-  source = "../modules/dynamodb-table-transactional-outbox"
-
-  environment    = var.environment
-  aggregate_name = "customers"
 }

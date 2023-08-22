@@ -1,6 +1,5 @@
 import os
 
-from aws_lambda_powertools.logging import Logger
 from aws_lambda_powertools.utilities.batch import AsyncBatchProcessor, EventType, async_process_partial_response
 from aws_lambda_powertools.utilities.batch.types import PartialItemFailureResponse
 from aws_lambda_powertools.utilities.data_classes import event_source
@@ -16,8 +15,6 @@ from .dispatch import TopicsCache, dispatch_message, envelope_json_message
 from .message import create_published_message_from_dynamodb_stream_record
 from .outbox_repository import create_outbox_repository
 from .settings import get_settings
-
-logger = Logger()
 
 settings = get_settings()
 processor = AsyncBatchProcessor(event_type=EventType.DynamoDBStreams)

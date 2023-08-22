@@ -1,3 +1,7 @@
+locals {
+  full_service_name = "${var.environment}-service-${var.service_name}"
+}
+
 # SNS/SQS
 module "sns_topic" {
   source   = "../sns-create-topic"
@@ -16,62 +20,27 @@ module "sqs_queue" {
   subscribe_to_sns_topic = each.value.topic
 }
 
-# IAM Policies and Roles
-module "ecs_assume_role_policy" {
-  source = "../ecs-assume-role-policy"
-}
-
-resource "aws_iam_role" "ecs_task_role" {
-  name               = "${var.environment}-service-${var.service_name}"
-  description        = "Role for ECS tasks - microservices running in Docker containers - service-${var.service_name}"
-  assume_role_policy = module.ecs_assume_role_policy.json
-}
-
-module "dynamodb_service_policy" {
-  source = "../dynamodb-service-policy"
+# IAM Task Role
+module "ecs_service_iam_task_role" {
+  source = "../ecs-service-iam-task-role"
 
   environment  = var.environment
   service_name = var.service_name
 
-  role_name           = aws_iam_role.ecs_task_role.name
-  dynamodb_table_arns = var.grant_dynamodb_permissions
-
-  count = length(var.grant_dynamodb_permissions) > 0 ? 1 : 0
-}
-
-module "sns_service_policy" {
-  source = "../sns-service-policy"
-
-  environment  = var.environment
-  service_name = var.service_name
-
-  role_name      = aws_iam_role.ecs_task_role.name
-  sns_topic_arns = [for sns_topic in module.sns_topic : sns_topic.arn]
-
-  count = length(var.create_sns_topics) > 0 ? 1 : 0
-}
-
-module "sqs_service_policy" {
-  source = "../sqs-service-policy"
-
-  environment  = var.environment
-  service_name = var.service_name
-
-  role_name      = aws_iam_role.ecs_task_role.name
-  sqs_queue_arns = [for sqs_queue in module.sqs_queue : sqs_queue.arn]
-
-  count = length(var.create_and_subscribe_sqs_queues) > 0 ? 1 : 0
+  dynamodb_table_arns = var.dynamodb_table_arns
+  sns_topic_arns      = [for sns_topic in module.sns_topic : sns_topic.arn]
+  sqs_queue_arns      = [for sqs_queue in module.sqs_queue : sqs_queue.arn]
 }
 
 # Elastic Container Registry
+# tfsec:ignore:aws-ecr-enforce-immutable-repository
 resource "aws_ecr_repository" "default" {
-  name = "${var.environment}-service-${var.service_name}"
+  name = local.full_service_name
 }
-
 
 # Elastic Application Load Balancer
 resource "aws_lb_target_group" "default" {
-  name        = "${var.environment}-service-${var.service_name}--tg"
+  name        = "${local.full_service_name}--tg"
   port        = 80
   protocol    = "HTTP"
   target_type = "ip"
@@ -102,8 +71,8 @@ resource "aws_lb_listener_rule" "default" {
 
 # Elastic Container Service - task definition
 resource "aws_ecs_task_definition" "default" {
-  family                   = "${var.environment}-service-${var.service_name}"
-  container_definitions    = <<DEFINITION
+  family                = local.full_service_name
+  container_definitions = <<DEFINITION
   [
     {
       "name": "service-${var.service_name}",
@@ -120,7 +89,7 @@ resource "aws_ecs_task_definition" "default" {
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/${var.environment}-service-${var.service_name}",
+          "awslogs-group": "/ecs/${local.full_service_name}",
           "awslogs-region": "${var.region}",
           "awslogs-create-group": "true",
           "awslogs-stream-prefix": "ecs"
@@ -130,15 +99,18 @@ resource "aws_ecs_task_definition" "default" {
     }
   ]
   DEFINITION
+
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  memory                   = var.memory
-  cpu                      = var.cpu
-  execution_role_arn       = var.ecs_task_execution_role_arn
-  task_role_arn            = aws_iam_role.ecs_task_role.arn
+
+  memory = var.memory
+  cpu    = var.cpu
+
+  execution_role_arn = var.ecs_task_execution_role_arn
+  task_role_arn      = module.ecs_service_iam_task_role.arn
 }
 
-# Elastic Container Service - main
+# Elastic Container Service - service
 resource "aws_ecs_service" "default" {
   name            = "service-${var.service_name}"
   cluster         = var.ecs_cluster_id
@@ -165,7 +137,7 @@ resource "aws_ecs_service" "default" {
     log_configuration {
       log_driver = "awslogs"
       options = {
-        awslogs-group         = "/ecs/${var.environment}-service-${var.service_name}",
+        awslogs-group         = "/ecs/${local.full_service_name}",
         awslogs-region        = var.region,
         awslogs-create-group  = "true",
         awslogs-stream-prefix = "ecs"
