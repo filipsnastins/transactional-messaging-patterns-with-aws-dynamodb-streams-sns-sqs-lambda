@@ -1,0 +1,25 @@
+= Tomodachi Transaction Outbox
+
+A complete example of implementing microservice transactional messaging patterns.
+
+This project demonstrates how to apply
+https://microservices.io/patterns/data/transactional-outbox.html[transactional outbox]
+and https://microservices.io/patterns/communication-style/idempotent-consumer.html[idempotent consumer]
+patterns using AWS DynamoDB, AWS SNS SQS, and AWS Lambda.
+
+== Motivation
+
+In a software architecture that uses asynchronous messaging for inter-service communication,
+additional measures need to be taken to ensure that messages are published reliably.
+
+=== Transactional Outbox Pattern
+
+...
+
+=== Idempotent Consumer Pattern
+
+...
+
+== Working Example
+
+...
