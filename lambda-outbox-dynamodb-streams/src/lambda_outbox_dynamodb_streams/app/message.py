@@ -1,12 +1,9 @@
 import uuid
 
-from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.data_classes.dynamo_db_stream_event import DynamoDBRecord
 from transactional_outbox.outbox import PublishedMessage
 
 from .time import str_to_datetime
-
-logger = Logger()
 
 
 def create_published_message_from_dynamodb_stream_record(record: DynamoDBRecord) -> PublishedMessage:

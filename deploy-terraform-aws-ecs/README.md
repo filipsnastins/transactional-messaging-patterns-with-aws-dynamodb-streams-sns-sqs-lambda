@@ -7,13 +7,13 @@ and most of the `tfsec` errors are ignored.
 
 ## Deploying Customers and Orders to AWS Elastic Container Service (ECS) with Terraform
 
-- Application stack:
+- Application stack description
 
-  - Containers deployed to AWS Elastic Container Service (ECS)
-  - Docker images stored in private AWS Elastic Container Registry (ECR)
+  - Services deployed as Docker Containers to AWS Elastic Container Service (ECS)
+  - Docker Images stored in private AWS Elastic Container Registry (ECR)
   - Ingress traffic via AWS Application Load Balancer (ALB) with path based routing
-    - `/customer*` -> customers service
-    - `/order*` -> orders service
+    - `/customer*` --> `service-customers`
+    - `/order*` --> `service-orders`
 
 - Create AWS resources
 
@@ -28,15 +28,15 @@ terraform -chdir=live apply
 export ECR_HOST=758308814218.dkr.ecr.us-east-1.amazonaws.com # Insert your ECR host here
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_HOST
 
-export CUSTOMERS_IMAGE=test-45d8-service-customers:latest
-docker build -t $CUSTOMERS_IMAGE --platform=linux/amd64 -f ../service-customers/Dockerfile ..
-docker tag $CUSTOMERS_IMAGE $ECR_HOST/$CUSTOMERS_IMAGE
-docker push $ECR_HOST/$CUSTOMERS_IMAGE
+export SERVICE_CUSTOMERS_IMAGE=test-45d8-service-customers:latest
+docker build -t $SERVICE_CUSTOMERS_IMAGE --platform=linux/amd64 -f ../service-customers/Dockerfile ..
+docker tag $SERVICE_CUSTOMERS_IMAGE $ECR_HOST/$SERVICE_CUSTOMERS_IMAGE
+docker push $ECR_HOST/$SERVICE_CUSTOMERS_IMAGE
 
-export ORDERS_IMAGE=test-45d8-service-orders:latest
-docker build -t $ORDERS_IMAGE --platform=linux/amd64 -f ../service-orders/Dockerfile ..
-docker tag $ORDERS_IMAGE $ECR_HOST/$ORDERS_IMAGE
-docker push $ECR_HOST/$ORDERS_IMAGE
+export SERVICE_ORDERS_IMAGE=test-45d8-service-orders:latest
+docker build -t $SERVICE_ORDERS_IMAGE --platform=linux/amd64 -f ../service-orders/Dockerfile ..
+docker tag $SERVICE_ORDERS_IMAGE $ECR_HOST/$SERVICE_ORDERS_IMAGE
+docker push $ECR_HOST/$SERVICE_ORDERS_IMAGE
 ```
 
 - Go to AWS Console and update ECS task definitions to use new Docker images
@@ -44,7 +44,7 @@ docker push $ECR_HOST/$ORDERS_IMAGE
 - Update revision variable in [service-orders.tf](live/service-orders.tf) and [service-customers.tf](live/service-customers.tf)
   to the latest revision of the task definition.
 
-- Deploy!
+- Deploy latest revision
 
 ```bash
 terraform -chdir=live apply
