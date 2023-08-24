@@ -14,71 +14,103 @@ Asynchronous messaging has several inherent properties that need to be taken int
 when designing a system that uses asynchronous messaging. These properties require
 additional countermeasures to ensure that the system behaves as expected.
 
-* *At-least-once message delivery*
-** *Property:* when message is published to a message broker,
-    it's guaranteed to be delivered to a consumer, but the same message can be delivered
-    more than once. This message broker property is called `at-least-once delivery`,
-    and it occurs because of how a message broker replicates the published message internally
-    to ensure high availability, fault tolerance, and durability.
-    https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html#standard-queues-at-least-once-delivery[Read more about the internals of why at-least-once delivery occurs in AWS Simple Queue Service].
-** *Consequences:* for the applications that use asynchronous messaging for communication,
-    this means that an action can be performed more than once, which can lead to data inconsistency and bad user experience.
-    For example, when a user creates an order, the `Order Service publishes `OrderCreated` message.
-    The message can be delivered more than once to a `Notifications Service` that sends emails to the user,
-    which can lead to the user receiving multiple identical emails.
-** *Countermeasure:* to compensate for this property, _message consumers_ need to be able to recognize and handle duplicate messages.
-    This can be achieved by implementing the https://microservices.io/patterns/communication-style/idempotent-consumer.html[Idempotent Consumer pattern].
-    A consumer is called _idempotent_ when the same call produces the same result, or in other words,
-    when the same message is processed more than once, the result is the same as if the message was processed only once.
-    Worth noting that the responsibility of handling duplicate messages is now always on the consumer side,
-    because the publishes has no way of ensuring that the message is delivered only once.
-** *Implementation example:* there are many ways of implementing the Idempotent Consumer pattern.
-    A common approach is to use an `Inbox` or `ProcessedMessages` table in a database to store unique `MessageId` of already processed messages.
-    When a message is received, the consumer checks if the `MessageId` is already in the `Inbox` table. If it is, the message is ignored as a duplicate.
-    However, some message consumers might be already idempotent by design and not require any additional measures.
+=== Property: At-least-once message delivery
 
-* *Domain inconsistency in event-driven architecture*
-** *Property:* when actions in a system are driven by asynchronous messages - events or commands -
-    usually a message triggers a consumer to change its internal state with a database update,
-    and then publish a new message to notify other consumers about the change.
-    For example, when a user places an order, the `Order Service` creates the order entry in the database,
-    and then publishes `OrderCreated` message to notify surrounding services about the new order,
-    so they can proceed with subsequent actions like shipping, credit checks, invoicing, notifications etc.
-** *Consequences:* in this process, a business operation spans across two independent infrastructure components - a database and a message broker.
-    This introduces a risk of a partial failure, when the database update succeeds, but the message publishing fails.
-    For example, when a user places an order, the `Order Service` creates an order entry in the database,
-    but the `OrderCreated` message is not published due to an error in the message broker.
-    This can lead to a situation when the order is created in the `Order Service` database,
-    but surrounding services are not aware of that, and the order is not processed further.
-    Even though message brokers are highly-available, the message publishing can still fail due to various reasons,
-    for example, due to a network failure, or a message broker being temporarily overloaded.
-    In this example, the business transaction lacks atomicity - the property that ensures that either all operations -
-    database update and message publishing - succeed, or none of them succeed.
-** *Countermeasure:* to ensure atomicity of the business operation implement https://microservices.io/tags/transactional%20messaging[transactional messaging]
-    to publish messages as part of a database transaction.
-    Messages that need to be published are saved to the database as part of the database transaction, and a separate process
-    - a _message relay_ - reads messages from the database and publishes them to the message broker.
-    This way, the database transaction ensures that either all operations - database update and message publishing - succeed,
-    or none of them succeed.
-** *Implementation example:* there are multiple ways of implementing transactional messaging -
-    with a combination of https://microservices.io/patterns/data/transactional-outbox.html[Transactional Outbox],
-    https://microservices.io/patterns/data/polling-publisher.html[Polling Publisher],
-    and https://microservices.io/patterns/data/transaction-log-tailing.html[Transaction Log Tailing] patterns.
-    This project demonstrates how to implement the message publisher using Transactional Outbox and Transactional Log Tailing
-    with https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html[AWS DynamoDB Streams].
-    In a Transactional Outbox pattern, messages are saved to a DynamoDB `Outbox` table as part of a DynamoDB transaction.
-    Then, a separate process - _message relay_ - reads or receives the messages from the `Outbox` table and publishes them to a message broker.
-    The message relay can be implemented with Transaction Log Tailing pattern by using DynamoDB Streams.
-    DynamoDB Streams capture data changes to the `Outbox` table, and publish events to a AWS Lambda function.
-    When a new message is saved to the `Outbox` table, DynamoDB Streams emit an `INSERT` event to the Lambda function.
-    The Lambda function receives the inserted message, and reliably publishes it to a message broker.
-    It's worth noting that DynamoDB Streams also guarantee at-least-once delivery of events,
-    so the chance of publishing duplicate messages is higher, and the message consumer must be idempotent by
-    implementing the https://microservices.io/patterns/communication-style/idempotent-consumer.html[Idempotent Consumer pattern] described in a section above.
+When message is published to a message broker, it's guaranteed to be delivered to a consumer,
+but the same message can be delivered more than once.
 
-TODO Unit of Work
-    - The need for additional countermeasures described above introduce another challenge of managing atomic operations.
-    - relational database - ACID transaction; aggregate store - write in a single operation to a document, or DynamoDB transaction
+At-least-once delivery occurs due to how a message broker replicates
+the published message internally to ensure high availability, fault tolerance, and durability.
+https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html#standard-queues-at-least-once-delivery[Read more about the internals of why at-least-once delivery occurs in AWS Simple Queue Service].
+
+==== Consequences
+
+For the applications that use asynchronous messaging, this means that an action can be performed more than once,
+which can lead to data inconsistency and bad user experience.
+For example, when a user creates an order, the `Order Service publishes `OrderCreated` message.
+The message can be delivered more than once to a `Notifications Service` that sends emails to the user,
+which can lead to the user receiving multiple identical emails.
+
+==== Countermeasures
+
+To compensate for at-least-once delivery, _message consumers_ need to be able to recognize and handle duplicate messages.
+This can be achieved by implementing the https://microservices.io/patterns/communication-style/idempotent-consumer.html[Idempotent Consumer pattern].
+A consumer is _idempotent_ when the same call produces the same result, or in other words,
+when the same message is processed more than once, the result is the same as if the message was processed only once.
+
+Notice that the responsibility of handling duplicate messages is now always on the consumer side,
+because the publishes has no way of ensuring that the message is delivered only once.
+
+==== Implementation example
+
+There are many ways of implementing the Idempotent Consumer pattern.
+A common approach is to use an `Inbox` or `ProcessedMessages` table in a database to store unique `MessageId` of already processed messages.
+When a message is received, the consumer checks if the `MessageId` is already in the `Inbox` table. If it is, the message is ignored as a duplicate.
+
+However, some message consumers might be already idempotent by design and not require any additional measures.
+
+=== Property: Domain inconsistency in event-driven architecture
+
+When actions in a system are driven by asynchronous messages - events or commands -
+usually a message triggers a consumer to change its internal state with a database update,
+and then publish a new message to notify other consumers about the change.
+
+For example, when a user places an order, the `Order Service` creates the order entry in the database,
+and then publishes `OrderCreated` message to notify surrounding services about the new order,
+so they can proceed with subsequent actions like shipping, credit checks, invoicing, notifications etc.
+
+==== Consequences
+
+In this process, a business transaction spans across two independent infrastructure components - a database and a message broker.
+This introduces a risk of a partial failure, when the database update succeeds, but the message publishing fails.
+For example, when a user places an order, the `Order Service` creates an order entry in the database,
+but the `OrderCreated` message is not published due to an error in the message broker.
+This can lead to a situation when the order is created in the `Order Service` database,
+but surrounding services are not aware of that, and the order is not processed further.
+
+Even though message brokers are highly-available, the message publishing can still fail due to various reasons,
+for example, due to a network failure, or a message broker being temporarily overloaded.
+In this example, the business transaction lacks atomicity - the property that ensures that either all operations -
+database update and message publishing - succeed, or none of them succeed.
+
+==== Countermeasures
+
+To ensure atomicity of the business transaction implement https://microservices.io/tags/transactional%20messaging[transactional messaging]
+to publish messages as part of a database transaction.
+
+Messages that need to be published are saved to the database as part of the database transaction,
+and a separate process - a _message relay_ - reads messages from the database and publishes them to the message broker.
+This way, the database transaction ensures that either all operations - database update and message publishing - succeed,
+or none of them succeed.
+
+==== Implementation example
+
+There are multiple ways of implementing transactional messaging -
+with a combination of https://microservices.io/patterns/data/transactional-outbox.html[Transactional Outbox],
+https://microservices.io/patterns/data/polling-publisher.html[Polling Publisher],
+and https://microservices.io/patterns/data/transaction-log-tailing.html[Transaction Log Tailing] patterns.
+
+This project demonstrates how to implement the message publisher using Transactional Outbox and Transactional Log Tailing
+with https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html[AWS DynamoDB Streams].
+
+In a Transactional Outbox pattern, messages are saved to a DynamoDB `Outbox` table as part of a DynamoDB transaction.
+Then, a separate process - _message relay_ - reads or receives the messages from the `Outbox` table and publishes them to a message broker.
+The message relay can be implemented with Transaction Log Tailing pattern by using DynamoDB Streams.
+DynamoDB Streams capture data changes to the `Outbox` table, and publish events to a AWS Lambda function.
+When a new message is saved to the `Outbox` table, DynamoDB Streams emit an `INSERT` event to the Lambda function.
+The Lambda function receives the inserted message, and reliably publishes it to a message broker.
+
+Note that DynamoDB Streams also guarantee at-least-once delivery of events,
+so the chance of publishing duplicate messages is higher, and the message consumer must be idempotent by
+implementing the https://microservices.io/patterns/communication-style/idempotent-consumer.html[Idempotent Consumer pattern] described in a section above.
+
+=== Unit of Work - ensuring atomicity of a business transaction
+
+TODO
+
+- The need for additional countermeasures described above introduce another challenge of managing atomic operations.
+
+- Relational database - ACID transaction; aggregate store - write in a single operation to a document, or DynamoDB transaction
 
 == Working Example - Customers and Orders application
 
