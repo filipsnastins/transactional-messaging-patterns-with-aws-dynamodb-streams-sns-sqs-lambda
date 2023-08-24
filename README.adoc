@@ -1,0 +1,53 @@
+= Tomodachi Transaction Outbox
+
+A complete example of implementing microservice transactional messaging patterns.
+
+This project demonstrates how to apply Transactional Outbox and Idempotent Consumer patterns together with
+Unit of Work pattern using AWS DynamoDB, AWS SNS SQS, and AWS Lambda.
+
+== Motivation
+
+In a software architecture that uses asynchronous messaging for inter-service communication,
+additional measures need to be taken to ensure that messages are published reliably.
+
+Asynchronous messaging has several inherent properties that need to be taken into account
+when designing a system that uses asynchronous messaging. These properties require
+additional countermeasures to ensure that the system behaves as expected.
+
+* *At-least-once message delivery*
+** *Property:* when message is published to a message broker,
+    it's guaranteed to be delivered to a consumer, but the same message can be delivered
+    more than once. This message broker property is called `at-least-once delivery`,
+    and it occurs because of how a message broker replicates the published message internally
+    to ensure high availability, fault tolerance, and durability.
+    https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html#standard-queues-at-least-once-delivery[Read more about the internals of why at-least-once delivery occurs in AWS Simple Queue Service].
+** *Consequences:* for the applications that use asynchronous messaging for communication,
+    this means that an action can be performed more than once, which can lead to data inconsistency and bad user experience.
+    For example, when a user creates an order, the Order service publishes `OrderCreated` message.
+    The message can be delivered more than once to a Notification service that sends emails to the user,
+    which can lead to the user receiving multiple identical emails.
+** *Countermeasure:* to compensate for this property, _message consumers_ need to be able to recognize and handle duplicate messages.
+    This can be achieved by implementing the https://microservices.io/patterns/communication-style/idempotent-consumer.html[Idempotent Consumer pattern].
+    A consumer is called _idempotent_ when the same call produces the same result, or in other words,
+    when the same message is processed more than once, the result is the same as if the message was processed only once.
+** *Implementation example:* there are many ways of implementing the Idempotent Consumer pattern.
+    A message consumers might be already idempotent by design and not require any additional measures.
+    A common approach is to use an `Inbox` or `ProcessedMessages` table in a database to store unique `MessageId` of already processed messages.
+    When a message is received, the consumer checks if the `MessageId` is already in the `Inbox` table. If it is, the message is ignored as a duplicate.
+
+== Working Example - Customers and Orders application
+
+The application example is inspired by https://github.com/eventuate-tram/eventuate-tram-examples-customers-and-orders[eventuate-tram/eventuate-tram-examples-customers-and-orders].
+
+The application demonstrates three key patterns:
+
+* https://www.cosmicpython.com/book/chapter_06_uow.html[Unit of Work] - perform a business transaction as a single atomic operation.
+* https://microservices.io/patterns/data/transactional-outbox.html[Transactional Outbox] - atomically update the database and send message to a message broker.
+* https://microservices.io/patterns/communication-style/idempotent-consumer.html[Idempotent Consumer] - handle duplicate messages on a consumer side.
+
+The application consists of two services:
+
+* `Order Service` - manages orders
+* `Customer Service` - manages customers
+
+All services are implemented using https://github.com/kalaspuff/tomodachi[tomodachi] framework that provides HTTP and AWS SNS SQS transport layers.
