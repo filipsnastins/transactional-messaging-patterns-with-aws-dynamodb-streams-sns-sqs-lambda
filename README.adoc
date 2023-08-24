@@ -5,6 +5,8 @@ A complete example of implementing microservice transactional messaging patterns
 This project demonstrates how to apply Transactional Outbox and Idempotent Consumer patterns together with
 Unit of Work pattern using AWS DynamoDB, DynamoDB Streams, SNS, SQS, and Lambda.
 
+:toc:
+
 == Motivation
 
 In a software architecture that uses asynchronous messaging for inter-service communication,
