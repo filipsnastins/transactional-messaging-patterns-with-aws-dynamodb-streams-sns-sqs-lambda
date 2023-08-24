@@ -1,5 +1,7 @@
 :toc:
-:toc-placement!:
+:toc-placement: preamble
+:toclevels: 2
+:showtitle:
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -15,8 +17,6 @@ A complete example of implementing microservice transactional messaging patterns
 
 This project demonstrates how to apply Transactional Outbox and Idempotent Consumer patterns together with
 Unit of Work pattern using AWS DynamoDB, DynamoDB Streams, SNS, SQS, and Lambda.
-
-toc::[]
 
 == Motivation
 
@@ -40,7 +40,7 @@ https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/stand
 
 For the applications that use asynchronous messaging, this means that an action can be performed more than once,
 which can lead to data inconsistency and bad user experience.
-For example, when a user creates an order, the `Order Service publishes `OrderCreated` message.
+For example, when a user creates an order, the `Order Service` publishes `OrderCreated` message.
 The message can be delivered more than once to a `Notifications Service` that sends emails to the user,
 which can lead to the user receiving multiple identical emails.
 
@@ -53,8 +53,8 @@ when the same message is processed more than once, the result is the same as if 
 
 [NOTE]
 ====
-Responsibility of handling duplicate messages is now always on the consumer side,
-because the publishes has no way of ensuring that the message is delivered only once.
+Responsibility of handling duplicate messages is now always on the _consumer_ side,
+because the publisher has no way of ensuring that the message is publisher and delivered exactly once.
 ====
 
 ==== Implementation example
@@ -125,11 +125,41 @@ implementing the https://microservices.io/patterns/communication-style/idempoten
 
 === Unit of Work - ensuring atomicity of a business transaction
 
-IMPORTANT: TODO
+Idempotent Consumer and Transactional Outbox patterns use a database layer to persist already processed
+message identifiers and published messages. For the pattern implementations to work reliably,
+it must be ensured that all database operations within a business transaction are atomic.
+If an application is performing multiple independent database writes within a single business transaction,
+it's possible that some of the writes succeed, and some fail, which can lead to data inconsistency.
+Therefore, we need to introduce another puzzle piece that will keep track of all database operations
+and ensure that they're committed atomically - Unit of Work pattern.
 
-- The need for additional countermeasures described above introduce another challenge of managing atomic operations.
+https://martinfowler.com/eaaCatalog/unitOfWork.html[Unit of Work] pattern is described by Martin Fowler in https://martinfowler.com/books/eaa.html[P of EAA book].
+The Unit of Work pattern is more broad that what's required for transactional messaging - it's also responsible for figuring out what exactly needs to be
+saved to the database and how to resolve concurrency conflicts, but for the purposes of transactional messaging, the atomicity aspect is the most relevant.
 
-- Relational database - ACID transaction; aggregate store - write in a single operation to a document, or DynamoDB transaction
+Therefore, we'll use another definition from the https://www.cosmicpython.com/[Cosmic Python book] -
+https://www.cosmicpython.com/book/chapter_06_uow.html["Unit of Work (UoW) pattern is our abstraction over the idea of atomic operations"].
+
+For our purposes, Unit of Work will keep a list of all database operations that need to happen within the particular business transaction,
+and perform an atomic commit at the end of the transaction. The operations will include
+saving a processed message identifier to the `Inbox` table, saving publishes messages to the `Outbox` table,
+and saving domain objects to another aggregate table, for example, in case of the `Order Service` - the `Orders` table.
+
+The database commit needs to be atomic, and its implementation will depend on a particular database technology.
+This project uses AWS DynamoDB that supports https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/transaction-apis.html[transactional operations] -
+exactly what we need for our purposes. If we were using a relational database, we'd be using a familiar ACID transaction.
+
+If you're familiar with https://www.sqlalchemy.org/[SQLAlchemy ORM], the `sqlalchemy.orm.Session` object already implements the Unit of Work pattern.
+Java JPA has a similar concept of `@Transactional` annotation.
+If your database doesn't support transactions, there are other ways of ensuring operation atomicity,
+like writing all changes to a single aggregate document in one operation.
+
+[TIP]
+====
+Patterns are not static and set in stone. They can be adapted to fit the needs of a particular use case,
+or only a required part of a pattern can be used. The most useful thing about patterns is that they provide
+a common language to describe a solution to a problem.
+====
 
 == Working Example - Customers and Orders application
 
