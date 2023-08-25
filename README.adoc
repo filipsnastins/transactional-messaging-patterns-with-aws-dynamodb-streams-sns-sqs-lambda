@@ -218,7 +218,7 @@ awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--custo
 awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--orders-outbox
 ----
 
-- Check DynamoDB content with [DynamoDB Admin](https://github.com/aaronshaf/dynamodb-admin) at `http://localhost:8001`
+- Check DynamoDB content with https://github.com/aaronshaf/dynamodb-admin[DynamoDB Admin] at `http://localhost:8001`
 
 === Sample requests
 
