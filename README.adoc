@@ -269,9 +269,9 @@ curl -X POST http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c/ca
   to cleanup old items, for example, after one year.
 - If a published message payload exceeds DynamoDB item size limit of `400 KB`, message saving to the database will fail.
   If large messages are expected, consider saving them in S3 and storing only a reference to the message in DynamoDB.
-  Read more in [Best practices for storing large items and attributes](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-use-s3-too.html).
+  Read more in https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-use-s3-too.html[Best practices for storing large items and attributes].
   The same bottleneck will occur in SQS too, so the same approach for transporting large SQS messages needs to be implemented.
-  Read more in [Managing large Amazon SQS messages using Amazon S3](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-s3-messages.html)
+  Read more in https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-s3-messages.html[Managing large Amazon SQS messages using Amazon S3].
 
 === Notes on running Outbox Lambda in a local environment or autotests
 
@@ -296,16 +296,16 @@ No such problems observed with LocalStack.
 == Resources and acknowledgements
 
 * Application example and domain problem:
-** [github.com/eventuate-tram/eventuate-tram-examples-customers-and-orders](https://github.com/eventuate-tram/eventuate-tram-examples-customers-and-orders)
+** https://github.com/eventuate-tram/eventuate-tram-examples-customers-and-orders[github.com/eventuate-tram/eventuate-tram-examples-customers-and-orders]
 * Application design inspiration:
-** [github.com/cosmicpython/code](https://github.com/cosmicpython/code)
-** [github.com/pycabook/rentomatic](https://github.com/pycabook/rentomatic)
+** https://github.com/cosmicpython/code[github.com/cosmicpython/code]
+** https://github.com/pycabook/rentomatic[github.com/pycabook/rentomatic]
 * Transactional messaging implementation inspiration:
-** [github.com/eventuate-tram/eventuate-tram-core](https://github.com/eventuate-tram/eventuate-tram-core)
+** https://github.com/eventuate-tram/eventuate-tram-core[github.com/eventuate-tram/eventuate-tram-core]
 * Books:
-** [Microservices Patterns: With Examples in Java.](https://microservices.io/book) Book by Chris Richardson.
-** [Architecture Patterns with Python: Enabling Test-Driven Development, Domain-Driven Design, and Event-Driven Microservices](https://www.cosmicpython.com/) Book by Harry Percival and Bob Gregory.
-** [Clean Architectures in Python: A practical approach to better software design.](https://leanpub.com/clean-architectures-in-python) Book by Leonardo Giordani.
+** https://microservices.io/book[Microservices Patterns: With Examples in Java.] Book by Chris Richardson.
+** https://www.cosmicpython.com/[Architecture Patterns with Python: Enabling Test-Driven Development, Domain-Driven Design, and Event-Driven Microservices] Book by Harry Percival and Bob Gregory.
+** https://leanpub.com/clean-architectures-in-python[Clean Architectures in Python: A practical approach to better software design.] Book by Leonardo Giordani.
 * Articles:
 ** ...
 
