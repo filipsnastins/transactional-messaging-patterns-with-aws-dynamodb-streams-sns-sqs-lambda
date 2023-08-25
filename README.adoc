@@ -15,8 +15,27 @@ endif::[]
 
 A complete example of implementing microservice transactional messaging patterns.
 
-This project demonstrates how to apply Transactional Outbox and Idempotent Consumer patterns together with
-Unit of Work pattern using AWS DynamoDB, DynamoDB Streams, SNS, SQS, and Lambda.
+This project demonstrates how to apply Transactional Outbox, Transaction Log Tailing,
+and Idempotent Consumer together with Unit of Work pattern using AWS DynamoDB, DynamoDB Streams, SNS, SQS, and Lambda.
+
+== Overview
+
+The project consists of multiple modules:
+
+* Pattern implementations:
+** link:library-transactional-outbox[library-transactional-outbox] - Transactional Messaging patterns implementation
+** link:lambda-outbox-dynamodb-streams[lambda-outbox-dynamodb-streams] - AWS Lambda function that implements
+    Transaction Log Tailing message relay using DynamoDB Streams for Transaction Log Tailing pattern
+** link:terraform-transactional-outbox[terraform-transactional-outbox] - example Terraform module for
+    `DynamoDB Streams + Lambda` Transactional Outbox deployment to AWS
+** link:library-unit-of-work[library-unit-of-work] - Unit of Work pattern implementation
+
+* Example applications that demonstrate the use of the patterns:
+** link:service-customers[service-customers] - Customers service
+** link:service-orders[service-orders] - Orders service
+** link:deploy-terraform-aws-ecs[deploy-terraform-aws-ecs] - Terraform definitions for deploying the application stack to AWS ECS
+** link:library-tomodachi-bootstrap[library-tomodachi-bootstrap] - helper library that provides common functionality for
+    bootstrapping https://github.com/kalaspuff/tomodachi[tomodachi] services
 
 == Motivation
 

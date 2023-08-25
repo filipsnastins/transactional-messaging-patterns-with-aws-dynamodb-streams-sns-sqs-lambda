@@ -10,7 +10,8 @@
   - <https://d1.awsstatic.com/architecture-diagrams/ArchitectureDiagrams/aws-reference-architecture-hybrid-domain-consistency-ra.pdf?did=wp_card&trk=wp_card>
 
 - [ ] Simple transactional outbox and idempotent consumer diagram
-- [ ] Prose description
+- [x] Prose description
+- [ ] Add diagrams to Idempotent Consumer, Transactional Outbox and Unit of Work
 
 ## service-customers
 
