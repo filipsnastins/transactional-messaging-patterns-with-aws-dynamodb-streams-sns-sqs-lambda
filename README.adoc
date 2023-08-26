@@ -18,9 +18,11 @@ A complete example of implementing microservice transactional messaging patterns
 This project demonstrates how to apply Transactional Outbox, Transaction Log Tailing,
 and Idempotent Consumer together with Unit of Work pattern using AWS DynamoDB, DynamoDB Streams, SNS, SQS, and Lambda.
 
+The project is greatly inspired by https://microservices.io[microservices.io] and https://eventuate.io[eventuate.io]
+
 == Overview
 
-The project consists of multiple modules:
+The project consists of multiple modules.
 
 * Pattern implementations:
 ** link:library-transactional-messaging[library-transactional-messaging] - Transactional Messaging patterns implementation
@@ -36,6 +38,11 @@ The project consists of multiple modules:
 ** link:deploy-terraform-aws-ecs[deploy-terraform-aws-ecs] - Terraform definitions for deploying the application stack to AWS ECS
 ** link:library-tomodachi-bootstrap[library-tomodachi-bootstrap] - helper library that provides common functionality for
     bootstrapping https://github.com/kalaspuff/tomodachi[tomodachi] services
+
+[NOTE]
+====
+See README files inside of each module for more detailed documentation.
+====
 
 == Motivation
 
@@ -198,9 +205,9 @@ The application example is inspired by https://github.com/eventuate-tram/eventua
 
 The application demonstrates three key patterns:
 
-* https://www.cosmicpython.com/book/chapter_06_uow.html[Unit of Work] - perform a business transaction as a single atomic operation.
-* https://microservices.io/patterns/data/transactional-outbox.html[Transactional Outbox] - atomically update the database and send message to a message broker.
 * https://microservices.io/patterns/communication-style/idempotent-consumer.html[Idempotent Consumer] - handle duplicate messages on a consumer side.
+* https://microservices.io/patterns/data/transactional-outbox.html[Transactional Outbox] - atomically update the database and send message to a message broker.
+* https://www.cosmicpython.com/book/chapter_06_uow.html[Unit of Work] - perform a business transaction as a single atomic operation.
 
 The application consists of two services:
 
@@ -208,6 +215,17 @@ The application consists of two services:
 * `Customer Service` - manages customers
 
 All services are implemented using https://github.com/kalaspuff/tomodachi[tomodachi] framework that provides HTTP and AWS SNS SQS transport layers.
+
+The service design is similar to https://github.com/eventuate-tram/eventuate-tram-examples-customers-and-orders[eventuate-tram/eventuate-tram-examples-customers-and-orders].
+The main difference is in the implementation technologies used.
+Instead of MySQL, DynamoDB is used as a database.
+Binlog/Transaction log is replaced with DynamoDB Streams.
+Eventuate Tram CDC service is implemented with AWS Lambda that listens to AWS DynamoDB Streams.
+Instead of Apache Kafka, Amazon SNS and SQS are used as a message broker.
+Order History Service is not implemented.
+
+image:images/Eventuate_Tram_Customer_and_Order_Architecture.png[]
+Image source: https://github.com/eventuate-tram/eventuate-tram-examples-customers-and-orders
 
 === Run locally with Docker Compose
 
@@ -226,7 +244,7 @@ awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--custo
 awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--orders-outbox
 ```
 
-- Check DynamoDB content with https://github.com/aaronshaf/dynamodb-admin[DynamoDB Admin] at `http://localhost:8001`
+- Check DynamoDB content with https://github.com/aaronshaf/dynamodb-admin[DynamoDB Admin] at http://localhost:8001
 
 === Sample requests
 
@@ -266,11 +284,19 @@ curl http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c
 curl -X POST http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c/cancel
 ```
 
-=== Limitations
+=== Further improvements for production use
 
-- To save storage costs, Inbox and Outbox repositories should use `DynamoDB time-to-live`
+* To save storage costs, Inbox and Outbox repositories should use `DynamoDB time-to-live`
   to cleanup old items, for example, after one year.
-- If a published message payload exceeds DynamoDB item size limit of `400 KB`, message saving to the database will fail.
+
+* Active monitoring on the `Outbox` table is required to notice if Lambda message relay has issues dispatching messages.
+  `OutboxRepository` has a method `get_not_dispatched_messages` that returns a list of not dispatched messages.
+  The monitoring can be implemented with a custom Lambda function that will be triggered by EventBridge,
+  for example, every 5 minutes, and will check the age of the oldest not dispatched message.
+  The Lambda function can publish a custom CloudWatch metric with the age of the oldest not dispatched message,
+  and an alarm can be configured to trigger if the latest metric value is greater than, for example, 30 minutes.
+
+* If a published message payload exceeds DynamoDB item size limit of `400 KB`, message saving to the database will fail.
   If large messages are expected, consider saving them in S3 and storing only a reference to the message in DynamoDB.
   Read more in https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-use-s3-too.html[Best practices for storing large items and attributes].
   The same bottleneck will occur in SQS too, so the same approach for transporting large SQS messages needs to be implemented.
@@ -312,7 +338,3 @@ No such problems observed with LocalStack.
 ** https://microservices.io/book[Microservices Patterns: With Examples in Java]. Book by Chris Richardson.
 ** https://www.cosmicpython.com/[Architecture Patterns with Python: Enabling Test-Driven Development, Domain-Driven Design, and Event-Driven Microservices]. Book by Harry Percival and Bob Gregory.
 ** https://leanpub.com/clean-architectures-in-python[Clean Architectures in Python: A practical approach to better software design]. Book by Leonardo Giordani.
-
-== Development
-
-...
