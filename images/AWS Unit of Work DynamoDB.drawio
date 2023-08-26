@@ -1,19 +1,14 @@
-<mxfile host="app.diagrams.net" modified="2023-08-26T14:06:19.728Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36" etag="hzUH7cDz3VUlgN3uksz1" version="21.6.9" type="google">
+<mxfile host="app.diagrams.net" modified="2023-08-26T14:18:03.554Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36" etag="Hrg-MCDhT7WUbJjIhaHy" version="21.6.9" type="google">
   <diagram name="Page-1" id="j8gyJ469gVMiIQmluv2O">
     <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="kkgnVbwnO8yxF-T6s2bL-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.615;entryY=-0.004;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=13;" edge="1" parent="1" source="kkgnVbwnO8yxF-T6s2bL-12" target="Ho6LmtUpcL3kxW8yU0lt-19">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="kkgnVbwnO8yxF-T6s2bL-24" value="6. Commit DynamoDB transaction&lt;br style=&quot;font-size: 13px;&quot;&gt;(TransactWriteItems)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=13;" vertex="1" connectable="0" parent="kkgnVbwnO8yxF-T6s2bL-23">
-          <mxGeometry x="0.2441" relative="1" as="geometry">
-            <mxPoint y="-2" as="offset" />
-          </mxGeometry>
+        <mxCell id="i8uVdYxym73UDjXrxFbb-1" value="&lt;font color=&quot;#64758d&quot;&gt;Business transaction - Unit of Work&lt;/font&gt;" style="dashed=1;verticalAlign=top;fontStyle=0;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fontSize=13;strokeColor=#97D077;strokeWidth=1;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="130" y="200" width="640" height="290" as="geometry" />
         </mxCell>
         <mxCell id="Ho6LmtUpcL3kxW8yU0lt-19" value="DynamoDB transaction" style="fillColor=none;strokeColor=#5A6C86;dashed=1;verticalAlign=top;fontStyle=0;fontColor=#5A6C86;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fontSize=13;" vertex="1" parent="1">
-          <mxGeometry x="141" y="530" width="501" height="150" as="geometry" />
+          <mxGeometry x="128.99" y="560" width="640" height="150" as="geometry" />
         </mxCell>
         <mxCell id="Ho6LmtUpcL3kxW8yU0lt-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=13;" edge="1" parent="1" source="Ho6LmtUpcL3kxW8yU0lt-13" target="Ho6LmtUpcL3kxW8yU0lt-8">
           <mxGeometry relative="1" as="geometry" />
@@ -24,10 +19,10 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="Ho6LmtUpcL3kxW8yU0lt-6" value="Outbox table" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#2E27AD;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=13;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.table;" vertex="1" parent="1">
-          <mxGeometry x="414.47" y="559" width="78" height="78" as="geometry" />
+          <mxGeometry x="410" y="589" width="78" height="78" as="geometry" />
         </mxCell>
         <mxCell id="Ho6LmtUpcL3kxW8yU0lt-7" value="DynamoDB" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=#4D72F3;gradientDirection=north;fillColor=#3334B9;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=13;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.dynamodb;" vertex="1" parent="1">
-          <mxGeometry x="170" y="559" width="78" height="78" as="geometry" />
+          <mxGeometry x="150" y="589" width="78" height="78" as="geometry" />
         </mxCell>
         <mxCell id="Ho6LmtUpcL3kxW8yU0lt-8" value="&lt;span style=&quot;background-color: rgb(255, 255, 255); font-size: 13px;&quot;&gt;SQS queue&lt;/span&gt;" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=#FF4F8B;gradientDirection=north;fillColor=#BC1356;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=13;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.sqs;spacingBottom=0;spacingTop=7;" vertex="1" parent="1">
           <mxGeometry x="409.99" y="30" width="78" height="78" as="geometry" />
@@ -37,13 +32,13 @@
             <mxPoint x="415.51" y="245" as="sourcePoint" />
             <mxPoint x="330" y="500.00088781642694" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="330" y="245" />
+              <mxPoint x="300" y="245" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="kkgnVbwnO8yxF-T6s2bL-9" value="2. Check if MessageId&lt;br style=&quot;font-size: 13px;&quot;&gt;already exists;&lt;br style=&quot;font-size: 13px;&quot;&gt;save processed MessageId" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=13;" vertex="1" connectable="0" parent="kkgnVbwnO8yxF-T6s2bL-3">
           <mxGeometry x="0.1312" y="1" relative="1" as="geometry">
-            <mxPoint x="-34" y="-108" as="offset" />
+            <mxPoint x="-21" y="-99" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="kkgnVbwnO8yxF-T6s2bL-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=13;" edge="1" parent="1" source="Ho6LmtUpcL3kxW8yU0lt-13" target="kkgnVbwnO8yxF-T6s2bL-12">
@@ -85,12 +80,20 @@
           <mxGeometry x="405.51" y="220" width="86.96" height="50" as="geometry" />
         </mxCell>
         <mxCell id="kkgnVbwnO8yxF-T6s2bL-1" value="Inbox table" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#2E27AD;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=13;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.table;" vertex="1" parent="1">
-          <mxGeometry x="290" y="559" width="78" height="78" as="geometry" />
+          <mxGeometry x="260" y="589" width="78" height="78" as="geometry" />
         </mxCell>
         <mxCell id="kkgnVbwnO8yxF-T6s2bL-2" value="Orders table" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#2E27AD;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=13;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.table;" vertex="1" parent="1">
-          <mxGeometry x="540" y="559" width="78" height="78" as="geometry" />
+          <mxGeometry x="560" y="589" width="78" height="78" as="geometry" />
         </mxCell>
-        <mxCell id="kkgnVbwnO8yxF-T6s2bL-12" value="&lt;b style=&quot;background-color: rgb(255, 255, 255);&quot;&gt;Unit of Work&lt;/b&gt;" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#D45B07;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=13;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.instance2;" vertex="1" parent="1">
+        <mxCell id="i8uVdYxym73UDjXrxFbb-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="kkgnVbwnO8yxF-T6s2bL-12" target="Ho6LmtUpcL3kxW8yU0lt-19">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="i8uVdYxym73UDjXrxFbb-4" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;6. Commit DynamoDB transaction&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;(TransactWriteItems)&lt;/font&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="i8uVdYxym73UDjXrxFbb-3">
+          <mxGeometry x="-0.2138" y="1" relative="1" as="geometry">
+            <mxPoint x="3" y="34" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kkgnVbwnO8yxF-T6s2bL-12" value="&lt;b style=&quot;background-color: rgb(255, 255, 255);&quot;&gt;&lt;font color=&quot;#000000&quot; style=&quot;font-size: 15px;&quot;&gt;Unit of Work&lt;/font&gt;&lt;/b&gt;" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#D45B07;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=13;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.instance2;" vertex="1" parent="1">
           <mxGeometry x="425" y="390" width="48" height="48" as="geometry" />
         </mxCell>
       </root>
