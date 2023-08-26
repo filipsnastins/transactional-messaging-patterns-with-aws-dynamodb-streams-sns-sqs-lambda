@@ -18,7 +18,7 @@ A complete example of implementing microservice transactional messaging patterns
 This project demonstrates how to apply Transactional Outbox, Transaction Log Tailing,
 and Idempotent Consumer together with Unit of Work pattern using AWS DynamoDB, DynamoDB Streams, SNS, SQS, and Lambda.
 
-The project is greatly inspired by https://microservices.io[microservices.io] and https://eventuate.io[eventuate.io]
+This example is heavily inspired by https://microservices.io[microservices.io] and https://eventuate.io[eventuate.io]
 
 == Overview
 
@@ -284,7 +284,7 @@ curl http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c
 curl -X POST http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c/cancel
 ```
 
-=== Further improvements for production use
+== Further improvements for production use
 
 * To save storage costs, Inbox and Outbox repositories should use `DynamoDB time-to-live`
   to cleanup old items, for example, after one year.
@@ -302,9 +302,9 @@ curl -X POST http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c/ca
   The same bottleneck will occur in SQS too, so the same approach for transporting large SQS messages needs to be implemented.
   Read more in https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-s3-messages.html[Managing large Amazon SQS messages using Amazon S3].
 
-=== Notes on running Outbox Lambda in a local environment or autotests
+== Notes on running Outbox Lambda in a local environment or autotests
 
-==== Moto: `arm64` vs `amd64` Lambda architecture
+=== Moto: `arm64` vs `amd64` Lambda architecture
 
 Seems that Moto ignores specified Lambda architecture name, and uses whichever `mlupin/docker-lambda` Docker image
 is pulled to the local Docker daemon. If you get errors that outbox messages are not dispatched, try to
@@ -312,7 +312,7 @@ delete locally cached `mlupin/docker-lambda` images and pull them again for your
 
 No such problems observed with LocalStack.
 
-### Moto: marking messages as dispatched doesn't work with Moto
+=== Moto: marking messages as dispatched doesn't work with Moto
 
 When Outbox Lambda is trying to mark a message as dispatched, Lambda goes into an infinite loop.
 That's why marking messages as dispatched is disabled when running Outbox Lambda in local environment or autotests.
