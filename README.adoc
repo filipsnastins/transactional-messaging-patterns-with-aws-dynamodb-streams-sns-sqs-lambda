@@ -84,7 +84,7 @@ When a message is received, the consumer checks if the `MessageId` is already in
 
 However, some message consumers might be already idempotent by design and not require any additional measures.
 
-image:images/AWS Idempotent Consumer.drawio.png[Idempotent Consumer pattern with DynamoDB, align="center"]
+image:images/AWS Idempotent Consumer.drawio.png[Idempotent Consumer pattern with DynamoDB,align="center"]
 
 === Property: Domain inconsistency in event-driven architecture
 
