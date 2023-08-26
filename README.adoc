@@ -70,7 +70,7 @@ This can be achieved by implementing the https://microservices.io/patterns/commu
 A consumer is _idempotent_ when the same call produces the same result, or in other words,
 when the same message is processed more than once, the result is the same as if the message was processed only once.
 
-[NOTE]
+[IMPORTANT]
 ====
 Responsibility of handling duplicate messages is now always on the _consumer_ side,
 because the publisher has no way of ensuring that the message is publisher and delivered exactly once.
@@ -139,7 +139,7 @@ The Lambda function receives the inserted message, and reliably publishes it to 
 
 image:images/AWS Transaction Log Tailing.drawio.png[Transaction Log Tailing pattern with DynamoDB]
 
-[NOTE]
+[IMPORTANT]
 ====
 DynamoDB Streams also guarantee at-least-once delivery of data capture events,
 so the chance of publishing duplicate messages is higher, and the message consumer must be idempotent by
@@ -177,13 +177,19 @@ Java JPA has a similar concept of `@Transactional` annotation.
 If your database doesn't support transactions, there are other ways of ensuring operation atomicity,
 like writing all changes to a single aggregate document in one operation.
 
-image:images/AWS Unit of Work DynamoDB.drawio.png[Unit of Work pattern with DynamoDB]
-
 [TIP]
 ====
 Patterns are not static and set in stone. They can be adapted to fit the needs of a particular use case,
 or only a required part of a pattern can be used. The most useful thing about patterns is that they provide
 a common language to describe a solution to a problem.
+====
+
+image:images/AWS Unit of Work DynamoDB.drawio.png[Unit of Work pattern with DynamoDB]
+
+[NOTE]
+====
+See a complete AWS reference architecture diagram -
+https://d1.awsstatic.com/architecture-diagrams/ArchitectureDiagrams/aws-reference-architecture-hybrid-domain-consistency-ra.pdf?did=wp_card&trk=wp_card[Domain consistency in event-driven architectures]
 ====
 
 == Working Example - Customers and Orders application
