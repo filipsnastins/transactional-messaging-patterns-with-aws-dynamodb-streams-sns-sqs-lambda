@@ -84,6 +84,8 @@ When a message is received, the consumer checks if the `MessageId` is already in
 
 However, some message consumers might be already idempotent by design and not require any additional measures.
 
+image:images/AWS Idempotent Consumer.drawio.png[Idempotent Consumer pattern with DynamoDB]
+
 === Property: Domain inconsistency in event-driven architecture
 
 When actions in a system are driven by asynchronous messages - events or commands -
@@ -203,20 +205,18 @@ All services are implemented using https://github.com/kalaspuff/tomodachi[tomoda
 
 - Start applications
 
-[bash]
-----
+```bash
 docker compose up
-----
+```
 
 - Get outbox lambda logs
 
-[bash]
-----
+```bash
 awslocal --region=us-east-1 logs describe-log-groups
 
 awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--customers-outbox
 awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--orders-outbox
-----
+```
 
 - Check DynamoDB content with https://github.com/aaronshaf/dynamodb-admin[DynamoDB Admin] at `http://localhost:8001`
 
@@ -224,44 +224,39 @@ awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--order
 
 - Create customer
 
-[bash]
-----
+```bash
 curl -X POST --header "Content-Type: application/json" -d '{
   "name": "Jane Doe",
   "credit_limit": 250
 }' http://localhost:9701/customers
-----
+```
 
 - Create order
 
-[bash]
-----
+```bash
 curl -X POST --header "Content-Type: application/json" -d '{
   "customer_id": "97c05e79-5902-451f-b96e-f06c8fc3ed68",
   "order_total": 100
 }' http://localhost:9702/orders
-----
+```
 
 - Get customer
 
-[bash]
-----
+```bash
 curl http://localhost:9701/customer/15883bbb-dbf9-4ea0-afec-b2fab1a0ab2f
-----
+```
 
 - Get order
 
-[bash]
-----
+```bash
 curl http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c
-----
+```
 
 - Cancel order
 
-[bash]
-----
+```bash
 curl -X POST http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c/cancel
-----
+```
 
 === Limitations
 
