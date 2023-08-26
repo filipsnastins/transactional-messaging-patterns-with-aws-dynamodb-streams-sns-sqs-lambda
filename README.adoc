@@ -84,7 +84,7 @@ When a message is received, the consumer checks if the `MessageId` is already in
 
 However, some message consumers might be already idempotent by design and not require any additional measures.
 
-image:images/AWS Idempotent Consumer.drawio.png[Idempotent Consumer pattern with DynamoDB,align="center"]
+image:images/AWS Idempotent Consumer.drawio.png[Idempotent Consumer pattern with DynamoDB]
 
 === Property: Domain inconsistency in event-driven architecture
 
@@ -137,6 +137,8 @@ DynamoDB Streams capture data changes to the `Outbox` table, and publish events 
 When a new message is saved to the `Outbox` table, DynamoDB Streams emit an `INSERT` event to the Lambda function.
 The Lambda function receives the inserted message, and reliably publishes it to a message broker.
 
+image:images/AWS Transaction Log Tailing.drawio.png[Transaction Log Tailing pattern with DynamoDB]
+
 [NOTE]
 ====
 DynamoDB Streams also guarantee at-least-once delivery of data capture events,
@@ -174,6 +176,8 @@ If you're familiar with https://www.sqlalchemy.org/[SQLAlchemy ORM], the `sqlalc
 Java JPA has a similar concept of `@Transactional` annotation.
 If your database doesn't support transactions, there are other ways of ensuring operation atomicity,
 like writing all changes to a single aggregate document in one operation.
+
+image:images/AWS Unit of Work DynamoDB.drawio.png[Unit of Work pattern with DynamoDB]
 
 [TIP]
 ====
