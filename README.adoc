@@ -27,7 +27,7 @@ The project consists of multiple modules.
 * Pattern implementations:
 ** link:library-transactional-messaging[library-transactional-messaging] - Transactional Messaging patterns implementation
 ** link:lambda-outbox-dynamodb-streams[lambda-outbox-dynamodb-streams] - AWS Lambda function that implements
-    Transaction Log Tailing message relay using DynamoDB Streams for Transaction Log Tailing pattern
+    Transaction Log Tailing message relay using DynamoDB Streams
 ** link:terraform-transactional-messaging[terraform-transactional-messaging] - example Terraform module for
     `DynamoDB Streams + Lambda` Transactional Outbox deployment to AWS
 ** link:library-unit-of-work[library-unit-of-work] - Unit of Work pattern implementation
