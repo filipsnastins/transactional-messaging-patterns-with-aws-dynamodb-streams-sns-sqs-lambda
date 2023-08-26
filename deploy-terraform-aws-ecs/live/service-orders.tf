@@ -72,14 +72,14 @@ resource "aws_dynamodb_table" "orders" {
 }
 
 module "service_orders_inbox_table" {
-  source = "../../terraform-transactional-outbox/idempotent-consumer-dynamodb-inbox"
+  source = "../../terraform-transactional-messaging/idempotent-consumer-dynamodb-inbox"
 
   environment  = var.environment
   service_name = "orders"
 }
 
 module "service_orders_outbox_dynamodb_streams" {
-  source = "../../terraform-transactional-outbox/outbox-dynamodb-streams"
+  source = "../../terraform-transactional-messaging/outbox-dynamodb-streams"
 
   environment  = var.environment
   service_name = "orders"

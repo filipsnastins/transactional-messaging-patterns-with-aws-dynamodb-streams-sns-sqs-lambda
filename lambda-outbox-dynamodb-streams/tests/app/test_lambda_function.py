@@ -2,7 +2,7 @@ import pytest
 from tomodachi.envelope.json_base import JsonBase
 from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.pytest.async_probes import probe_during_interval, probe_until
-from transactional_outbox.dynamodb import DynamoDBOutboxRepository
+from transactional_messaging.dynamodb import DynamoDBOutboxRepository
 from types_aiobotocore_sqs import SQSClient
 from unit_of_work.dynamodb import DynamoDBSession
 

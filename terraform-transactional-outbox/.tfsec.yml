@@ -1,4 +1,0 @@
----
-exclude:
-  - aws-dynamodb-table-customer-key
-  - aws-sqs-enable-queue-encryption

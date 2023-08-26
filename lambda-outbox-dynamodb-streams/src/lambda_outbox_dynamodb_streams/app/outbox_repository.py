@@ -1,4 +1,4 @@
-from transactional_outbox.dynamodb import DynamoDBOutboxRepository
+from transactional_messaging.dynamodb import DynamoDBOutboxRepository
 from unit_of_work.dynamodb import DynamoDBSession
 
 from . import clients

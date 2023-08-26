@@ -1,7 +1,7 @@
 import copy
 import uuid
 
-from transactional_outbox.fakes import FakeInboxRepository, FakeOutboxRepository
+from transactional_messaging.fakes import FakeInboxRepository, FakeOutboxRepository
 
 from adapters.order_repository import OrderAlreadyExistsError, OrderNotFoundError, OrderRepository
 from orders.order import Order

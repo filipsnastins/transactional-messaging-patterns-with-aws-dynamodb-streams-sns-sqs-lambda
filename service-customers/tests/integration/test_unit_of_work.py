@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 import structlog
-from transactional_outbox.idempotent_consumer import MessageAlreadyProcessedError
+from transactional_messaging.idempotent_consumer import MessageAlreadyProcessedError
 
 from customers.customer import Customer
 from service_layer.unit_of_work import DynamoDBUnitOfWork

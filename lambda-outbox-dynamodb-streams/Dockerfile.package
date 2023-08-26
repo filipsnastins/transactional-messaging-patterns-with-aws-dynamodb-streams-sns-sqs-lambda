@@ -15,7 +15,7 @@ RUN python -m pip install --no-cache-dir -U \
     "poetry==$POETRY_VERSION" && \
     virtualenv "$VIRTUAL_ENV"
 COPY --link lambda-outbox-dynamodb-streams/pyproject.toml lambda-outbox-dynamodb-streams/poetry.lock ./
-COPY --link library-transactional-outbox ../library-transactional-outbox
+COPY --link library-transactional-messaging ../library-transactional-messaging
 COPY --link library-unit-of-work ../library-unit-of-work
 RUN poetry install --without dev
 
