@@ -1,8 +1,5 @@
 # TODOs
 
-- [x] Rename repository to `transactional-messaging-patterns-with-aws-dynamodb-streams-sns-sqs-lambda`
-- [ ] Rename `library-transactional-outbox` to `library-transactional-messaging`
-
 ## Documentation
 
 - [ ] AWS architecture diagram
@@ -20,10 +17,6 @@
 ## service-orders
 
 ✅
-
-## service-order-history
-
-- [ ] Feature specs for acceptance tests
 
 ## Inbox
 

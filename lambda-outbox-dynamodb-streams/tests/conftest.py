@@ -2,7 +2,7 @@ import pytest
 import pytest_asyncio
 from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.containers import MotoContainer
-from transactional_outbox.dynamodb import DynamoDBOutboxRepository, create_outbox_table
+from transactional_messaging.dynamodb import DynamoDBOutboxRepository, create_outbox_table
 from types_aiobotocore_dynamodb import DynamoDBClient
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient

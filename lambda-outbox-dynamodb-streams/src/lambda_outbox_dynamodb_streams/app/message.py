@@ -1,7 +1,7 @@
 import uuid
 
 from aws_lambda_powertools.utilities.data_classes.dynamo_db_stream_event import DynamoDBRecord
-from transactional_outbox.outbox import PublishedMessage
+from transactional_messaging.outbox import PublishedMessage
 
 from .time import str_to_datetime
 

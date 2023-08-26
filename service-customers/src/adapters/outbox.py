@@ -1,5 +1,5 @@
 from lambda_outbox_dynamodb_streams import outbox
-from transactional_outbox.dynamodb import create_outbox_table as transactional_outbox_create_outbox_table
+from transactional_messaging.dynamodb import create_outbox_table as transactional_messaging_create_outbox_table
 
 from adapters import clients
 from adapters.settings import get_settings
@@ -11,7 +11,7 @@ def get_outbox_table_name() -> str:
 
 async def create_outbox_table() -> None:
     async with clients.get_dynamodb_client() as client:
-        await transactional_outbox_create_outbox_table(table_name=get_outbox_table_name(), client=client)
+        await transactional_messaging_create_outbox_table(table_name=get_outbox_table_name(), client=client)
 
 
 async def create_dynamodb_streams_outbox() -> None:

@@ -3,7 +3,7 @@ from typing import Awaitable, Callable
 
 from aws_lambda_powertools.logging import Logger
 from tomodachi.envelope.json_base import JsonBase
-from transactional_outbox.outbox import PublishedMessage
+from transactional_messaging.outbox import PublishedMessage
 from types_aiobotocore_sns import SNSClient
 
 logger = Logger()

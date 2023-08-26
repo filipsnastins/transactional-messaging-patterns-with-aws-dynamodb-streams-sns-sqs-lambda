@@ -11,7 +11,7 @@ stockholm = "^0.5.5"
 structlog = "^23.1.0"
 tomodachi = "^0.25.0"
 tomodachi-bootstrap = { path = "../library-tomodachi-bootstrap" }
-transactional-outbox = { path = "../library-transactional-outbox" }
+transactional-messaging = { path = "../library-transactional-messaging" }
 types-aiobotocore = { extras = [
     "dynamodb",
     "iam",

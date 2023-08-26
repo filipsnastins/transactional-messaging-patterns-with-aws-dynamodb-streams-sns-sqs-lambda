@@ -1,8 +1,8 @@
 import uuid
 
 import structlog
-from transactional_outbox import InboxRepository, OutboxRepository, ensure_idempotence
-from transactional_outbox.dynamodb import DynamoDBInboxRepository, DynamoDBOutboxRepository
+from transactional_messaging import InboxRepository, OutboxRepository, ensure_idempotence
+from transactional_messaging.dynamodb import DynamoDBInboxRepository, DynamoDBOutboxRepository
 from unit_of_work import AbstractUnitOfWork
 from unit_of_work.dynamodb import DynamoDBSession
 

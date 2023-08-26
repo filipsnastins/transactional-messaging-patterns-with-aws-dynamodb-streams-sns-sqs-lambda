@@ -70,14 +70,14 @@ resource "aws_dynamodb_table" "customers" {
 }
 
 module "service_customers_inbox_table" {
-  source = "../../terraform-transactional-outbox/idempotent-consumer-dynamodb-inbox"
+  source = "../../terraform-transactional-messaging/idempotent-consumer-dynamodb-inbox"
 
   environment  = var.environment
   service_name = "customers"
 }
 
 module "service_customers_outbox_dynamodb_streams" {
-  source = "../../terraform-transactional-outbox/outbox-dynamodb-streams"
+  source = "../../terraform-transactional-messaging/outbox-dynamodb-streams"
 
   environment  = var.environment
   service_name = "customers"

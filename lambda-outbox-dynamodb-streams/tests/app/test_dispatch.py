@@ -7,7 +7,7 @@ from pytest_mock import MockerFixture
 from tomodachi.envelope.json_base import JsonBase
 from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.pytest.async_probes import probe_until
-from transactional_outbox.outbox import PublishedMessage
+from transactional_messaging.outbox import PublishedMessage
 from types_aiobotocore_sns import SNSClient
 from types_aiobotocore_sqs import SQSClient
 

@@ -1,7 +1,7 @@
 import copy
 import uuid
 
-from transactional_outbox.fakes import FakeInboxRepository, FakeOutboxRepository
+from transactional_messaging.fakes import FakeInboxRepository, FakeOutboxRepository
 
 from adapters.customer_repository import CustomerNotFoundError, CustomerRepository
 from customers.customer import Customer

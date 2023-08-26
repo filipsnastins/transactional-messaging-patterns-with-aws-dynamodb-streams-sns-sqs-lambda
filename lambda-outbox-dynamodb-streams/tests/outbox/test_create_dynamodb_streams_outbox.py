@@ -5,7 +5,7 @@ from tomodachi.envelope.json_base import JsonBase
 from tomodachi_testcontainers.clients import snssqs_client
 from tomodachi_testcontainers.containers import MotoContainer
 from tomodachi_testcontainers.pytest.async_probes import probe_until
-from transactional_outbox.dynamodb import DynamoDBOutboxRepository
+from transactional_messaging.dynamodb import DynamoDBOutboxRepository
 from types_aiobotocore_dynamodb import DynamoDBClient
 from types_aiobotocore_iam import IAMClient
 from types_aiobotocore_lambda import LambdaClient

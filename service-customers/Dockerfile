@@ -18,7 +18,7 @@ RUN python -m pip install --no-cache-dir -U \
 COPY --link service-customers/pyproject.toml service-customers/poetry.lock ./
 COPY --link lambda-outbox-dynamodb-streams ../lambda-outbox-dynamodb-streams
 COPY --link library-tomodachi-bootstrap ../library-tomodachi-bootstrap
-COPY --link library-transactional-outbox ../library-transactional-outbox
+COPY --link library-transactional-messaging ../library-transactional-messaging
 COPY --link library-unit-of-work ../library-unit-of-work
 RUN poetry install --without dev
 
