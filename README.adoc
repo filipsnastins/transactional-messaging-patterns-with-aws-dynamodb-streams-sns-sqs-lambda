@@ -324,17 +324,23 @@ No such problems observed with LocalStack.
 
 == Resources and acknowledgements
 
-* Application example and domain problem:
+* Transactional messaging implementation inspiration:
+** https://github.com/eventuate-tram/eventuate-tram-core[github.com/eventuate-tram/eventuate-tram-core]
+** https://github.com/mikaelvesavuori/aws-serverless-outbox-demo[github.com/mikaelvesavuori/aws-serverless-outbox-demo]
+
+* Application example and domain problem (Customers and Orders):
 ** https://github.com/eventuate-tram/eventuate-tram-examples-customers-and-orders[github.com/eventuate-tram/eventuate-tram-examples-customers-and-orders]
 
 * Application design inspiration:
 ** https://github.com/cosmicpython/code[github.com/cosmicpython/code]
 ** https://github.com/pycabook/rentomatic[github.com/pycabook/rentomatic]
 
-* Transactional messaging implementation inspiration:
-** https://github.com/eventuate-tram/eventuate-tram-core[github.com/eventuate-tram/eventuate-tram-core]
-
 * Books:
 ** https://microservices.io/book[Microservices Patterns: With Examples in Java]. Book by Chris Richardson.
 ** https://www.cosmicpython.com/[Architecture Patterns with Python: Enabling Test-Driven Development, Domain-Driven Design, and Event-Driven Microservices]. Book by Harry Percival and Bob Gregory.
 ** https://leanpub.com/clean-architectures-in-python[Clean Architectures in Python: A practical approach to better software design]. Book by Leonardo Giordani.
+
+* Articles:
+** https://engineering.zalando.com/posts/2022/02/transactional-outbox-with-aws-lambda-and-dynamodb.html[Zalando Engineering Blog - Utilizing Amazon DynamoDB and AWS Lambda for Asynchronous Event Publication]
+** https://medium.com/ssense-tech/implementing-a-transactional-outbox-pattern-with-dynamodb-streams-to-avoid-2-phase-commits-ed0f91e69e9[Implementing a Transactional Outbox Pattern with DynamoDB Streams to Avoid 2-phase Commits]
+** https://aws.amazon.com/blogs/database/dynamodb-streams-use-cases-and-design-patterns/[DynamoDB Streams Use Cases and Design Patterns]
