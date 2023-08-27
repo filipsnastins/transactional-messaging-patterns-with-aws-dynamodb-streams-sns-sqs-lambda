@@ -286,8 +286,7 @@ curl -X POST http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c/ca
 
 == Further improvements for production use
 
-* To save storage costs, Inbox and Outbox repositories should use `DynamoDB time-to-live`
-  to cleanup old items, for example, after one year.
+=== Monitoring
 
 * Active monitoring on the `Outbox` table is required to notice if Lambda message relay has issues dispatching messages.
   `OutboxRepository` has a method `get_not_dispatched_messages` that returns a list of not dispatched messages.
@@ -295,6 +294,18 @@ curl -X POST http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c/ca
   for example, every 5 minutes, and will check the age of the oldest not dispatched message.
   The Lambda function can publish a custom CloudWatch metric with the age of the oldest not dispatched message,
   and an alarm can be configured to trigger if the latest metric value is greater than, for example, 30 minutes.
+
+* Implement CloudWatch alarm that monitors if there are messages in Lambda's dead-letter queue.
+
+* When working with DynamoDB Streams, set monitoring on Lambda `IteratorAge` metric -
+  https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html#stream-events[see working with streams section].
+
+=== Storage
+
+* To save storage costs, Inbox and Outbox repositories should use `DynamoDB time-to-live`
+  to cleanup old items, for example, after one year.
+
+=== Large message payloads
 
 * If a published message payload exceeds DynamoDB item size limit of `400 KB`, message saving to the database will fail.
   If large messages are expected, consider saving them in S3 and storing only a reference to the message in DynamoDB.
