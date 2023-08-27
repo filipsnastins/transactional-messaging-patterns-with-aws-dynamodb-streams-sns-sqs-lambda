@@ -13,6 +13,8 @@ endif::[]
 
 = library-transactional-messaging
 
+Implementation of Transactional Messaging patterns.
+
 == Features
 
 * Idempotent Consumer pattern with `InboxRepository`
