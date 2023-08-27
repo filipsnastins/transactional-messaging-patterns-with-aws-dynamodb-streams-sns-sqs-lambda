@@ -27,6 +27,10 @@ COPY --link service-orders/src ./src
 RUN poetry install --without dev
 
 FROM dependencies-base AS development
+# hadolint ignore=DL3008
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends git && \
+  rm -rf /var/lib/apt/lists/*
 RUN poetry install --with dev
 COPY --link service-orders .
 RUN poetry install
