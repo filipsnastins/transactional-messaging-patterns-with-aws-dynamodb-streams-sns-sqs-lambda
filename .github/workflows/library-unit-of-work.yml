@@ -1,20 +1,20 @@
-name: Build and test - library-tomodachi-bootstrap
+name: Build and test - library-unit-of-work
 
 on:
   push:
     branches: [main]
     paths:
-      - 'library-tomodachi-bootstrap/**'
+      - 'library-unit-of-work/**'
   pull_request:
     paths:
-      - 'library-tomodachi-bootstrap/**'
+      - 'library-unit-of-work/**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./library-tomodachi-bootstrap
+        working-directory: ./library-unit-of-work
     env:
       POETRY_VIRTUALENVS_CREATE: false
       DOCKER_BUILDKIT: 1
