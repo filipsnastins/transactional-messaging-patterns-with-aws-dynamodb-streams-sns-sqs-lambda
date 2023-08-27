@@ -1,0 +1,250 @@
+:toc:
+:toc-placement: preamble
+:toclevels: 2
+:showtitle:
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+= library-transactional-messaging
+
+== Features
+
+* Idempotent Consumer pattern with `InboxRepository`
+* Transactional Outbox pattern with `OutboxRepository`
+* Implementation repositories work with the link:../library-unit-of-work[library-unit-of-work]
+
+== Idempotent Consumer with `InboxRepository`
+
+```python
+from transactional_messaging.dynamodb import DynamoDBInboxRepository
+from unit_of_work.dynamodb import DynamoDBSession
+
+from adapters import clients
+
+session = DynamoDBSession(clients.get_dynamodb_client)
+inbox_repository = DynamoDBInboxRepository(table_name="inbox", session=session)
+
+# Save processed MessageId
+await inbox_repository.save(message_id="8c7ef9b6-f215-4340-8014-903cfb76f47e")
+await session.commit()
+
+# Check if message is already processed
+message = await inbox_repository.get(message_id="8c7ef9b6-f215-4340-8014-903cfb76f47e")
+if message:
+    raise RuntimeError("Message is already processed")
+```
+
+== Transactional Outbox with `OutboxRepository`
+
+* Outbox Repository saves publishes messages to a database.
+  The message should implement `transactional_messaging.outbox.Message` interface -
+  contain required information to uniquely identify the message, have a serialized payload, and route the destination.
+
+** `message_id` - the unique ID of the message. Is used by the Idempotent Consumer to de-duplicate messages.
+** `aggregate_id` - the ID of the Aggregate/Entity to whom this message belongs, for example, a Customer or an Order aggregate.
+** `correlation_id` - original ID of the message that resulted in the given message creation - for tracing purposes.
+** `serialize()` - serializing message to a string - a delivery format, for example, JSON or base64 encoded Protobuf.
+
+```python
+class Message(Protocol):
+    @property
+    def message_id(self) -> uuid.UUID:
+        ...
+
+    @property
+    def aggregate_id(self) -> uuid.UUID:
+        ...
+
+    @property
+    def correlation_id(self) -> uuid.UUID:
+        ...
+
+    @property
+    def created_at(self) -> datetime.datetime:
+        ...
+
+    def serialize(self) -> str:
+        ...
+```
+
+* An example message that implements `transactional_messaging.outbox.Message` interface - `OrderCreatedEvent`
+
+```python
+import datetime
+import json
+import uuid
+from dataclasses import dataclass, field
+from decimal import Decimal
+
+from stockholm import Money
+
+from orders.order import OrderState
+from utils.time import datetime_to_str, utcnow
+
+
+@dataclass(kw_only=True)
+class Event:
+    event_id: uuid.UUID = field(default_factory=uuid.uuid4)
+    correlation_id: uuid.UUID = field(default_factory=uuid.uuid4)
+    order_id: uuid.UUID
+    customer_id: uuid.UUID
+    state: OrderState
+    created_at: datetime.datetime = field(default_factory=utcnow)
+
+    @property
+    def message_id(self) -> uuid.UUID:
+        return self.event_id
+
+    @property
+    def aggregate_id(self) -> uuid.UUID:
+        return self.order_id
+
+    def serialize(self) -> str:
+        return json.dumps(self.to_dict())
+
+
+@dataclass(kw_only=True)
+class OrderCreatedEvent(Event):
+    order_total: Decimal
+```
+
+* Outbox Repository usage example with `transactional_messaging.dynamodb.DynamoDBOutboxRepository`
+
+```python
+import uuid
+from decimal import Decimal
+
+import structlog
+from transactional_messaging.dynamodb import DynamoDBOutboxRepository
+from unit_of_work.dynamodb import DynamoDBSession
+
+from adapters import clients, outbox
+from orders.events import Event, OrderCreatedEvent
+from orders.order import OrderState
+from service_layer.topics import TOPICS_MAP
+
+logger: structlog.stdlib.BoundLogger = structlog.get_logger()
+
+# Event to topic mapping
+TOPICS_MAP: dict[type[Event], str] = {
+    OrderCreatedEvent: "order--created",
+}
+
+# Instantiate DynamoDB session and Outbox Repository
+session = DynamoDBSession(clients.get_dynamodb_client)
+# The Outbox Repository represents an Event Store - for application that use event-driven architecture
+events_repository = DynamoDBOutboxRepository(outbox.get_outbox_table_name(), session, TOPICS_MAP)
+
+# Create new event
+order_id = uuid.uuid4()
+customer_id = uuid.uuid4()
+event = OrderCreatedEvent(
+    order_id=order_id,
+    customer_id=uuid.uuid4(),
+    order_total=Decimal("100.00"),
+    state=OrderState.PENDING,
+)
+
+# Publish the event by adding it to the Outbox Repository and committing the DynamoDB session
+await events_repository.publish([event])
+await session.commit()
+```
+
+== Integration with link:../library-unit-of-work[library-unit-of-work]
+
+```python
+import uuid
+
+import structlog
+from transactional_messaging import InboxRepository, OutboxRepository, ensure_idempotence
+from transactional_messaging.dynamodb import DynamoDBInboxRepository, DynamoDBOutboxRepository
+from unit_of_work import AbstractUnitOfWork
+from unit_of_work.dynamodb import DynamoDBSession
+
+from adapters import clients, dynamodb, inbox, outbox
+from adapters.order_repository import DynamoDBOrderRepository, OrderRepository
+from service_layer.topics import TOPICS_MAP
+
+logger: structlog.stdlib.BoundLogger = structlog.get_logger()
+
+
+class UnitOfWork(AbstractUnitOfWork):
+    orders: OrderRepository
+    inbox: InboxRepository
+    events: OutboxRepository
+
+    # New Unit of Work instance is created with an incoming message_id
+    def __init__(self, message_id: uuid.UUID | None = None) -> None:
+        self.message_id = message_id
+
+    # Idempotent Consumer pattern checks if the message is already processed
+    # If the message is already processed, MessageAlreadyProcessedError is raised
+    async def __aenter__(self) -> "UnitOfWork":
+        if self.message_id:
+            await ensure_idempotence(message_id=self.message_id, repository=self.inbox)
+        return self
+
+
+class DynamoDBUnitOfWork(UnitOfWork):
+    session: DynamoDBSession
+    orders: DynamoDBOrderRepository
+    inbox: DynamoDBInboxRepository
+    events: DynamoDBOutboxRepository
+
+    # DynamoDB Unit of Work implementation instantiates DynamoDB session and repositories
+    def __init__(self, message_id: uuid.UUID | None = None) -> None:
+        super().__init__(message_id=message_id)
+        self.session = DynamoDBSession(clients.get_dynamodb_client)
+        self.orders = DynamoDBOrderRepository(dynamodb.get_orders_table_name(), self.session)
+        self.inbox = DynamoDBInboxRepository(inbox.get_inbox_table_name(), self.session)
+        self.events = DynamoDBOutboxRepository(outbox.get_outbox_table_name(), self.session, TOPICS_MAP)
+
+    async def commit(self) -> None:
+        await self.session.commit()
+        logger.info("dynamodb_unit_of_work__committed")
+
+    async def rollback(self) -> None:
+        self.session.rollback()
+        logger.info("dynamodb_unit_of_work__rolled_back")
+```
+
+== Resources
+
+* https://microservices.io/patterns/communication-style/idempotent-consumer.html
+* https://microservices.io/patterns/data/transactional-outbox.html
+* https://microservices.io/patterns/data/transaction-log-tailing.html
+
+== Development
+
+* Install dev dependencies with https://python-poetry.org[Poetry]
+
+```bash
+poetry install
+poetry shell
+```
+
+* Run tests
+
+```bash
+pytest
+poetry run test-ci
+```
+
+* Format and lint code
+
+```bash
+poetry run format
+poetry run lint
+```
+
+* Build package release
+
+```bash
+poetry build
+```
