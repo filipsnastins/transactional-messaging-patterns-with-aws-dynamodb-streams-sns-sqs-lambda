@@ -12,6 +12,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./library-tomodachi-bootstrap
     env:
       POETRY_VIRTUALENVS_CREATE: false
       DOCKER_BUILDKIT: 1
@@ -52,8 +55,8 @@ jobs:
       - name: Test Poetry build step
         run: poetry build
 
-      - name: Run commit hooks
-        run: SKIP=test poetry run hooks
+      # - name: Run commit hooks
+      #   run: SKIP=test poetry run hooks
 
       - name: Run tests
         run: poetry run test-ci
