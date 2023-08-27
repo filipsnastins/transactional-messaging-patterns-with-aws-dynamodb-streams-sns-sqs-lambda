@@ -1,0 +1,72 @@
+:toc:
+:toc-placement: preamble
+:toclevels: 2
+:showtitle:
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+= terraform-transactional-messaging
+
+Terraform module for `Idempotent Consumer` and `Transactional Outbox with DynamoDB Streams + Lambda` deployment to AWS.
+
+[WARNING]
+====
+The Terraform definitions in this repository are for demo purposes only,
+and must not be used for production deployments.
+The IaC code omits many security practices for brevity and simplicity,
+and most of the `tfsec` errors are ignored.
+====
+
+== Usage
+
+=== Idempotent Consumer
+
+Deploying DynamoDB `Inbox` table.
+
+```terraform
+module "service_orders_inbox_table" {
+  source = "./idempotent-consumer-dynamodb-inbox"
+
+  environment  = "test"
+  service_name = "orders"
+}
+```
+
+=== Transactional Outbox with DynamoDB Streams + Lambda
+
+Deploying `Outbox` DynamoDB table, Lambda message relay, creating SNS topics and configuring IAM permissions.
+
+```terraform
+module "service_orders_outbox_dynamodb_streams" {
+  source = "outbox-dynamodb-streams"
+
+  environment  = "test"
+  service_name = "orders"
+
+  create_sns_topics = [
+    "order--approved",
+    "order--cancelled",
+    "order--created",
+    "order--rejected",
+  ]
+}
+```
+
+== Development
+
+```bash
+brew install tfenv
+brew install tflint
+brew install tfsec
+
+tfenv install
+
+tflint
+tfsec --config-file .tfsec.yml
+```
