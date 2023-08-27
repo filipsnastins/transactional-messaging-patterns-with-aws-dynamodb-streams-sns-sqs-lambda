@@ -141,7 +141,7 @@ TOPICS_MAP: dict[type[Event], str] = {
 # Instantiate DynamoDB session and Outbox Repository
 session = DynamoDBSession(clients.get_dynamodb_client)
 # The Outbox Repository represents an Event Store - for application that use event-driven architecture
-events_repository = DynamoDBOutboxRepository(outbox.get_outbox_table_name(), session, TOPICS_MAP)
+events_repository = DynamoDBOutboxRepository("outbox", session, TOPICS_MAP)
 
 # Create new event
 order_id = uuid.uuid4()
@@ -160,6 +160,8 @@ await session.commit()
 
 == Integration with link:../library-unit-of-work[library-unit-of-work]
 
+* Unit Of Work encapsulates `InboxRepository` and `OutboxRepository`
+
 ```python
 import uuid
 
@@ -169,7 +171,7 @@ from transactional_messaging.dynamodb import DynamoDBInboxRepository, DynamoDBOu
 from unit_of_work import AbstractUnitOfWork
 from unit_of_work.dynamodb import DynamoDBSession
 
-from adapters import clients, dynamodb, inbox, outbox
+from adapters import clients
 from adapters.order_repository import DynamoDBOrderRepository, OrderRepository
 from service_layer.topics import TOPICS_MAP
 
@@ -203,9 +205,9 @@ class DynamoDBUnitOfWork(UnitOfWork):
     def __init__(self, message_id: uuid.UUID | None = None) -> None:
         super().__init__(message_id=message_id)
         self.session = DynamoDBSession(clients.get_dynamodb_client)
-        self.orders = DynamoDBOrderRepository(dynamodb.get_orders_table_name(), self.session)
-        self.inbox = DynamoDBInboxRepository(inbox.get_inbox_table_name(), self.session)
-        self.events = DynamoDBOutboxRepository(outbox.get_outbox_table_name(), self.session, TOPICS_MAP)
+        self.orders = DynamoDBOrderRepository("orders", self.session)
+        self.inbox = DynamoDBInboxRepository("inbox", self.session)
+        self.events = DynamoDBOutboxRepository("outbox", self.session, TOPICS_MAP)
 
     async def commit(self) -> None:
         await self.session.commit()
@@ -214,6 +216,43 @@ class DynamoDBUnitOfWork(UnitOfWork):
     async def rollback(self) -> None:
         self.session.rollback()
         logger.info("dynamodb_unit_of_work__rolled_back")
+```
+
+* Unit of Work usage example when invoking a use case
+
+```python
+import uuid
+from contextlib import suppress
+
+import tomodachi
+from tomodachi.envelope.json_base import JsonBase
+from tomodachi_bootstrap import TomodachiServiceBase
+from transactional_messaging.idempotent_consumer import MessageAlreadyProcessedError
+
+from orders.commands import ApproveOrderCommand
+from service_layer import use_cases
+from service_layer.unit_of_work import DynamoDBUnitOfWork
+
+
+class TomodachiService(TomodachiServiceBase):
+    name = "service-orders"
+
+    @tomodachi.aws_sns_sqs(
+        "customer--credit-reserved",
+        queue_name="order--customer-credit-reserved",
+        dead_letter_queue_name="order--customer-credit-reserved--dlq",
+        max_receive_count=3,
+        message_envelope=JsonBase,
+    )
+    async def customer_credit_reserved_handler(self, data: dict, correlation_id: uuid.UUID) -> None:
+        # Skip if message already processed
+        with suppress(MessageAlreadyProcessedError):
+            # Create new Unit of Work instance
+            # Pass the message_id to the Unit of Work to ensure idempotence
+            async with DynamoDBUnitOfWork(message_id=uuid.UUID(data["event_id"])) as uow:
+                cmd = ApproveOrderCommand(correlation_id=correlation_id, order_id=uuid.UUID(data["order_id"]))
+                # DynamoDB session is explicitly committed inside the use case
+                await use_cases.approve_order(uow, cmd)
 ```
 
 == Resources
