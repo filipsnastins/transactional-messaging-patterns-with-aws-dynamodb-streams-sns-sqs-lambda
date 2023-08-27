@@ -60,22 +60,6 @@ async def test_unknown_message_topic_raises(repo: DynamoDBOutboxRepository) -> N
 
 
 @pytest.mark.asyncio()
-async def test_get_not_dispatched_messages(repo: DynamoDBOutboxRepository, session: DynamoDBSession) -> None:
-    event_1 = OrderCreatedEvent(order_id=uuid.uuid4())
-    event_2 = OrderCreatedEvent(order_id=uuid.uuid4())
-    event_3 = OrderCreatedEvent(order_id=uuid.uuid4())
-
-    await repo.publish([event_1, event_2, event_3])
-    await session.commit()
-
-    not_dispatched_messages = await repo.get_not_dispatched_messages()
-    assert len(not_dispatched_messages) == 3
-    assert not_dispatched_messages[0] == await repo.get(message_id=event_1.event_id)
-    assert not_dispatched_messages[1] == await repo.get(message_id=event_2.event_id)
-    assert not_dispatched_messages[2] == await repo.get(message_id=event_3.event_id)
-
-
-@pytest.mark.asyncio()
 async def test_mark_as_dispatched_not_existing_message_raises(repo: DynamoDBOutboxRepository) -> None:
     message_id = uuid.uuid4()
 
@@ -111,6 +95,27 @@ async def test_mark_as_dispatched_twice(repo: DynamoDBOutboxRepository, session:
     published_message = await repo.get(message_id=event.event_id)
     assert published_message
     assert published_message.approximate_dispatch_count == 2
+
+
+@pytest.mark.asyncio()
+async def test_get_not_dispatched_messages__oldest_message_first(
+    repo: DynamoDBOutboxRepository, session: DynamoDBSession
+) -> None:
+    event_1 = OrderCreatedEvent(order_id=uuid.uuid4(), created_at=datetime.datetime(2023, 1, 1))
+    event_2 = OrderCreatedEvent(order_id=uuid.uuid4(), created_at=datetime.datetime(2021, 1, 1))
+    event_3 = OrderCreatedEvent(order_id=uuid.uuid4(), created_at=datetime.datetime(2022, 1, 1))
+    event_4 = OrderCreatedEvent(order_id=uuid.uuid4())  # Dispatched
+
+    await repo.publish([event_1, event_2, event_3, event_4])
+    await session.commit()
+    await repo.mark_as_dispatched(message_id=event_4.event_id)
+    await session.commit()
+
+    not_dispatched_messages = await repo.get_not_dispatched_messages()
+    assert len(not_dispatched_messages) == 3
+    assert not_dispatched_messages[0] == await repo.get(message_id=event_2.event_id)
+    assert not_dispatched_messages[1] == await repo.get(message_id=event_3.event_id)
+    assert not_dispatched_messages[2] == await repo.get(message_id=event_1.event_id)
 
 
 @pytest.mark.asyncio()

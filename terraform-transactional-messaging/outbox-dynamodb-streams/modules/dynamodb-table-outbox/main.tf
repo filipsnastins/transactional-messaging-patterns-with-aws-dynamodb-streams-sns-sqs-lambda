@@ -34,6 +34,11 @@ resource "aws_dynamodb_table" "default" {
     type = "S"
   }
 
+  attribute {
+    name = "CreatedAt"
+    type = "S"
+  }
+
   global_secondary_index {
     name            = "CorrelationIdIndex"
     hash_key        = "CorrelationId"
@@ -49,6 +54,7 @@ resource "aws_dynamodb_table" "default" {
   global_secondary_index {
     name            = "NotDispatchedMessagesIndex"
     hash_key        = "NotDispatched"
+    range_key       = "CreatedAt"
     projection_type = "ALL"
   }
 }

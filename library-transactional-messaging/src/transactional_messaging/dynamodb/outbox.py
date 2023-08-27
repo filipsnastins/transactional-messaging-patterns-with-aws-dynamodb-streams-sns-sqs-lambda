@@ -41,7 +41,7 @@ class DynamoDBOutboxRepository(OutboxRepository):
                             "CreatedAt": {"S": datetime_to_str(message.created_at)},
                             "ApproximateDispatchCount": {"N": "0"},
                             "IsDispatched": {"BOOL": False},
-                            "NotDispatched": {"S": "Y"},  # Flag for a sparse index NotDispatchedMessagesIndex
+                            "NotDispatched": {"S": "x"},  # Flag for a sparse index NotDispatchedMessagesIndex
                         },
                         "ConditionExpression": "attribute_not_exists(PK)",
                     }
@@ -98,7 +98,8 @@ class DynamoDBOutboxRepository(OutboxRepository):
                 TableName=self._table_name,
                 IndexName="NotDispatchedMessagesIndex",
                 KeyConditionExpression="NotDispatched = :NotDispatched",
-                ExpressionAttributeValues={":NotDispatched": {"S": "Y"}},
+                ExpressionAttributeValues={":NotDispatched": {"S": "x"}},
+                ScanIndexForward=True,  # Older message first
             )
             items = response.get("Items")
             if not items:
@@ -148,6 +149,10 @@ async def create_outbox_table(table_name: str, client: DynamoDBClient) -> None:
                     "AttributeName": "NotDispatched",
                     "AttributeType": "S",
                 },
+                {
+                    "AttributeName": "CreatedAt",
+                    "AttributeType": "S",
+                },
             ],
             KeySchema=[
                 {
@@ -174,6 +179,7 @@ async def create_outbox_table(table_name: str, client: DynamoDBClient) -> None:
                     "IndexName": "NotDispatchedMessagesIndex",
                     "KeySchema": [
                         {"AttributeName": "NotDispatched", "KeyType": "HASH"},
+                        {"AttributeName": "CreatedAt", "KeyType": "RANGE"},
                     ],
                     "Projection": {"ProjectionType": "ALL"},
                 },

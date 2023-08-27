@@ -18,7 +18,7 @@
 
 ## Outbox
 
-- [ ] Get not dispatched messages - use sort key to order by `CreatedAt`. `get_not_dispatched_messages` should return older messages first.
+✅
 
 ## Unit of Work
 
