@@ -1,0 +1,94 @@
+:toc:
+:toc-placement: preamble
+:toclevels: 2
+:showtitle:
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+= library-tomodachi-bootstrap
+
+Helper library that provides common functionality for bootstrapping https://github.com/kalaspuff/tomodachi[tomodachi] services.
+
+== Features
+
+* Service configuration from environment variables with https://docs.pydantic.dev/latest/usage/pydantic_settings/[Pydantic-Settings]
+* https://www.structlog.org[structlog] logging middleware
+* Correlation ID middleware
+* Tomodachi base service class
+
+== Usage
+
+* Create your tomodachi service by inheriting from the `TomodachiServiceBase` class.
+
+```python
+from tomodachi_bootstrap import TomodachiServiceBase
+
+
+class TomodachiService(TomodachiServiceBase):
+    name = "service-example"
+```
+
+* Extend base `Pydantic-Settings` configuration class with your own configuration class.
+
+```python
+from functools import lru_cache
+
+from tomodachi_bootstrap import TomodachiBaseSettings
+
+
+class Settings(TomodachiBaseSettings):
+    dynamodb_orders_table_name: str
+    dynamodb_inbox_table_name: str
+    dynamodb_outbox_table_name: str
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()  # type: ignore
+```
+
+* `TomodachiServiceBase` base configures structlog logger.
+
+```python
+import structlog
+
+
+logger: structlog.stdlib.BoundLogger = structlog.get_logger()
+
+logger.info("Hello, World!", foo="bar")
+```
+
+== Development
+
+* Install dev dependencies with https://python-poetry.org[Poetry]
+
+```bash
+poetry install
+poetry shell
+```
+
+* Run tests
+
+```bash
+pytest
+poetry run test-ci
+```
+
+* Format and lint code
+
+```bash
+poetry run format
+poetry run lint
+```
+
+* Build package release
+
+```bash
+poetry build
+```
