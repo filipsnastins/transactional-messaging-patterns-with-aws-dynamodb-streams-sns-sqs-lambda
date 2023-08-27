@@ -22,7 +22,7 @@ def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, credit_limi
             "credit_limit": int(Money(credit_limit).to_sub_units()),
         }
 
-        response = await http_client.post("/customers", json=data, timeout=10)
+        response = await http_client.post("/customers", json=data)
 
         assert response.status_code == 200
         return response
