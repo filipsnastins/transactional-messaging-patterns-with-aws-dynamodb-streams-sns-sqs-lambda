@@ -300,6 +300,8 @@ curl -X POST http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c/ca
 * When working with DynamoDB Streams, set monitoring on Lambda `IteratorAge` metric -
   https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html#stream-events[see working with streams section].
 
+* Implement and test tools/scripts to manually dispatch stuck publishes messages in the `Outbox` table.
+
 === Storage
 
 * To save storage costs, Inbox and Outbox repositories should use `DynamoDB time-to-live`
