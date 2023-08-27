@@ -1,3 +1,4 @@
+import contextlib
 import uuid
 
 import tomodachi
@@ -5,6 +6,7 @@ from aiohttp import web
 from stockholm import Money
 from tomodachi.envelope.json_base import JsonBase
 from tomodachi_bootstrap import TomodachiServiceBase
+from transactional_messaging.idempotent_consumer import MessageAlreadyProcessedError
 
 from adapters import dynamodb, inbox, outbox, sns
 from orders.commands import ApproveOrderCommand, CancelOrderCommand, CreateOrderCommand, RejectOrderCommand
@@ -75,9 +77,10 @@ class TomodachiService(TomodachiServiceBase):
         message_envelope=JsonBase,
     )
     async def customer_credit_reserved_handler(self, data: dict, correlation_id: uuid.UUID) -> None:
-        async with DynamoDBUnitOfWork(message_id=uuid.UUID(data["event_id"])) as uow:
-            cmd = ApproveOrderCommand(correlation_id=correlation_id, order_id=uuid.UUID(data["order_id"]))
-            await use_cases.approve_order(uow, cmd)
+        with contextlib.suppress(MessageAlreadyProcessedError):
+            async with DynamoDBUnitOfWork(message_id=uuid.UUID(data["event_id"])) as uow:
+                cmd = ApproveOrderCommand(correlation_id=correlation_id, order_id=uuid.UUID(data["order_id"]))
+                await use_cases.approve_order(uow, cmd)
 
     @tomodachi.aws_sns_sqs(
         "customer--credit-reservation-failed",
@@ -87,9 +90,10 @@ class TomodachiService(TomodachiServiceBase):
         message_envelope=JsonBase,
     )
     async def customer_credit_reservation_failed_handler(self, data: dict, correlation_id: uuid.UUID) -> None:
-        async with DynamoDBUnitOfWork(message_id=uuid.UUID(data["event_id"])) as uow:
-            cmd = RejectOrderCommand(correlation_id=correlation_id, order_id=uuid.UUID(data["order_id"]))
-            await use_cases.reject_order(uow, cmd)
+        with contextlib.suppress(MessageAlreadyProcessedError):
+            async with DynamoDBUnitOfWork(message_id=uuid.UUID(data["event_id"])) as uow:
+                cmd = RejectOrderCommand(correlation_id=correlation_id, order_id=uuid.UUID(data["order_id"]))
+                await use_cases.reject_order(uow, cmd)
 
     @tomodachi.aws_sns_sqs(
         "customer--validation-failed",
@@ -99,6 +103,7 @@ class TomodachiService(TomodachiServiceBase):
         message_envelope=JsonBase,
     )
     async def customer_validation_failed_handler(self, data: dict, correlation_id: uuid.UUID) -> None:
-        async with DynamoDBUnitOfWork(message_id=uuid.UUID(data["event_id"])) as uow:
-            cmd = RejectOrderCommand(correlation_id=correlation_id, order_id=uuid.UUID(data["order_id"]))
-            await use_cases.reject_order(uow, cmd)
+        with contextlib.suppress(MessageAlreadyProcessedError):
+            async with DynamoDBUnitOfWork(message_id=uuid.UUID(data["event_id"])) as uow:
+                cmd = RejectOrderCommand(correlation_id=correlation_id, order_id=uuid.UUID(data["order_id"]))
+                await use_cases.reject_order(uow, cmd)
