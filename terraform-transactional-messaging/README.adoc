@@ -41,6 +41,7 @@ module "service_orders_inbox_table" {
 === Transactional Outbox with DynamoDB Streams + Lambda
 
 Deploying `Outbox` DynamoDB table, Lambda message relay, creating SNS topics and configuring IAM permissions.
+Failed messages are saved to SQS dead-letter queue.
 
 ```terraform
 module "service_orders_outbox_dynamodb_streams" {

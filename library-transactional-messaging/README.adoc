@@ -221,8 +221,8 @@ class DynamoDBUnitOfWork(UnitOfWork):
 * Unit of Work usage example when invoking a use case
 
 ```python
+import contextlib
 import uuid
-from contextlib import suppress
 
 import tomodachi
 from tomodachi.envelope.json_base import JsonBase
@@ -246,7 +246,7 @@ class TomodachiService(TomodachiServiceBase):
     )
     async def customer_credit_reserved_handler(self, data: dict, correlation_id: uuid.UUID) -> None:
         # Skip if message already processed
-        with suppress(MessageAlreadyProcessedError):
+        with contextlib.suppress(MessageAlreadyProcessedError):
             # Create new Unit of Work instance
             # Pass the message_id to the Unit of Work to ensure idempotence
             async with DynamoDBUnitOfWork(message_id=uuid.UUID(data["event_id"])) as uow:
