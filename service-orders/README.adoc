@@ -1,0 +1,66 @@
+:toc:
+:toc-placement: preamble
+:toclevels: 2
+:showtitle:
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+= service-orders
+
+== Sample requests
+
+* Create order
+
+```bash
+curl -X POST --header "Content-Type: application/json" -d '{
+  "customer_id": "97c05e79-5902-451f-b96e-f06c8fc3ed68",
+  "order_total": 100
+}' http://localhost:9702/orders
+```
+
+* Get order
+
+```bash
+curl http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c
+```
+
+* Cancel order
+
+```bash
+curl -X POST http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c/cancel
+```
+
+== Development
+
+* Install dev dependencies with https://python-poetry.org[Poetry]
+
+```bash
+poetry install
+poetry shell
+```
+
+* Run tests
+
+```bash
+pytest
+poetry run test-ci
+```
+
+* Format and lint code
+
+```bash
+poetry run format
+poetry run lint
+```
+
+* Build package release
+
+```bash
+poetry build
+```

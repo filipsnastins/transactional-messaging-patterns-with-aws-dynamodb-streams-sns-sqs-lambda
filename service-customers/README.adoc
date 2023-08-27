@@ -1,0 +1,60 @@
+:toc:
+:toc-placement: preamble
+:toclevels: 2
+:showtitle:
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+= service-customers
+
+== Sample requests
+
+* Create customer
+
+```bash
+curl -X POST --header "Content-Type: application/json" -d '{
+  "name": "Jane Doe",
+  "credit_limit": 250
+}' http://localhost:9701/customers
+```
+
+* Get customer
+
+```bash
+curl http://localhost:9701/customer/15883bbb-dbf9-4ea0-afec-b2fab1a0ab2f
+```
+
+== Development
+
+* Install dev dependencies with https://python-poetry.org[Poetry]
+
+```bash
+poetry install
+poetry shell
+```
+
+* Run tests
+
+```bash
+pytest
+poetry run test-ci
+```
+
+* Format and lint code
+
+```bash
+poetry run format
+poetry run lint
+```
+
+* Build package release
+
+```bash
+poetry build
+```
