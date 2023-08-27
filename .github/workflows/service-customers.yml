@@ -1,13 +1,13 @@
-name: Build and test - Service Orders
+name: Build and test - Service Customers
 
 on:
   push:
     branches: [main]
     paths:
-      - 'service-orders/**'
+      - 'service-customers/**'
   pull_request:
     paths:
-      - 'service-orders/**'
+      - 'service-customers/**'
 
 jobs:
   build:
@@ -24,7 +24,7 @@ jobs:
         with:
           target: development
           load: true
-          file: ./service-orders/Dockerfile
+          file: ./service-customers/Dockerfile
           context: .
 
       - name: Run commit hooks
@@ -40,7 +40,7 @@ jobs:
         with:
           target: release
           load: true
-          file: ./service-orders/Dockerfile
+          file: ./service-customers/Dockerfile
           context: .
 
       - name: Run tests
