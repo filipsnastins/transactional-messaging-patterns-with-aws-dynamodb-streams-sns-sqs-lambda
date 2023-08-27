@@ -229,13 +229,13 @@ Image source: https://github.com/eventuate-tram/eventuate-tram-examples-customer
 
 === Run locally with Docker Compose
 
-- Start applications
+* Start applications
 
 ```bash
 docker compose up
 ```
 
-- Get outbox lambda logs
+* Get outbox lambda logs
 
 ```bash
 awslocal --region=us-east-1 logs describe-log-groups
@@ -244,11 +244,11 @@ awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--custo
 awslocal --region=us-east-1 logs tail /aws/lambda/lambda-dynamodb-streams--orders-outbox
 ```
 
-- Check DynamoDB content with https://github.com/aaronshaf/dynamodb-admin[DynamoDB Admin] at http://localhost:8001
+* Check DynamoDB content with https://github.com/aaronshaf/dynamodb-admin[DynamoDB Admin] at http://localhost:8001
 
 === Sample requests
 
-- Create customer
+* Create customer
 
 ```bash
 curl -X POST --header "Content-Type: application/json" -d '{
@@ -257,7 +257,7 @@ curl -X POST --header "Content-Type: application/json" -d '{
 }' http://localhost:9701/customers
 ```
 
-- Create order
+* Create order
 
 ```bash
 curl -X POST --header "Content-Type: application/json" -d '{
@@ -266,19 +266,19 @@ curl -X POST --header "Content-Type: application/json" -d '{
 }' http://localhost:9702/orders
 ```
 
-- Get customer
+* Get customer
 
 ```bash
 curl http://localhost:9701/customer/15883bbb-dbf9-4ea0-afec-b2fab1a0ab2f
 ```
 
-- Get order
+* Get order
 
 ```bash
 curl http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c
 ```
 
-- Cancel order
+* Cancel order
 
 ```bash
 curl -X POST http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c/cancel

@@ -2,7 +2,7 @@
 
 ## Documentation
 
-- [ ] Document each sub-module
+- [x] Document each sub-module
 - [ ] Monitoring section
 
 ## service-customers
