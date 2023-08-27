@@ -27,13 +27,19 @@ COPY --link service-customers/src ./src
 RUN poetry install --without dev
 
 FROM dependencies-base AS development
+# hadolint ignore=DL3008
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends git && \
+  rm -rf /var/lib/apt/lists/*
 RUN poetry install --with dev
 COPY --link service-customers/ .
 RUN poetry install
 CMD ["tomodachi", "run", "src/entrypoints/tomodachi_app.py", "--loop", "uvloop"]
 
 FROM python-base AS release
-COPY --link --from=dependencies-release --chown=app:app /opt/venv /opt/venv
-COPY --link --from=dependencies-release --chown=app:app /app .
+RUN mkdir -p /app /opt/venv && \
+  chown -R app:app /app /opt/venv
 USER app
+COPY --link --from=dependencies-release /opt/venv /opt/venv
+COPY --link --from=dependencies-release /app .
 CMD ["tomodachi", "run", "src/entrypoints/tomodachi_app.py", "--loop", "uvloop", "--production"]

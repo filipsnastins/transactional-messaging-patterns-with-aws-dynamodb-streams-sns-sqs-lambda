@@ -71,6 +71,7 @@ logger.info("Hello, World!", foo="bar")
 ```bash
 poetry install
 poetry shell
+pre-commit install
 ```
 
 * Run tests
@@ -85,6 +86,12 @@ poetry run test-ci
 ```bash
 poetry run format
 poetry run lint
+```
+
+* Run all commit hooks at once
+
+```bash
+poetry run hooks
 ```
 
 * Build package release

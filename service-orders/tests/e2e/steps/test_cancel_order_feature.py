@@ -18,7 +18,7 @@ def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, create_orde
     cancel_order_link = create_order.json()["_links"]["cancel"]["href"]
 
     async def _async() -> httpx.Response:
-        return await http_client.post(cancel_order_link, timeout=10)
+        return await http_client.post(cancel_order_link)
 
     return event_loop.run_until_complete(_async())
 

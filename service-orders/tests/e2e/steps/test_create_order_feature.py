@@ -29,7 +29,7 @@ def _(event_loop: AbstractEventLoop, http_client: httpx.AsyncClient, order_data:
             "order_total": order_data["order_total"],
         }
 
-        return await http_client.post("/orders", json=data, timeout=10)
+        return await http_client.post("/orders", json=data)
 
     return event_loop.run_until_complete(_async())
 

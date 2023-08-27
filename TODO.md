@@ -34,4 +34,4 @@
 
 ## Deploy
 
-- [ ] GitHub actions
+✅

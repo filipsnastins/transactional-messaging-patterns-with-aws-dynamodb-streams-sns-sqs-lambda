@@ -75,5 +75,9 @@ def tomodachi_container(
 
 @pytest_asyncio.fixture()
 async def http_client(tomodachi_container: TomodachiContainer) -> AsyncGenerator[httpx.AsyncClient, None]:
-    async with httpx.AsyncClient(base_url=tomodachi_container.get_external_url()) as client:
+    async with httpx.AsyncClient(
+        base_url=tomodachi_container.get_external_url(),
+        transport=httpx.AsyncHTTPTransport(retries=3),
+        timeout=10.0,
+    ) as client:
         yield client

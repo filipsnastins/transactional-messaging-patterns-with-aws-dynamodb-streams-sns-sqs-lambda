@@ -2,6 +2,10 @@
 from subprocess import check_call
 
 
+def hooks() -> None:
+    check_call(["pre-commit", "run", "--all-files"])
+
+
 def format() -> None:
     check_call(["ruff", "check", "--fix", "."])
     check_call(["black", "."])
