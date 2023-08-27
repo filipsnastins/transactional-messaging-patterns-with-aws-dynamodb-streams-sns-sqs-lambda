@@ -310,7 +310,8 @@ curl -X POST http://localhost:9702/order/a5ecbfba-32cd-4c94-bfcf-f6a4a8f8a91c/ca
 * If a published message payload exceeds DynamoDB item size limit of `400 KB`, message saving to the database will fail.
   If large messages are expected, consider saving them in S3 and storing only a reference to the message in DynamoDB.
   Read more in https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-use-s3-too.html[Best practices for storing large items and attributes].
-  The same bottleneck will occur in SQS too, so the same approach for transporting large SQS messages needs to be implemented.
+
+* The same bottleneck will occur in SQS too, so the same approach for transporting large SQS messages needs to be implemented.
   Read more in https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-s3-messages.html[Managing large Amazon SQS messages using Amazon S3].
 
 == Notes on running Outbox Lambda in a local environment or autotests
