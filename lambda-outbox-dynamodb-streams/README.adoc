@@ -1,0 +1,107 @@
+:toc:
+:toc-placement: preamble
+:toclevels: 2
+:showtitle:
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+= lambda-outbox-dynamodb-streams
+
+https://microservices.io/patterns/data/transaction-log-tailing.html[Transaction Log Tailing] pattern message relay implementation.
+
+AWS Lambda function that listens to DynamoDB Streams and publishes messages to SNS topics.
+
+== Features
+
+* Incoming DynamoDB Stream records are processed with
+  https://docs.powertools.aws.dev/lambda/python/latest/utilities/batch/#processing-messages-asynchronously[partial asynchronous batch processing]
+* Messages are marked as dispatched in the `Outbox` table
+* Supports `ARM64` and `X86_64` platforms
+
+=== Configuration
+
+=== Lambda configuration environment variables
+
+Lambda configuration environment variables are defined in `lambda_outbox_dynamodb_streams.app.settings.Settings`
+
+* `DYNAMODB_OUTBOX_TABLE_NAME` - DynamoDB Outbox table name (required)
+* `AWS_ENDPOINT_URL` - AWS endpoint URL (optional, defaults to `None`)
+* `AWS_SNS_TOPIC_PREFIX` - AWS SNS topic prefix (optional, defaults to an empty string)
+
+=== Feature flags
+
+* `OUTBOX_SKIP_MARK_MESSAGES_AS_DISPATCHED` - when set to `true`,
+  messages are not marked as dispatched in the `Outbox` table (optional, defaults to `false`).
+  This feature flag should be enabled in local or autotest environment only.
+
+== Deployment to AWS
+
+* link:../terraform-transactional-messaging[terraform-transactional-messaging] - with Terraform
+
+== Usage in a local environment or autotests
+
+* Moto[https://github.com/getmoto/moto] and LocalStack[https://localstack.cloud/] support `DynamoDB Streams + Lambda` integration,
+  so the Transactional Outbox can be easily used in a local environment or with end-to-end automated acceptance tests.
+
+* Deploy the `DynamoDB Streams + Lambda` stack locally with `lambda_outbox_dynamodb_streams.outbox.create_dynamodb_streams_outbox`
+
+```python
+from lambda_outbox_dynamodb_streams.outbox import create_dynamodb_streams_outbox
+
+
+# Define your AWS clients somewhere in the project `adapters` layer
+await create_dynamodb_streams_outbox(
+    lambda_client,
+    iam_client,
+    dynamodb_client,
+    s3_client,
+    settings=outbox.Settings(
+        dynamodb_outbox_table_name=dynamodb_table_name,
+        aws_endpoint_url=settings.aws_endpoint_url,
+        aws_sns_topic_prefix=settings.aws_sns_topic_prefix,
+    ),
+)
+```
+
+== Development
+
+* Build Lambda `zip` package for `linux/arm64` and `linux/amd64` platforms
+
+```bash
+docker buildx build --platform linux/arm64 -f Dockerfile.package --target=package --output type=local,dest=$(pwd)/src/lambda_outbox_dynamodb_streams ..
+
+docker buildx build --platform linux/amd64 -f Dockerfile.package --target=package --output type=local,dest=$(pwd)/src/lambda_outbox_dynamodb_streams ..
+```
+
+* Install dev dependencies with https://python-poetry.org[Poetry]
+
+```bash
+poetry install
+poetry shell
+```
+
+* Run tests
+
+```bash
+pytest
+poetry run test-ci
+```
+
+* Format and lint code
+
+```bash
+poetry run format
+poetry run lint
+```
+
+* Build package release
+
+```bash
+poetry build
+```
