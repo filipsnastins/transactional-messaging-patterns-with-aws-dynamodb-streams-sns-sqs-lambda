@@ -1,0 +1,99 @@
+:toc:
+:toc-placement: preamble
+:toclevels: 2
+:showtitle:
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+= library-unit-of-work
+
+Unit of Work provides an abstraction over an idea of atomic operation.
+
+== Features
+
+* DynamoDB transactional session
+* Easily extendable `AbstractUnitOfWork` abstract class
+
+== Usage with DynamoDB
+
+* Using `unit_of_work.AbstractUnitOfWork` abstract class, implement your own lightweight `UnitOfWork` class
+  that is responsible for instantiating all repositories and committing/rolling back operations.
+
+```python
+import structlog
+from unit_of_work import AbstractUnitOfWork
+from unit_of_work.dynamodb import DynamoDBSession
+
+from adapters import clients, dynamodb
+from adapters.order_repository import DynamoDBOrderRepository, OrderRepository
+
+logger: structlog.stdlib.BoundLogger = structlog.get_logger()
+
+
+# 1. Define base Unit of Work class that extends AbstractUnitOfWork
+# Unit of Work will orchestrate all repositories and commit/rollback operations
+class UnitOfWork(AbstractUnitOfWork):
+    orders: OrderRepository
+
+
+# 2. Implement DynamoDB Unit of Work class that extends the base Unit of Work class
+class DynamoDBUnitOfWork(UnitOfWork):
+    session: DynamoDBSession
+    orders: DynamoDBOrderRepository
+
+    def __init__(self) -> None:
+        # Instantiate a single session object that is reused by all repositories
+        self.session = DynamoDBSession(clients.get_dynamodb_client)
+        # Instantiate all repositories
+        self.orders = DynamoDBOrderRepository(dynamodb.get_orders_table_name(), self.session)
+
+    # Implement commit and rollback methods
+    async def commit(self) -> None:
+        await self.session.commit()
+        logger.info("dynamodb_unit_of_work__committed")
+
+    async def rollback(self) -> None:
+        self.session.rollback()
+        logger.info("dynamodb_unit_of_work__rolled_back")
+
+```
+
+== Resources
+
+* https://martinfowler.com/eaaCatalog/unitOfWork.html
+* https://www.cosmicpython.com/book/chapter_06_uow.html
+
+== Development
+
+* Install dev dependencies with https://python-poetry.org[Poetry]
+
+```bash
+poetry install
+poetry shell
+```
+
+* Run tests
+
+```bash
+pytest
+poetry run test-ci
+```
+
+* Format and lint code
+
+```bash
+poetry run format
+poetry run lint
+```
+
+* Build package release
+
+```bash
+poetry build
+```
