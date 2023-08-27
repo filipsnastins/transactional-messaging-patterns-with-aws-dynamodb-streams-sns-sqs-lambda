@@ -13,7 +13,7 @@ endif::[]
 
 = library-tomodachi-bootstrap
 
-Helper library that provides common functionality for bootstrapping https://github.com/kalaspuff/tomodachi[tomodachi] services.
+Helper library that provides common functionality for bootstrapping https://github.com/kalaspuff/tomodachi[tomodachi] services
 
 == Features
 
@@ -24,7 +24,7 @@ Helper library that provides common functionality for bootstrapping https://gith
 
 == Usage
 
-* Create your tomodachi service by inheriting from the `TomodachiServiceBase` class.
+* Create your tomodachi service by inheriting from the `TomodachiServiceBase` class
 
 ```python
 from tomodachi_bootstrap import TomodachiServiceBase
@@ -34,7 +34,7 @@ class TomodachiService(TomodachiServiceBase):
     name = "service-example"
 ```
 
-* Extend base `Pydantic-Settings` configuration class with your own configuration class.
+* Extend base `Pydantic-Settings` configuration class with your own configuration class
 
 ```python
 from functools import lru_cache
