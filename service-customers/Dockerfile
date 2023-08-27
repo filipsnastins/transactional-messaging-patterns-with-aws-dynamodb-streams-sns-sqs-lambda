@@ -37,7 +37,9 @@ RUN poetry install
 CMD ["tomodachi", "run", "src/entrypoints/tomodachi_app.py", "--loop", "uvloop"]
 
 FROM python-base AS release
-COPY --link --from=dependencies-release --chown=app:app /opt/venv /opt/venv
-COPY --link --from=dependencies-release --chown=app:app /app .
+RUN mkdir -p /app /opt/venv && \
+  chown -R app:app /app /opt/venv
 USER app
+COPY --link --from=dependencies-release /opt/venv /opt/venv
+COPY --link --from=dependencies-release /app .
 CMD ["tomodachi", "run", "src/entrypoints/tomodachi_app.py", "--loop", "uvloop", "--production"]
