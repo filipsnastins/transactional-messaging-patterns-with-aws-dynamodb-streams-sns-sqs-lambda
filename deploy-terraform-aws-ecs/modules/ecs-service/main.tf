@@ -114,7 +114,7 @@ resource "aws_ecs_task_definition" "default" {
 resource "aws_ecs_service" "default" {
   name            = "service-${var.service_name}"
   cluster         = var.ecs_cluster_id
-  task_definition = "${aws_ecs_task_definition.default.arn_without_revision}:${var.revision}"
+  task_definition = var.revision == null ? aws_ecs_task_definition.default.arn : "${aws_ecs_task_definition.default.arn_without_revision}:${var.revision}"
   launch_type     = "FARGATE"
 
   desired_count = var.replicas

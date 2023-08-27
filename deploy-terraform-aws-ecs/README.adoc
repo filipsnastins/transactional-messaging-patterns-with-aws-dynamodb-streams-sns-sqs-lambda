@@ -47,12 +47,12 @@ export ECR_HOST=758308814218.dkr.ecr.us-east-1.amazonaws.com # Insert your ECR h
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_HOST
 
 export SERVICE_CUSTOMERS_IMAGE=test-45d8-service-customers:latest
-docker build -t $SERVICE_CUSTOMERS_IMAGE -f ../service-customers/Dockerfile ..
+docker build --platform=linux/amd64 -t $SERVICE_CUSTOMERS_IMAGE  -f ../service-customers/Dockerfile ..
 docker tag $SERVICE_CUSTOMERS_IMAGE $ECR_HOST/$SERVICE_CUSTOMERS_IMAGE
 docker push $ECR_HOST/$SERVICE_CUSTOMERS_IMAGE
 
 export SERVICE_ORDERS_IMAGE=test-45d8-service-orders:latest
-docker build -t $SERVICE_ORDERS_IMAGE -f ../service-orders/Dockerfile ..
+docker build --platform=linux/amd64 -t $SERVICE_ORDERS_IMAGE -f ../service-orders/Dockerfile ..
 docker tag $SERVICE_ORDERS_IMAGE $ECR_HOST/$SERVICE_ORDERS_IMAGE
 docker push $ECR_HOST/$SERVICE_ORDERS_IMAGE
 ```

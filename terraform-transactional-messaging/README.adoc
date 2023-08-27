@@ -27,7 +27,7 @@ and most of the `tfsec` errors are ignored.
 
 === Idempotent Consumer
 
-Deploying DynamoDB `Inbox` table.
+* Deploying DynamoDB `Inbox` table
 
 ```terraform
 module "service_orders_inbox_table" {
@@ -40,8 +40,9 @@ module "service_orders_inbox_table" {
 
 === Transactional Outbox with DynamoDB Streams + Lambda
 
-Deploying `Outbox` DynamoDB table, Lambda message relay, creating SNS topics and configuring IAM permissions.
-Failed messages are saved to SQS dead-letter queue.
+* Deploying `Outbox` DynamoDB table, Lambda message relay, creating SNS topics and configuring IAM permissions
+* Failed messages are saved to SQS dead-letter queue
+* CloudWatch alarms on Lambda `IteratorAge` and messages in SQS dead-letter queue
 
 ```terraform
 module "service_orders_outbox_dynamodb_streams" {

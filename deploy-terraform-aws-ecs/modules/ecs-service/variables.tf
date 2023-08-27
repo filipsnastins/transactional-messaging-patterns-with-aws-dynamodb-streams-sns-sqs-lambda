@@ -11,7 +11,8 @@ variable "service_name" {
 }
 
 variable "revision" {
-  type = string
+  type    = string
+  default = null
 }
 
 variable "container_port" {
@@ -54,11 +55,11 @@ variable "replicas" {
   type = number
 }
 
-variable "http_healthcheck_path" {
+variable "http_listen_path_pattern" {
   type = string
 }
 
-variable "http_listen_path_pattern" {
+variable "http_healthcheck_path" {
   type = string
 }
 

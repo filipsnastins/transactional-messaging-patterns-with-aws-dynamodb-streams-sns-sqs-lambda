@@ -1,5 +1,5 @@
 locals {
-  function_name = "${var.environment}-outbox-dynamodb-streams--${var.service_name}"
+  function_name = "outbox-dynamodb-streams--${var.service_name}"
 }
 
 # DynamoDB Outbox Table
@@ -31,7 +31,7 @@ module "lambda_sqs_dlq" {
 module "lambda_iam_role" {
   source = "./modules/lambda-iam-role"
 
-  function_name             = local.function_name
+  function_name             = "${var.environment}-${local.function_name}"
   dynamodb_table_arn        = module.dynamodb_outbox_table.arn
   dynamodb_table_stream_arn = module.dynamodb_outbox_table.stream_arn
   sns_topic_arns            = [for sns_topic in module.sns_topics : sns_topic.arn]
@@ -45,7 +45,7 @@ data "local_file" "lambda_source_zip" {
 
 # Lambda Function
 resource "aws_lambda_function" "default" {
-  function_name = local.function_name
+  function_name = "${var.environment}-${local.function_name}"
   description   = "Transactional Outbox publisher - listens to DynamoDB Streams and publishes messages to SNS"
 
   role = module.lambda_iam_role.arn
@@ -109,4 +109,11 @@ module "cloudwatch_alarm__lambda_iterator_age" {
   source = "./modules/cloudwatch-alarm--lambda-iterator-age"
 
   function_name = aws_lambda_function.default.function_name
+}
+
+
+module "cloudwatch_alarm__lambda_sqs_dlq" {
+  source = "./modules/cloudwatch-alarm--sqs-dlq"
+
+  sqs_dlq_name = module.lambda_sqs_dlq.name
 }

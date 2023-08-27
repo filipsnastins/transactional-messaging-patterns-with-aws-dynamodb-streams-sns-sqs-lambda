@@ -5,7 +5,7 @@ module "service_customers_ecs" {
   environment  = var.environment
   service_name = "customers"
 
-  revision = 21
+  revision = null
 
   container_port    = 9700
   vpc_id            = module.vpc.id
@@ -20,8 +20,8 @@ module "service_customers_ecs" {
   memory   = 512
   replicas = 1
 
-  http_healthcheck_path    = "/customers/health"
   http_listen_path_pattern = "/customer*"
+  http_healthcheck_path    = "/customers/health"
 
   environment_variables = [
     { "name" : "ENVIRONMENT", "value" : var.environment },
