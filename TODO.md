@@ -3,6 +3,7 @@
 ## Documentation
 
 - [ ] Document each sub-module
+- [ ] Monitoring section
 
 ## service-customers
 
