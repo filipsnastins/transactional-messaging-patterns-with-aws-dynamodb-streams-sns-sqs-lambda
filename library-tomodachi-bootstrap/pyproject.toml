@@ -36,6 +36,7 @@ httpx = "^0.24.1"
 isort = "^5.12.0"
 mypy = "^1.4.1"
 mypy-protobuf = "^3.5.0"
+pre-commit = "^3.3.3"
 pylint = "^2.17.4"
 pytest = "^7.4.0"
 pytest-asyncio = "^0.21.1"
@@ -49,6 +50,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
+hooks = "dev:hooks"
 format = "dev:format"
 lint = "dev:lint"
 test = "dev:test"
