@@ -1,3 +1,4 @@
+import contextlib
 import uuid
 
 import tomodachi
@@ -5,6 +6,7 @@ from aiohttp import web
 from stockholm import Money
 from tomodachi.envelope.json_base import JsonBase
 from tomodachi_bootstrap import TomodachiServiceBase
+from transactional_messaging.idempotent_consumer import MessageAlreadyProcessedError
 
 from adapters import dynamodb, inbox, outbox, sns
 from customers.commands import CreateCustomerCommand, ReleaseCreditCommand, ReserveCreditCommand
@@ -66,14 +68,15 @@ class TomodachiService(TomodachiServiceBase):
         message_envelope=JsonBase,
     )
     async def order_created_handler(self, data: dict, correlation_id: uuid.UUID) -> None:
-        async with DynamoDBUnitOfWork(message_id=uuid.UUID(data["event_id"])) as uow:
-            event = ReserveCreditCommand(
-                correlation_id=correlation_id,
-                order_id=uuid.UUID(data["order_id"]),
-                customer_id=uuid.UUID(data["customer_id"]),
-                order_total=Money.from_sub_units(int(data["order_total"])).as_decimal(),
-            )
-            await use_cases.reserve_credit(uow, event)
+        with contextlib.suppress(MessageAlreadyProcessedError):
+            async with DynamoDBUnitOfWork(message_id=uuid.UUID(data["event_id"])) as uow:
+                event = ReserveCreditCommand(
+                    correlation_id=correlation_id,
+                    order_id=uuid.UUID(data["order_id"]),
+                    customer_id=uuid.UUID(data["customer_id"]),
+                    order_total=Money.from_sub_units(int(data["order_total"])).as_decimal(),
+                )
+                await use_cases.reserve_credit(uow, event)
 
     @tomodachi.aws_sns_sqs(
         "order--cancelled",
@@ -83,10 +86,11 @@ class TomodachiService(TomodachiServiceBase):
         message_envelope=JsonBase,
     )
     async def order_cancelled_handler(self, data: dict, correlation_id: uuid.UUID) -> None:
-        async with DynamoDBUnitOfWork(message_id=uuid.UUID(data["event_id"])) as uow:
-            event = ReleaseCreditCommand(
-                correlation_id=correlation_id,
-                order_id=uuid.UUID(data["order_id"]),
-                customer_id=uuid.UUID(data["customer_id"]),
-            )
-            await use_cases.release_credit(uow, event)
+        with contextlib.suppress(MessageAlreadyProcessedError):
+            async with DynamoDBUnitOfWork(message_id=uuid.UUID(data["event_id"])) as uow:
+                event = ReleaseCreditCommand(
+                    correlation_id=correlation_id,
+                    order_id=uuid.UUID(data["order_id"]),
+                    customer_id=uuid.UUID(data["customer_id"]),
+                )
+                await use_cases.release_credit(uow, event)
