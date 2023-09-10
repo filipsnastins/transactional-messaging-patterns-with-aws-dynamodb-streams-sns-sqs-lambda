@@ -3,11 +3,7 @@ name: Build and test - Service Customers
 on:
   push:
     branches: [main]
-    paths:
-      - 'service-customers/**'
   pull_request:
-    paths:
-      - 'service-customers/**'
 
 jobs:
   build:

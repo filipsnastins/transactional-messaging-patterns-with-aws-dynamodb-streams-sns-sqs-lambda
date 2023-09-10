@@ -3,11 +3,7 @@ name: Build and test - library-transactional-messaging
 on:
   push:
     branches: [main]
-    paths:
-      - 'library-transactional-messaging/**'
   pull_request:
-    paths:
-      - 'library-transactional-messaging/**'
 
 jobs:
   build:

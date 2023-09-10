@@ -3,11 +3,7 @@ name: Build and test - library-tomodachi-bootstrap
 on:
   push:
     branches: [main]
-    paths:
-      - 'library-tomodachi-bootstrap/**'
   pull_request:
-    paths:
-      - 'library-tomodachi-bootstrap/**'
 
 jobs:
   build:

@@ -48,7 +48,11 @@ def tomodachi_container(
 ) -> Generator[TomodachiContainer, None, None]:
     aws_config = moto_container.get_aws_client_config()
     with (
-        TomodachiContainer(image=str(tomodachi_image.id), edge_port=get_available_port())
+        TomodachiContainer(
+            image=str(tomodachi_image.id),
+            edge_port=get_available_port(),
+            http_healthcheck_path="/orders/health",
+        )
         .with_env("ENVIRONMENT", "autotest")
         .with_env("AWS_REGION", aws_config["region_name"])
         .with_env("AWS_ACCESS_KEY_ID", aws_config["aws_access_key_id"])
@@ -63,9 +67,5 @@ def tomodachi_container(
 
 @pytest_asyncio.fixture()
 async def http_client(tomodachi_container: TomodachiContainer) -> AsyncGenerator[httpx.AsyncClient, None]:
-    async with httpx.AsyncClient(
-        base_url=tomodachi_container.get_external_url(),
-        transport=httpx.AsyncHTTPTransport(retries=3),
-        timeout=10.0,
-    ) as client:
+    async with httpx.AsyncClient(base_url=tomodachi_container.get_external_url()) as client:
         yield client

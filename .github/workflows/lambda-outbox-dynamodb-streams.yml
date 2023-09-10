@@ -3,11 +3,7 @@ name: Build and test - lambda-outbox-dynamodb-streams
 on:
   push:
     branches: [main]
-    paths:
-      - 'lambda-outbox-dynamodb-streams/**'
   pull_request:
-    paths:
-      - 'lambda-outbox-dynamodb-streams/**'
 
 jobs:
   build:

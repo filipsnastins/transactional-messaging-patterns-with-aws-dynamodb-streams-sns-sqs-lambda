@@ -3,11 +3,7 @@ name: Build and test - library-unit-of-work
 on:
   push:
     branches: [main]
-    paths:
-      - 'library-unit-of-work/**'
   pull_request:
-    paths:
-      - 'library-unit-of-work/**'
 
 jobs:
   build:

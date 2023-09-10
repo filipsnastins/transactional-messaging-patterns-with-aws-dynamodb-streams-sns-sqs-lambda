@@ -3,11 +3,7 @@ name: Build and test - Service Orders
 on:
   push:
     branches: [main]
-    paths:
-      - 'service-orders/**'
   pull_request:
-    paths:
-      - 'service-orders/**'
 
 jobs:
   build:
