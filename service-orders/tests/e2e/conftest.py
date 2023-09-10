@@ -69,7 +69,6 @@ def tomodachi_container(
 async def http_client(tomodachi_container: TomodachiContainer) -> AsyncGenerator[httpx.AsyncClient, None]:
     async with httpx.AsyncClient(
         base_url=tomodachi_container.get_external_url(),
-        transport=httpx.AsyncHTTPTransport(retries=3),
-        timeout=10.0,
+        timeout=httpx.Timeout(connect=10, read=30, write=10, pool=10),
     ) as client:
         yield client
